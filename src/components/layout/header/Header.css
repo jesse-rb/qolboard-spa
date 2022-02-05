@@ -1,0 +1,9 @@
+#header {
+    width: 100%;
+    padding: 20px;
+    background-color: var(--background-color-2);
+    direction: rtl;
+}
+#header>* {
+    margin-right: 5px;
+}

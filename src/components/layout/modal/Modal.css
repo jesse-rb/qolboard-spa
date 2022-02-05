@@ -1,0 +1,31 @@
+.modal-background.open {
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 450;
+    background-color: transparent;
+}
+
+.modal.open {
+    display: inline-block;
+    position: absolute;
+    left: 50%; 
+    right: 50%;
+    top: 50%; 
+    bottom: 50%;
+    transform: translate(-50%, -50%);
+    width: fit-content;
+    height: fit-content;
+    background-color: var(--background-color-3);
+    border-radius: 10px;
+    padding: 20px;
+    z-index: 500;
+}
+
+.modal-background,
+.modal {
+    display: none;
+}

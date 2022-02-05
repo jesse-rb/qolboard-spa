@@ -1,13 +1,66 @@
+/*
+    Globals
+*/
+* {
+    box-sizing: border-box;
+    font-family: sans-serif;
+    color: var(--color-1);
+    transition-duration: 200ms;
+}
+
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    /* App Variabkles */
+    --background-color-1: #525252;
+    --background-color-2: #252525;
+    --background-color-3: #304f7e;
+
+    --color-1: #cce1e9;
+
+    background-color: var(--background-color-1);
+
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/*
+    Scroll bars
+*/
+::-webkit-scrollbar-corner {
+    background-color: transparent
+}
+::-webkit-scrollbar {
+    background-color: var(--scroll-bar-color);
+    width: 0.8em;
+    height: 0.8em;
+    border-radius: 20px;
+}
+::-webkit-scrollbar-thumb {
+    background-color: var(--scroll-bar-thumb-color);
+    border-radius: 20px;
+    border: 1px black solid;
+}
+
+/*
+    Buttons
+*/
+.button {
+    background-color: var(--background-color-2);
+    border: none;
+    padding: 5px;
+    border-radius: 5px;
+}
+.button:hover {
+	transform: scale(1.05);
+}
+.button:active {
+    transform: scale(0.95);
+}
+
+@keyframes small-bounce {
+    20% {  }
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
