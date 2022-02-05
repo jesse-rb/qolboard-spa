@@ -1,25 +1,24 @@
+.wrap-modal {
+    animation: open 0.5s ease-in-out;
+}
 .modal-background.open {
-    display: inline-block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     z-index: 450;
-    background-color: transparent;
+    background-color: rgba(0, 0, 0, 0.025);
 }
 
 .modal.open {
+    background-color: transparent;
     display: inline-block;
-    position: absolute;
-    left: 50%; 
-    right: 50%;
-    top: 50%; 
-    bottom: 50%;
-    transform: translate(-50%, -50%);
     width: fit-content;
     height: fit-content;
-    background-color: var(--background-color-3);
     border-radius: 10px;
     padding: 20px;
     z-index: 500;
@@ -28,4 +27,14 @@
 .modal-background,
 .modal {
     display: none;
+}
+@keyframes open {
+    0% {
+        opacity: 0;
+        transform: translateY(-100%);
+    }
+    100% {
+        opacity: 100%;
+        transform: translateY(0%);
+    }
 }

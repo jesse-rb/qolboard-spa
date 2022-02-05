@@ -10,13 +10,12 @@
 
 body {
     /* App Variabkles */
-    --background-color-1: #525252;
-    --background-color-2: #252525;
-    --background-color-3: #304f7e;
-
     --color-1: #cce1e9;
+    --color-2: #202020;
+    --color-3: #303030;
+    --color-4: #b33232;
 
-    background-color: var(--background-color-1);
+    background-color: var(--color-2);
 
     margin: 0;
     -webkit-font-smoothing: antialiased;
@@ -45,7 +44,7 @@ body {
     Buttons
 */
 .button {
-    background-color: var(--background-color-2);
+    background-color: var(--color-3);
     border: none;
     padding: 5px;
     border-radius: 5px;
@@ -57,10 +56,21 @@ body {
     transform: scale(0.95);
 }
 
-@keyframes small-bounce {
-    20% {  }
-}
-
 code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+.animation-attention {
+    animation: attention 0.2s ease-in-out;
+}
+@keyframes attention {
+    25% {
+        transform: translateX(-10px);
+    }
+    75% {
+        transform: translateX(10px);
+    }
+    100% {
+        transform: translateX(0px);
+    }
 }

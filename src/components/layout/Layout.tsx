@@ -10,6 +10,7 @@ import Register from '../register/Register';
 
 function Layout(props: {children: ReactNode}) {
     const { loggedIn } = useSelector( (state: RootState) => state.user );
+    const modalRegisterOpen = useSelector((state: RootState) => state.modalRegisterOpen);
 
     return (
         <div id='layout'>
@@ -17,7 +18,9 @@ function Layout(props: {children: ReactNode}) {
             {
                 loggedIn
                 ? false
-                : <Modal><Register /></Modal>
+                :   modalRegisterOpen.open
+                    ? <Modal><Register /></Modal>
+                    : false
             }
             { props.children }
             <Footer />
