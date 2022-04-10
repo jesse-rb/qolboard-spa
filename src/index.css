@@ -22,6 +22,10 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+.nothing {
+    display: contents;
+}
+
 /*
     Scroll bars
 */

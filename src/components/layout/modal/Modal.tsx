@@ -1,26 +1,33 @@
-import { ReactNode, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../../app/store';
-import { close } from "../../../store/modalSlice"
+import { ReactNode, useEffect, useState } from 'react'
 import './Modal.css';
 
-function Modal(props: { children: ReactNode }) {
-    const { open } = useSelector((state: RootState) => state.modalRegisterOpen);
-    const dispatch = useDispatch();
+function Modal(props: {open: ReactNode, children: ReactNode}) {
+    useEffect(() => {
+        window.removeEventListener('click', handleOpen);
+    });
+    const [ open, setOpen ] = useState(false);
     const [ attention, setAttention ] = useState(false);
+    const handleOpen = () => setOpen(true);
+    let toRender;
+
     if (!open) {
-        return <></>;
+        toRender = (
+            <div className='nothing' onClick={ () => setOpen(true) }>{ props.open }</div>
+        );
+    } else {
+        toRender = (
+            <div className={ `modal-background ${ !open ? '' : 'open' } `} onClick={ (() => setAttention(true)) }>
+                <button className='button' onClick={ () => { setOpen(false); } }>close</button>
+                <div className='wrap-modal'>
+                <div className= { 'modal' + (!open ? '' : ' open') + (!attention ? '' : ' animation-attention') } onClick={ ((e) => e.stopPropagation()) } onAnimationEnd={ (() => { setAttention(false) }) }>
+                    { props.children }
+                </div>
+                </div>
+            </div>
+        );
     }
-    return (
-        <div className={ `modal-background ${ !open ? '' : 'open' } `} onClick={ (() => setAttention(true)) }>
-            <button className='button' onClick={ () => { dispatch(close()); } }>close</button>
-            <div className='wrap-modal'>
-            <div className= { 'modal' + (!open ? '' : ' open') + (!attention ? '' : ' animation-attention') } onClick={ ((e) => e.stopPropagation()) } onAnimationEnd={ (() => { setAttention(false) }) }>
-                { props.children }
-            </div>
-            </div>
-        </div>
-    );
+    return toRender;
 }
 
-export default Modal
+
+export default Modal;

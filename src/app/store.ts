@@ -5,7 +5,7 @@ import modalReducer from '../store/modalSlice'
 const store = configureStore({
 	reducer: {
 		user: userReducer,
-		modalRegisterOpen: modalReducer
+		modal: modalReducer
 	},
 })
 

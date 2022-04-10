@@ -1,14 +1,16 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { RootState } from '../../../app/store'
-import { useDispatch, useSelector } from 'react-redux'
-import { login, logout } from "../../../store/userSlice"
-import { open, close, toggle } from "../../../store/modalSlice"
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { RootState } from '../../../app/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { login, logout } from '../../../store/userSlice';
 import "./Header.css"
+import Register from '../../register/Register';
+import Modal from '.././modal/Modal';
 
 function Header() {
-    const { loggedIn } = useSelector((state: RootState) => state.user)
-    const dispatch = useDispatch()
+    const { loggedIn } = useSelector((state: RootState) => state.user);
+    const dispatch = useDispatch();
+    const registerModalOpen = <button className='button'>Register</button>;
     return (
         <div id="header">
             {
@@ -18,8 +20,8 @@ function Header() {
             }
             {
                 loggedIn
-                ? false
-                : <button className='button' onClick={ () => dispatch(toggle()) }>Register</button>
+                ? ''
+                : <Modal open={registerModalOpen}><Register /></Modal>
             }
         </div>
     );
