@@ -4,7 +4,6 @@ import { ReactNode } from 'react';
 import './Layout.css'
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store';
-import Modal from './modal/Modal';
 
 
 function Layout(props: {children: ReactNode}) {
@@ -13,7 +12,9 @@ function Layout(props: {children: ReactNode}) {
     return (
         <div id='layout'>
             <Header />
-            { props.children }
+            <div id='page'>
+                { props.children }
+            </div>
             <Footer />
         </div>
     );

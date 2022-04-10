@@ -4,8 +4,8 @@ import { RootState } from '../../../app/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { login, logout } from '../../../store/userSlice';
 import "./Header.css"
-import Register from '../../register/Register';
-import Modal from '.././modal/Modal';
+import Register from '../../modals/register/Register';
+import Modal from '../../modal/Modal';
 
 function Header() {
     const { loggedIn } = useSelector((state: RootState) => state.user);
