@@ -6,17 +6,18 @@ import { login, logout } from '../../../store/userSlice';
 import "./Header.css"
 import Register from '../../modals/register/Register';
 import Modal from '../../modal/Modal';
+import Button from '../../button/Button';
 
 function Header() {
     const { loggedIn } = useSelector((state: RootState) => state.user);
     const dispatch = useDispatch();
-    const registerModalOpen = <button className='button'>Register</button>;
+    const registerModalOpen = <Button label='Register' callback={ () => '' } />;
     return (
         <div id="header">
             {
                 loggedIn
-                ? <button className='button material-icons' onClick={ () => dispatch(logout()) }>Logout</button>
-                : <button className='button material-icons' onClick={ () => dispatch(login()) }>Login</button>
+                ? <Button label='Logout' callback={ () => dispatch(logout()) } />
+                : <Button label='Login' callback={ () => dispatch(login()) } />
             }
             {
                 loggedIn

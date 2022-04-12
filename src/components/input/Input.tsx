@@ -4,9 +4,13 @@ import './Input.css';
 
 function Input(props: {label: string, children: ReactNode}) {
     let children = React.Children.toArray(props.children);
-    children.map((c: any) => console.log(c.props)); // TODO: figure out how TS works.
+    let elementProps = children.map((c: any) => c.props)[0]; // TODO: figure out how TS works.
+    console.log(elementProps);
     let toRender = (
-        <label htmlFor=''></label>
+        <div className='input'>
+            <label htmlFor={elementProps.id}>{props.label}</label>
+            {props.children}
+        </div>
     );
     return toRender;
 }

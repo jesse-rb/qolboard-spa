@@ -1,21 +1,27 @@
-import React from 'react';
 import './Register.css';
 import Input from '../../input/Input';
+import Form from '../../form/Form';
+import Button from '../../button/Button';
 
 function Register() {
-    return (
-        <div className='form'>
-            <Input label='This is test'><input type='text' id='test' placeholder='Test'/></Input>
-            <label htmlFor='name'>Display Name</label>
-            <input type='text' id='name' placeholder='John'/>
+    let toReturn = (
+        <Form>
+            <Input label='Display Name'>
+                <input type='text' id='name' placeholder='e.g. John'/>
+            </Input>
 
-            <label htmlFor='email'>Email</label>
-            <input type='text' id='email' placeholder='john@gmail.com'/>
+            <Input label='Email'>
+                <input type='text' id='email' placeholder='e.g. john@gmail.com'/>
+            </Input>
 
-            <label htmlFor='password'>Password</label>
-            <input type='password' id='password' placeholder='secretpassword'/>
-        </div>
+            <Input label='Password'>
+                <input type='password' id='password' placeholder='e.g. supersecretpassword'/>
+            </Input>
+
+            <Button label='Go' callback={ () => alert('Hello') }></Button>
+        </Form>
     );
+    return toReturn;
 }
 
 export default Register;

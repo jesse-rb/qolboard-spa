@@ -1,4 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react'
+import Button from '../button/Button';
 import './Modal.css';
 
 function Modal(props: {open: ReactNode, children: ReactNode}) {
@@ -14,11 +15,11 @@ function Modal(props: {open: ReactNode, children: ReactNode}) {
         <>
         <div className='nothing' onClick={ () => setOpen(true) }>{ props.open }</div>
         <div className={ `modal-background ${ !open ? '' : 'open' } `} onClick={ (() => setAttention(true)) }>
-            <button className='button' onClick={ () => { setOpen(false); } }>close</button>
+            <Button label='Close' callback={ () => setOpen(false) }></Button>
             <div className='wrap-modal'>
-            <div className= { 'modal' + (!open ? '' : ' open') + (!attention ? '' : ' animation-attention') } onClick={ ((e) => e.stopPropagation()) } onAnimationEnd={ (() => { setAttention(false) }) }>
-                { props.children }
-            </div>
+                <div className= { 'modal' + (!open ? '' : ' open') + (!attention ? '' : ' animation-attention') } onClick={ ((e) => e.stopPropagation()) } onAnimationEnd={ (() => { setAttention(false) }) }>
+                    { props.children }
+                </div>
             </div>
         </div>
         </>

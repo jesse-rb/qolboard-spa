@@ -10,10 +10,13 @@
 
 body {
     /* App Variabkles */
+    --color-0: #aaaaaa;
     --color-1: #cce1e9;
     --color-2: #202020;
     --color-3: #303030;
     --color-4: #b33232;
+    --color-5: #e8f0fd;
+    --color-6: black;
 
     background-color: var(--color-2);
 
@@ -25,15 +28,6 @@ body {
 /* This is nothing -- useful if you need something like a <></> but that can have event listeners */
 .nothing {
     display: contents;
-}
-
-/* Form */
-.form {
-    direction: ltr;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--color-4);
-    padding: 10px;
 }
 
 /*
@@ -54,22 +48,7 @@ body {
     border: 1px black solid;
 }
 
-/*
-    Buttons
-*/
-.button {
-    background-color: var(--color-3);
-    border: none;
-    padding: 5px;
-    border-radius: 5px;
-    
-}
-.button:hover {
-	transform: scale(1.05);
-}
-.button:active {
-    transform: scale(0.95);
-}
+
 
 code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
