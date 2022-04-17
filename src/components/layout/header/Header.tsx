@@ -7,22 +7,22 @@ import "./Header.css"
 import Register from '../../modals/register/Register';
 import Modal from '../../modal/Modal';
 import Button from '../../button/Button';
+import Login from '../../modals/login/Login';
 
 function Header() {
     const { loggedIn } = useSelector((state: RootState) => state.user);
     const dispatch = useDispatch();
-    const registerModalOpen = <Button label='Register' callback={ () => '' } />;
     return (
         <div id="header">
             {
                 loggedIn
                 ? <Button label='Logout' callback={ () => dispatch(logout()) } />
-                : <Button label='Login' callback={ () => dispatch(login()) } />
+                : <Modal open={ <Button label='Login' callback={ () => '' } /> }><Login /></Modal>
             }
             {
                 loggedIn
                 ? ''
-                : <Modal open={registerModalOpen}><Register /></Modal>
+                : <Modal open={ <Button label='Register' callback={ () => '' } />}><Register /></Modal>
             }
         </div>
     );

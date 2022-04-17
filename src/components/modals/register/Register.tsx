@@ -1,4 +1,3 @@
-import './Register.css';
 import Input from '../../input/Input';
 import Form from '../../form/Form';
 import Button from '../../button/Button';
@@ -18,7 +17,11 @@ function Register() {
                 <input type='password' id='password' placeholder='e.g. supersecretpassword'/>
             </Input>
 
-            <Button label='Go' callback={ () => alert('Hello') }></Button>
+            <Input label='Confirm Password'>
+                <input type='password' id='password-confirm' placeholder='e.g. supersecretpassword'/>
+            </Input>
+
+            <Button label='Register' callback={ () => alert('Hello') }></Button>
         </Form>
     );
     return toReturn;
