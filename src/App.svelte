@@ -1,30 +1,23 @@
 <script>
-	export let name;
+	// This is the app's page and can be used for routing
+	import { Router, Route, Link } from 'svelte-navigator';
+	import Header from './layout/Header.svelte';
+	import Home from './pages/Home.svelte';
 </script>
-
-<main>
-	<h1>Hello {name}!</h1>
-	<p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
-</main>
+<div id="app">
+	<Router>
+		<Header />
+		<div id="page">
+			<Route>
+				<Home />
+			</Route>
+		</div>
+		<!-- <Footer /> -->
+	</Router>
+</div>
 
 <style>
-	main {
-		text-align: center;
-		padding: 1em;
-		max-width: 240px;
-		margin: 0 auto;
-	}
-
-	h1 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
-	}
-
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
-		}
+	#page {
+		margin: 0 30px 0 30px;
 	}
 </style>
