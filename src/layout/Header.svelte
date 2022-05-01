@@ -23,5 +23,6 @@
         display: flex;
         align-items: center;
         justify-content: space-evenly;
+        background-color: #754848;
     }
 </style>
