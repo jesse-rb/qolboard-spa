@@ -6,6 +6,7 @@
 </script>
 <div id="app">
 	<Router>
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 		<Header />
 		<div id="page">
 			<Route>
