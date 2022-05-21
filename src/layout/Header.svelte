@@ -1,5 +1,6 @@
 <script>
     import { Link } from 'svelte-navigator';
+    import Input from '../components/Input.svelte';
     import Modal from '../components/Modal.svelte';
     import Button from '../components/Button.svelte';
 
@@ -12,19 +13,22 @@
 <div class="header-layout">
     <div class="banner">
         <h1>Welcome to qolboard 2.0</h1>
-        <Button label="Menu" onclick={()=>menuModal.toggle()} />
+        <Button icon="menu" label="Menu" onclick={()=>menuModal.toggle()} />
     </div>
     <div class="menu">
         
     </div>
 </div>
 <Modal bind:this={menuModal}>
-    <Button label="Login" onclick={()=>loginModal.toggle()} />
-    <Button label="Register" onclick={()=>registerModal.toggle()} />
-    <Button label="About" onclick={()=>aboutModal.toggle()} />
+    <Button label="Login" icon="login" onclick={()=>loginModal.toggle()} />
+    <Button label="Register" icon="person_add" onclick={()=>registerModal.toggle()} />
+    <Button label="About" icon="info" onclick={()=>aboutModal.toggle()} />
 
     <Modal bind:this={loginModal}>
         <h2>Login</h2>
+        <form action="">
+            <Input label="Display name" />
+        </form>
     </Modal>
 
     <Modal bind:this={registerModal}>
@@ -32,7 +36,8 @@
     </Modal>
 
     <Modal bind:this={aboutModal}>
-        <h2>Privacy note</h2>
+        <h2>About</h2>
+        <h3>Privacy note</h3>
         <p>Please note that qolboard uses:</p>
         <ul>
             <li>session storage to carry your drawings over between page refreshes</li>

@@ -1,27 +1,31 @@
 <script>
     export let label = '';
+    export let icon = '';
     export let onclick = () => {};
-
     
 </script>
 
-<button class="button-component" on:click="{ onclick }" class:symbol={label.length <= 1}>{label}</button>
+<button class="button-component" on:click="{ onclick }" >
+    <span class="icon" class:icon-only={label.length<=0} class:material-icons={icon.length>0} >{icon}</span>
+    <span class="label" >{label}</span>
+</button>
 
 <style>
     .button-component {
-        border-radius: 50px;
+        border-radius: 5px;
         padding: 10px;
         border: none;
         background-color: #e78e8e;
         transition-duration: 1s;
         font-size: large;
+        display: inline-flex;
+        align-items: center;
     }
-    .button-component.symbol {
-        border-radius: 50%;
-        padding: 0;
-        width: 35px;
-        height: 35px;
-        text-align: center;
+    .icon {
+        margin-right: 5px;
+    }
+    .icon.icon-only {
+        margin-right: 0;
     }
     
     .button-component:hover {
@@ -31,6 +35,7 @@
     .button-component:active {
         animation: 0.5s click;
     }
+
 
     @keyframes hover {
         100% {

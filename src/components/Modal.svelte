@@ -21,9 +21,9 @@
 
 {#if open}
     <div class="modal-component" class:cinema={cinema}>
-        <div in:slide out:slide="{{ delay:400 }}" class="modal-component-inner">
-            <div in:transitionCloseButton="{{delay: 400}}" out:transitionCloseButton="{{delay: 0}}" class="close-button">
-                <Button label="x" onclick={toggle} />
+        <div in:slide out:slide="{{ delay:100 }}" class="modal-component-inner">
+            <div in:transitionCloseButton="{{delay: 100}}" out:transitionCloseButton="{{delay: 0}}" class="close-button">
+                <Button icon="close" onclick={toggle} />
             </div>
             <slot></slot>
         </div>
@@ -35,10 +35,10 @@
         display: contents;
     }
     .modal-component-inner {
-        display: none;
+        display: block;
         position: relative;
         background-color: #2c2035;
-        border-radius: 10px;
+        border-radius: 5px;
         padding: 10px;
         margin: 30px;
         /* box-shadow: #8d4848 -1px 1px 1px 0px; */
@@ -61,14 +61,10 @@
         height: 50%;
         z-index: 1050;
     }
-    .modal-component .modal-component-inner {
-        display: block;
-    }
-
     .modal-component .close-button {
         position: relative;
         float: right;
-        right: -20px;
-        top: -20px;
+        right: 0px;
+        top: 0px;
     }
 </style>
