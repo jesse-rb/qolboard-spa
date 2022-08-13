@@ -4,7 +4,9 @@
     import Button from './Button.svelte';
     export let cinema = false;
     let open = false;
+
     export const toggle = () => {open = !open};
+    export const close = () => {open = false};
 
     function transitionCloseButton(node, { delay }) {
         return {
@@ -41,7 +43,6 @@
         border-radius: 5px;
         padding: 10px;
         margin: 30px;
-        /* box-shadow: #8d4848 -1px 1px 1px 0px; */
         border: #383643 1px solid;
     }
     .modal-component.cinema {
