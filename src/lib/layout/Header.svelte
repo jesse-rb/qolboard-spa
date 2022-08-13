@@ -1,5 +1,4 @@
 <script>
-    import { Link } from 'svelte-navigator';
     import Input from '../components/Input.svelte';
     import Modal from '../components/Modal.svelte';
     import Button from '../components/Button.svelte';
@@ -20,9 +19,15 @@
     </div>
 </div>
 <Modal bind:this={menuModal}>
-    <Button label="Login" icon="login" onclick={()=>loginModal.toggle()} />
-    <Button label="Register" icon="person_add" onclick={()=>registerModal.toggle()} />
-    <Button label="About" icon="info" onclick={()=>aboutModal.toggle()} />
+    <Button label="Login" icon="login" onclick={()=>{
+        loginModal.toggle(); registerModal.close(); aboutModal.close();
+    }} />
+    <Button label="Register" icon="person_add" onclick={()=>{
+        registerModal.toggle(); loginModal.close(); aboutModal.close();
+    }} />
+    <Button label="About" icon="info" onclick={()=>{
+        aboutModal.toggle(); loginModal.close(); registerModal.close();
+    }} />
 
     <Modal bind:this={loginModal}>
         <h2>Login</h2>

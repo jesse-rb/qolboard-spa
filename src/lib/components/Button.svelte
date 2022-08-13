@@ -14,6 +14,7 @@
     .button-component {
         border-radius: 5px;
         padding: 10px;
+        margin: 2px;
         border: none;
         background-color: #e78e8e;
         transition-duration: 1s;
