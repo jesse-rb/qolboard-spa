@@ -31,7 +31,7 @@ jobs:
         run: |
           npm install
           npm run build
-          sed '/^dist$/d' ./.gitignore
+          sed '/^dist$/d' ./.gitignore > ./.gitignore
           git add .gitignore
           git add dist
           git commit -m "Deploy to gh-pages"
