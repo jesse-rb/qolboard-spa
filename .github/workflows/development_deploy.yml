@@ -31,4 +31,7 @@ jobs:
         run: |
           npm install
           npm run build
+          sed '/^dist$/d' ./.gitignore
+          git add dist
+          git commit -m "Remove dist from gitignore to deploy to hg pages"
           git subtree push --prefix dist/ origin gh-pages
