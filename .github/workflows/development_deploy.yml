@@ -32,6 +32,7 @@ jobs:
           npm install
           npm run build
       - name: deploy
+        run: |
           sed '/^dist$/d' ./.gitignore > ./.gitignore
           git add .gitignore
           git add dist
