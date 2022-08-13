@@ -1,0 +1,10 @@
+body {
+    margin: 0;
+    font-family: 'Lucida Sans';
+    background-color: #383644;
+    color: #e09696;
+}
+
+* {
+    box-sizing: border-box;
+}

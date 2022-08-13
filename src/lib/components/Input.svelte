@@ -43,8 +43,7 @@
         font-size: large;
         padding: 10px;
         border-radius: 5px;
-    }
-    input {
         outline: none;
+        width: 100%;
     }
 </style>

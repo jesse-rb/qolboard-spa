@@ -1,5 +1,4 @@
 <script>
-    import { Link } from 'svelte-navigator';
     import Input from '../components/Input.svelte';
     import Modal from '../components/Modal.svelte';
     import Button from '../components/Button.svelte';

@@ -2,7 +2,6 @@
     import { elasticOut } from 'svelte/easing';
     import { slide } from 'svelte/transition';
     import Button from './Button.svelte';
-    export let cinema = false;
     let open = false;
 
     export const toggle = () => {open = !open};
@@ -22,7 +21,7 @@
 
 
 {#if open}
-    <div class="modal-component" class:cinema={cinema}>
+    <div class="modal-component" >
         <div in:slide out:slide="{{ delay:100 }}" class="modal-component-inner">
             <div in:transitionCloseButton="{{delay: 100}}" out:transitionCloseButton="{{delay: 0}}" class="close-button">
                 <Button icon="close" onclick={toggle} />
@@ -44,23 +43,6 @@
         padding: 10px;
         margin: 30px;
         border: #383643 1px solid;
-    }
-    .modal-component.cinema {
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 1000;
-        background-color: rgba(56, 54, 67, 0.7);
-    }
-    .modal-component.cinema .modal-component-inner {
-        margin: 0 auto 0 auto;
-        top: 25%;
-        width: 50%;
-        height: 50%;
-        z-index: 1050;
     }
     .modal-component .close-button {
         position: relative;
