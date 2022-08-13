@@ -26,15 +26,17 @@ jobs:
         with:
           node-version: 18
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      # Build and deploy steps
+      - name: build
         run: |
           npm install
           npm run build
+      - name: deploy
+        run: |
           sed '/^dist$/d' ./.gitignore > ./.gitignore
           git add .gitignore
           git add dist
           git config user.name github-actions
           git config user.email github-actions@github.com
           git commit -m "Deploy to gh-pages"
-          git subtree push --prefix dist/ origin gh-pages
+          git push origin `git subtree split --prefix dist`:gh-pages --force
