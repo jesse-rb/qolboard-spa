@@ -22,8 +22,6 @@
     // Cahce store
     $: window.localStorage.setItem('store', JSON.stringify($store));
 
-    $: console.log($store);
-
     if (!$store['loggedIn'] && $store['logInProgressEmail']) {
         completeSignInWithEmailLink($store['logInProgressEmail'])
         .then(data => {
