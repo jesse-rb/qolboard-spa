@@ -16,7 +16,8 @@
         padding: 10px;
         margin: 2px;
         border: none;
-        background-color: #e78e8e;
+        background-color: var(--color-back-3);
+        color: var(--color-a);
         transition-duration: 1s;
         font-size: large;
         display: inline-flex;

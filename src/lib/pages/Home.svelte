@@ -1,5 +1,10 @@
 <script>
+    import { store } from '../store';
+    import { onMount } from 'svelte';
 
+    onMount(()=>{
+
+    });
 </script>
 
 <div id="home-page">
