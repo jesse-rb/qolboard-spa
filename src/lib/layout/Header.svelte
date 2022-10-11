@@ -3,7 +3,6 @@
     import Modal from '../components/Modal.svelte';
     import Button from '../components/Button.svelte';
     import Form from '../components/Form.svelte'
-    import { emailSignInLink, completeSignInWithEmailLink, logout } from '../util/firebase';
     import { store } from '../store';
 
     let loginModal;
@@ -21,62 +20,17 @@
     
     // Cahce store
     $: window.localStorage.setItem('store', JSON.stringify($store));
-
-    if (!$store['loggedIn'] && $store['logInProgressEmail']) {
-        completeSignInWithEmailLink($store['logInProgressEmail'])
-        .then(data => {
-            console.log(data);
-            if (!data['err']) {
-                $store['loggedIn'] = true;
-                $store['user'] = data['data'];
-            } else {
-                completeSignInFailedModal.toggle();
-            }
-            $store['logInProgressEmail'] = null;
-        });
-        
-    }
-
-    function login() {
-        emailSignInLink(loginEmail);
-        $store['logInProgressEmail'] = loginEmail;
-        loginModal.close();
-        loginInstructionsModal.toggle();
-    }
 </script>
 
 <div class="header-layout">
     <div class="banner">
         <h1>Welcome to qolboard 2.0</h1>
-        
-        {#if !$store['loggedIn']}
-        <Button label="Login" icon="login" onclick={()=>{
-            loginModal.toggle();
-        }} />
-        {:else}
-            <Button label="Logout" icon='logout' onclick={logout}></Button>
-        {/if}
 
         <Button label="About" icon="info" onclick={()=>{
             aboutModal.toggle();
         }} />
-        
-        {#if $store['loggedIn']}
-            <div class="status">
-                <span class="material-icons">verified_user</span>
-                <span>You are logged in</span>
-            </div>
-        {/if}
     </div>
 </div>
-
-<Modal bind:this={loginModal}>
-    <h2>Login</h2>
-    <Form>
-        <Input bind:value={loginEmail} label="Email" properties={{type:'text', id:'email'}} />
-        <Button label="Login" onclick={login}></Button>
-    </Form>
-</Modal>
 
 <Modal bind:this={aboutModal}>
     <h2>About</h2>
@@ -124,11 +78,6 @@
     }
     h1 {
         margin: 0;
-    }
-    .status {
-        margin: 5px;
-        display: flex;
-        align-items: center;
     }
 
     @media only screen and (max-width: 800px) {
