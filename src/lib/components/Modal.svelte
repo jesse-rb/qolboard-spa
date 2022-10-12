@@ -1,29 +1,18 @@
+
 <script>
-    import { elasticOut } from 'svelte/easing';
     import { slide } from 'svelte/transition';
     import Button from './Button.svelte';
     let open = false;
 
     export const toggle = () => {open = !open};
     export const close = () => {open = false};
-
-    function transitionCloseButton(node, { delay }) {
-        return {
-            delay,
-            duration: 800,
-            easing: elasticOut,
-            css: (t, u) => `
-                transform: scale(${t});
-            `
-        }
-    }
 </script>
 
 
 {#if open}
-    <div class="modal-component" >
-        <div in:slide out:slide="{{ delay:100 }}" class="modal-component-inner">
-            <div in:transitionCloseButton="{{delay: 100}}" out:transitionCloseButton="{{delay: 0}}" class="close-button">
+    <div on:click|self={close} class="modal-component" >
+        <div transition:slide class="modal-component-inner">
+            <div class="close-button">
                 <Button icon="close" onclick={toggle} />
             </div>
             <slot></slot>
@@ -33,16 +22,28 @@
 
 <style>
     .modal-component {
-        display: contents;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background-color: transparent;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     .modal-component-inner {
-        display: block;
-        position: relative;
-        background-color: #2c2035;
+        display: inline-block;
+        width: fit-content;
+        height: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+        background-color: var(--color-back-2);
         border-radius: 5px;
-        padding: 10px;
-        margin: 30px;
-        border: #383643 1px solid;
+        padding: 20px;
+        /* box-shadow: var(--color-back-2) 0 0 10px 20px; */
+        border-top: white solid 5px;
+        border-bottom: white solid 5px;
     }
     .modal-component .close-button {
         position: relative;

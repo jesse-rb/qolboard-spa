@@ -29,17 +29,16 @@
 
 <style>
     .input-component {
-        background-color: #383643;
+        background-color: var(--color-back-3);
         padding: 10px;
         width: fit-content;
         border-radius: 5px;
-        color: #d59b97;
         font-size: large;
     }
     input {
-        background-color: #2a2134;
+        background-color: var(--color-back-4);
+        color: var(--color-fore);
         border: none;
-        color: #d59b97;
         font-size: large;
         padding: 10px;
         border-radius: 5px;

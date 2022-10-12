@@ -1,10 +1,24 @@
 body {
+    --color-back: #222222;
+    --color-back-2: #2e2e2e;
+    --color-back-3: #383838;
+    --color-back-4: #4c4660;
+    --color-back-autofill: #e9f0fd;
+    --color-fore: #4fbb7c;
     margin: 0;
     font-family: 'Lucida Sans';
-    background-color: #383644;
-    color: #e09696;
+    background-color: var(--color-back);
+    color: var(--color-fore);
 }
 
 * {
     box-sizing: border-box;
+}
+
+a {
+    color: var(--color-fore);
+}
+
+#page {
+    margin: 0;
 }
