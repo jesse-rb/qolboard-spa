@@ -1,14 +1,9 @@
 <script>
-    import Input from '../components/Input.svelte';
     import Modal from '../components/Modal.svelte';
     import Button from '../components/Button.svelte';
-    import Form from '../components/Form.svelte'
     import { store } from '../store';
 
-    let loginModal;
     let aboutModal;
-    let loginInstructionsModal;
-    let completeSignInFailedModal;
 
     let loginEmail = "";
 
@@ -43,19 +38,6 @@
     <p>Therefore <em>please do not use qolboard for any personal or private details</em>.</p>
     <h3>Github</h3>
     <a href="https://github.com/jesse-rb" target="_blank" rel="noopener noreferrer">github.com/jesse-rb</a>
-</Modal>
-
-<Modal bind:this={loginInstructionsModal}>
-    <h2>Login email sent</h2>
-    <span class="material-icons">email</span>
-    <p>
-        Login link sent to <strong>{$store['logInProgressEmail']}</strong>
-    </p>
-</Modal>
-
-<Modal bind:this={completeSignInFailedModal}>
-    <h2>Log in failed</h2>
-    <p>Sorry, something went wrong during login, please try again.</p>
 </Modal>
 
 <style>
