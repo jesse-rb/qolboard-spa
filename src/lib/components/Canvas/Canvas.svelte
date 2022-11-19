@@ -1,7 +1,9 @@
 <script>
     import { onMount, setContext, tick } from "svelte";
+    import { writable } from "svelte/store";
     import PiecesManager from "./PiecesManager.svelte";
     import ControlPanel from "./ControlPanel.svelte";
+  import Piece from "./Piece.svelte";
 
     const modes = {
         draw: 'draw',
@@ -14,6 +16,8 @@
     let elemCanvas;
     let ctx;
 
+    let piecesManager = null;
+
     let backgroundColor = '#30303f';
     let width = 100;
     let height = 100;
@@ -23,14 +27,23 @@
 
     let fps = 0;
     let framesDone = 0;
-    
 
-    let piecesManager;
+    const store = writable({activeMode:'', mouseDown:false, mouseX:0, mouseY:0, ctx: ctx});
+    setContext('canvasStore', store);
 
-    setContext('ctx', ctx);
+    $: $store.activeMode = activeMode;
+    $: $store.mouseDown = mouseDown;
+    $: $store.mouseX = mouseX;
+    $: $store.mouseY = mouseY;
+    $: $store.ctx = ctx;
 
-    $: console.log(mouseDown); // Epic svelte debugging
-    $: setContext('activeMode', activeMode);
+    $: if (mouseDown) {
+        piecesManager.addPiece();
+    }
+
+    $: if (mouseDown && (mouseX || mouseY)) {
+        piecesManager.addPointToLatestPiece();
+    }
 
     onMount(()=>{
         let elemContainerResizeObserver = new ResizeObserver(updateCanvasSize).observe(elemContaienr);
@@ -51,6 +64,7 @@
     async function draw() {
         await tick(); // If DOM falls behind... await tick();
         updateBackgroundColor();
+        piecesManager.draw();
         // updatePieces();
     }
 
@@ -74,9 +88,15 @@
     }
 
     function setMouseDown(e, _mouseDown) {
+        e.preventDefault();
         mouseDown = _mouseDown;
-        mouseX = e.clientX;
-        mouseY = e.clientY;
+    }
+
+    function setMousePos(e) {
+        const canvasOffsetLeft = elemCanvas.offsetLeft;
+        const canvasOffsetTop = elemCanvas.offsetTop
+        mouseX = e.clientX - canvasOffsetLeft;
+        mouseY = e.clientY - canvasOffsetTop;
     }
 
     // Get rgba of pixel at coord (or set)
@@ -105,7 +125,8 @@
         height="{height}px"
         on:mousedown={(e)=>setMouseDown(e, true)}
         on:mouseup={(e)=>setMouseDown(e, false)} 
-        on:mouseleave={(e)=>setMouseDown(e, false)} />
+        on:mouseleave={(e)=>setMouseDown(e, false)} 
+        on:mousemove={(e)=>setMousePos(e)} />
         <PiecesManager bind:this={piecesManager} />
 </div>
 
