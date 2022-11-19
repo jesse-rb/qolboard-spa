@@ -135,8 +135,7 @@
         margin: 30px;
         resize: both;
         overflow: auto;
-        width: 100px;
-        height: 100px;
+        height: 80vh;
     }
     canvas {
         border: 1px solid var(--color-back-3);
