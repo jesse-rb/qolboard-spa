@@ -27,6 +27,12 @@
     }
 
     export function select() {
+        console.log('event: selecting piece');
+        // Deselect old selected piece
+        if (selectedPiece) {
+            selectedPiece.deselect();
+        }
+        // Select new piece
         let k = pointToPieceMapKey();
         if (pointToPieceMap[k]) {
             pointToPieceMap[k].select();
@@ -35,7 +41,10 @@
     }
 
     export function move() {
-        // selectedPiece && selectedPiece.move();
+        if (selectedPiece) {
+            console.log('event: moving piece');
+            selectedPiece.move();
+        }
     }
 
     export function getSelected() {
@@ -52,13 +61,18 @@
         console.log(latestPiece.component.getPoints());
     }
 
-    function pointToPieceMapKey() {
-        let x = $canvasSotre.mouseX;
-        let y= $canvasSotre.mouseY;
+    function updatePointToPieceMap(pointDetails) {
+        delete pointToPieceMap[pointToPieceMapKey(pointDetails.oldX, pointDetails.oldY)];
+        pointToPieceMap[pointToPieceMapKey(pointDetails.x, pointDetails.y)] = selectedPiece;
+    }
+
+    function pointToPieceMapKey(x=null, y=null) {
+        x = x ? x : $canvasSotre.mouseX;
+        y = y ? y : $canvasSotre.mouseY;
         return `${x},${y}`;
     }
 </script>
 
 {#each pieces as p}
-    <Piece bind:this={p.component} />
+    <Piece bind:this={p.component} on:move={(e)=>updatePointToPieceMap(e.detail)} />
 {/each}

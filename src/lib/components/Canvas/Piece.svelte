@@ -1,5 +1,7 @@
 <script>
-    import { getContext } from "svelte";
+    import { getContext, createEventDispatcher } from "svelte";
+
+    const dispatch = createEventDispatcher();
 
     export let size = 5;
     export let color = '#af8a8a';
@@ -58,5 +60,28 @@
 
     export function select() {
         selected = true;
+    }
+
+    export function deselect() {
+        selected = false;
+    }
+
+    export function move() {
+        let mouseX = $canvasSotre.mouseX;
+        let mouseY = $canvasSotre.mouseY;
+        let originX = points[0];
+        let originY = points[1];
+        for (let i = 0; i < points.length; i+=2) {
+            let x = points[i];
+            let y = points[i+1];
+            let newX = mouseX+(x-originX);
+            let newY = mouseY+(y-originY);
+            // Update x
+            points[i] = newX;
+            // Update y
+            points[i+1] = newY;
+
+            dispatch('move', {oldX: x, oldY: y, x: newX, y: newY});
+        }
     }
 </script>
