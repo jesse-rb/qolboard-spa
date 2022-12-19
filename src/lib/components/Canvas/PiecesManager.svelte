@@ -1,11 +1,11 @@
 <script>
-    import { getContext, tick } from "svelte";
+    import { getContext } from "svelte";
     import Piece from "./Piece.svelte";
 
     const canvasSotre = getContext('canvasStore');
+    let selectedPiece = null;
     let pieces = [];
-
-    // $: console.log(pieces);
+    let pointToPieceMap = {}; // x,y->[p]
 
     export function addPiece() {
         pieces = [...pieces, {component:null}];
@@ -13,7 +13,10 @@
 
     export function addPointToLatestPiece() {
         if (pieces.length && pieces[pieces.length-1].component) {
-            pieces[pieces.length-1].component.addPoint();
+            let p = pieces[pieces.length-1].component;
+            p.addPoint();
+            let k = pointToPieceMapKey();
+            pointToPieceMap[k] = p;
         }
     }
 
@@ -21,6 +24,22 @@
         for (let i = 0; i < pieces.length; i++) {
             pieces[i].component.draw();
         }
+    }
+
+    export function select() {
+        let k = pointToPieceMapKey();
+        if (pointToPieceMap[k]) {
+            pointToPieceMap[k].select();
+        }
+        selectedPiece = pointToPieceMap[k];
+    }
+
+    export function move() {
+        // selectedPiece && selectedPiece.move();
+    }
+
+    export function getSelected() {
+        return selectedPiece;
     }
 
     export function debugLogLatestPiece() {
@@ -31,6 +50,12 @@
 
         const latestPiece = pieces[pieces.length-1];
         console.log(latestPiece.component.getPoints());
+    }
+
+    function pointToPieceMapKey() {
+        let x = $canvasSotre.mouseX;
+        let y= $canvasSotre.mouseY;
+        return `${x},${y}`;
     }
 </script>
 

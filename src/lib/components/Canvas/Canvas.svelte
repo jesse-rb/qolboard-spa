@@ -5,30 +5,24 @@
     import ControlPanel from "./ControlPanel.svelte";
   import Piece from "./Piece.svelte";
 
-    const modes = {
-        draw: 'draw',
-        select: 'select'
-    }
-
-    let activeMode = 'draw';
-
+    let backgroundColor = '#30303f';
+    let width = 100;
+    let height = 100;
     let elemContaienr;
     let elemCanvas;
     let ctx;
 
     let piecesManager = null;
 
-    let backgroundColor = '#30303f';
-    let width = 100;
-    let height = 100;
     let mouseDown = false;
     let mouseX = 0;
     let mouseY = 0;
+    let activeMode = 'draw';
 
     let fps = 0;
     let framesDone = 0;
 
-    const store = writable({activeMode:'', mouseDown:false, mouseX:0, mouseY:0, ctx: ctx});
+    const store = writable({activeMode:activeMode, mouseDown:false, mouseX:0, mouseY:0, ctx: ctx});
     setContext('canvasStore', store);
 
     $: $store.activeMode = activeMode;
@@ -37,12 +31,27 @@
     $: $store.mouseY = mouseY;
     $: $store.ctx = ctx;
 
-    $: if (mouseDown) {
+    // Draw mode
+    $: if (activeMode == 'draw' && mouseDown) {
         piecesManager.addPiece();
     }
 
-    $: if (mouseDown && (mouseX || mouseY)) {
+    $: if (activeMode == 'draw' && (mouseDown && (mouseX || mouseY))) {
         piecesManager.addPointToLatestPiece();
+    }
+
+    // Move mode
+    $: if (activeMode == 'move' && mouseDown) {
+        piecesManager.select();
+    }
+
+    $: if (activeMode == 'move' && (mouseDown && (mouseX || mouseY))) {
+        if (piecesManager.getSelected()) {
+            piecesManager.move();
+        }
+        else {
+            piecesManager.select();
+        }
     }
 
     onMount(()=>{
@@ -82,9 +91,11 @@
 
     function updateCanvasSize() {
         let box = elemContaienr.getBoundingClientRect();
-        width = box.width-10;
-        height = box.height-10;
-        draw();
+        if (box) {
+            width = box.width-10;
+            height = box.height-10;
+            draw();
+        }
     }
 
     function setMouseDown(e, _mouseDown) {
@@ -97,6 +108,10 @@
         const canvasOffsetTop = elemCanvas.offsetTop
         mouseX = e.clientX - canvasOffsetLeft;
         mouseY = e.clientY - canvasOffsetTop;
+    }
+
+    function setActiveMode(mode) {
+        activeMode = mode;
     }
 
     // Get rgba of pixel at coord (or set)
@@ -116,18 +131,21 @@
     }
 </script>
 
-<ControlPanel />
-<span>fps: {fps}</span>
-<div bind:this={elemContaienr} class="canvas-container" >
-    <canvas
-        bind:this={elemCanvas}
-        width="{width}px"
-        height="{height}px"
-        on:mousedown={(e)=>setMouseDown(e, true)}
-        on:mouseup={(e)=>setMouseDown(e, false)} 
-        on:mouseleave={(e)=>setMouseDown(e, false)} 
-        on:mousemove={(e)=>setMousePos(e)} />
-        <PiecesManager bind:this={piecesManager} />
+<div class="canvas-component">
+    <ControlPanel
+        on:setActiveMode={(e)=>setActiveMode(e.detail)}/>
+    <span>fps: {fps}</span>
+    <div bind:this={elemContaienr} class="canvas-container" >
+        <canvas
+            bind:this={elemCanvas}
+            width="{width}px"
+            height="{height}px"
+            on:mousedown={(e)=>setMouseDown(e, true)}
+            on:mouseup={(e)=>setMouseDown(e, false)} 
+            on:mouseleave={(e)=>setMouseDown(e, false)} 
+            on:mousemove={(e)=>setMousePos(e)} />
+            <PiecesManager bind:this={piecesManager} />
+    </div>
 </div>
 
 <style>
@@ -135,9 +153,12 @@
         margin: 30px;
         resize: both;
         overflow: auto;
-        height: 80vh;
+        height: 50vh;
     }
     canvas {
         border: 1px solid var(--color-back-3);
+    }
+    canvas:hover {
+        cursor: crosshair;
     }
 </style>

@@ -1,11 +1,13 @@
 <script>
     import { getContext } from "svelte";
 
+    export let size = 5;
+    export let color = '#af8a8a';
+    export let selected = false;
+
     const canvasSotre = getContext('canvasStore');
 
     let points = [];
-    let size = 5;
-    let color = '#af8a8a';
 
     const ctx = $canvasSotre.ctx;
 
@@ -19,12 +21,16 @@
     }
 
     export function draw() {
-        
         ctx.lineCap = 'round';
         ctx.lineJoin = 'bevel';
         ctx.strokeStyle = color;
-        ctx.fillStyle = color;
         ctx.lineWidth = size;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 0;
+        if (selected) {
+            ctx.shadowColor = "red";
+            ctx.shadowBlur = 5;
+        }
         ctx.beginPath();
         for (let i = 0; i < points.length; i+=2) {
             const x = points[i];
@@ -35,7 +41,6 @@
             ctx.moveTo(x, y);
             ctx.lineTo(x1, y1);
             
-            ctx.fill();
             ctx.stroke();
             ctx.closePath();
         }
@@ -43,11 +48,15 @@
     }
 
     export function addPoint() {
-        console.log('adding point');
+        console.log('event: adding point');
         points = [...points, $canvasSotre.mouseX, $canvasSotre.mouseY];
     }
 
     export function getPoints() {
         return points;
+    }
+
+    export function select() {
+        selected = true;
     }
 </script>
