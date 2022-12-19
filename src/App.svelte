@@ -9,7 +9,6 @@
     <div id="page">
         <Home />
     </div>
-    <!-- <Footer /> -->
 </main>
 
 <style>

@@ -2,10 +2,11 @@
     export let label = '';
     export let icon = '';
     export let onclick = () => {};
+    export let active = false;
     
 </script>
 
-<button class="button-component" on:click="{ onclick }" >
+<button class="button-component" class:active={active} on:click="{ onclick }" >
     <span class="icon" class:icon-only={label.length<=0} class:material-icons={icon.length>0} >{icon}</span>
     <span class="label" >{label}</span>
 </button>
@@ -28,6 +29,10 @@
     }
     .icon.icon-only {
         margin-right: 0;
+    }
+
+    .button-component.active {
+        border: 1px solid var(--color-fore);
     }
     
     .button-component:hover {

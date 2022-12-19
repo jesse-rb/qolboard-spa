@@ -42,8 +42,8 @@
         border-radius: 5px;
         padding: 20px;
         /* box-shadow: var(--color-back-2) 0 0 10px 20px; */
-        border-top: white solid 5px;
-        border-bottom: white solid 5px;
+        border-top: var(--color-back-3) solid 10px;
+        border-bottom: var(--color-back-3) solid 10px;
     }
     .modal-component .close-button {
         position: relative;
