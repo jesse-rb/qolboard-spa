@@ -3,7 +3,7 @@
     import { writable } from "svelte/store";
     import PiecesManager from "./PiecesManager.svelte";
     import ControlPanel from "./ControlPanel.svelte";
-  import Piece from "./Piece.svelte";
+    import Piece from "./Piece.svelte";
 
     let backgroundColor = '#30303f';
     let width = 100;
@@ -17,18 +17,22 @@
     let mouseDown = false;
     let mouseX = 0;
     let mouseY = 0;
+    let prevMouseX = 0;
+    let prevMouseY = 0;
     let activeMode = 'draw';
 
     let fps = 0;
     let framesDone = 0;
 
-    const store = writable({activeMode:activeMode, mouseDown:false, mouseX:0, mouseY:0, ctx: ctx});
+    const store = writable({activeMode:activeMode, mouseDown:false, mouseX:0, mouseY:0, prevMouseX:0, prevMouseY:0, ctx: ctx});
     setContext('canvasStore', store);
 
     $: $store.activeMode = activeMode;
     $: $store.mouseDown = mouseDown;
     $: $store.mouseX = mouseX;
     $: $store.mouseY = mouseY;
+    $: $store.prevMouseX = prevMouseX;
+    $: $store.prevMouseY = prevMouseY;
     $: $store.ctx = ctx;
 
     // Draw mode
@@ -65,7 +69,7 @@
     });
 
     async function loop() {
-        await draw();
+        draw();
         framesDone++;
         setTimeout(loop, 0);
     }
@@ -74,7 +78,7 @@
         await tick(); // If DOM falls behind... await tick();
         updateBackgroundColor();
         piecesManager.draw();
-        // updatePieces();
+        // TODO: only redraw in area in needs it
     }
 
     // Update fps
@@ -105,7 +109,9 @@
 
     function setMousePos(e) {
         const canvasOffsetLeft = elemCanvas.offsetLeft;
-        const canvasOffsetTop = elemCanvas.offsetTop
+        const canvasOffsetTop = elemCanvas.offsetTop;
+        prevMouseX = mouseX;
+        prevMouseY = mouseY;
         mouseX = e.clientX - canvasOffsetLeft;
         mouseY = e.clientY - canvasOffsetTop;
     }
