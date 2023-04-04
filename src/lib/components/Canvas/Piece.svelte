@@ -108,20 +108,19 @@
         for (let i = 0; i < points.length; i+=2) {
             let x = points[i];
             let y = points[i+1];
-            let newX = x += dx;
-            let newY = y += dy;
+            let newX = x + dx;
+            let newY = y + dy;
             // Update x
             points[i] = newX;
             // Update y
             points[i+1] = newY;
-
-            // Update points details
-            leftMost = leftMost && leftMost == x ? newX : leftMost;
-            rightMost = rightMost && rightMost == x ? newX : rightMost;
-            highest = highest && highest < newY ? newY : highest;
-            lowest = lowest && lowest > newY ? newY : lowest;
-
+            
             dispatch('move', {oldX: x, oldY: y, x: newX, y: newY});
         }
+        // Update points details
+        leftMost = leftMost + dx;
+        rightMost = rightMost + dx;
+        highest = highest + dy;
+        lowest = lowest + dy;
     }
 </script>
