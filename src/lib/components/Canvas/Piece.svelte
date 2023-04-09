@@ -9,7 +9,7 @@
 
     const canvasStore = getContext('canvasStore');
 
-    let points = [];
+    let path = new Path2D();
     let lowest;
     let highest;
     let leftMost;
@@ -17,75 +17,32 @@
 
     const ctx = $canvasStore.ctx;
 
-    export function drawSquares() {
-        ctx.fillStyle = color;
-        for (let i = 0; i < points.length; i+=2) {
-            const x = points[i];
-            const y = points[i+1];
-            ctx.fillRect(x, y, size, size);
-        }
+    export function isPointInPath() {
+        const x = $canvasStore.mouseX;
+        const y = $canvasStore.mouseY;
+        return ctx.isPointInPath(path, x, y);
     }
 
     export function draw() {
-        if (selected) {
-            drawBox();
-        }
         ctx.lineCap = 'round';
         ctx.lineJoin = 'bevel';
         ctx.strokeStyle = color;
         ctx.lineWidth = size;
         ctx.shadowColor = color;
         ctx.shadowBlur = 0;
-        
-        ctx.beginPath();
-        for (let i = 0; i < points.length; i+=2) {
-            const x = points[i];
-            const y = points[i+1];
-            const x1 = points[i+2];
-            const y1 = points[i+3];
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x1, y1);
-            
-            ctx.stroke();
-            ctx.closePath();
+        if (selected) {
+            ctx.strokeStyle = '#FF0000';
         }
-        ctx.closePath();
-    }
-
-    export function drawBox() {
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 5;
-        ctx.shadowBlur = 0;
-        ctx.beginPath();
-        ctx.moveTo(leftMost, highest);
-        ctx.lineTo(rightMost, highest);
-        ctx.lineTo(rightMost, lowest);
-        ctx.lineTo(leftMost, lowest);
-        ctx.lineTo(leftMost, highest);
-
-        ctx.stroke();
-        ctx.closePath();
-        console.log(leftMost, highest, rightMost, lowest);
+            
+        ctx.stroke(path);
     }
 
     export function addPoint() {
         let mouseX = $canvasStore.mouseX;
         let mouseY = $canvasStore.mouseY;
         console.log('event: adding point');
-        points = [...points, mouseX, mouseY];
-
-        // Update point details
-        leftMost = leftMost && leftMost < mouseX ? leftMost : mouseX;
-        rightMost = rightMost && rightMost > mouseX ? rightMost : mouseX;
-        highest = highest && highest < mouseY ? highest : mouseY;
-        lowest = lowest && lowest > mouseY ? lowest : mouseY;
+        path.lineTo(mouseX, mouseY);
     }
-
-    export function getPoints() {
-        return points;
-    }
-
 
     export function select() {
         selected = true;
@@ -105,22 +62,11 @@
         let dx = mouseX-prevMouseX;
         let dy = mouseY-prevMouseY;
 
-        for (let i = 0; i < points.length; i+=2) {
-            let x = points[i];
-            let y = points[i+1];
-            let newX = x + dx;
-            let newY = y + dy;
-            // Update x
-            points[i] = newX;
-            // Update y
-            points[i+1] = newY;
-            
-            dispatch('move', {oldX: x, oldY: y, x: newX, y: newY});
-        }
-        // Update points details
-        leftMost = leftMost + dx;
-        rightMost = rightMost + dx;
-        highest = highest + dy;
-        lowest = lowest + dy;
+        let m = new DOMMatrix();
+        m.translateSelf(dx, dy);
+
+        let updatedPath = new Path2D();
+        updatedPath.addPath(path, m);
+        path = updatedPath;
     }
 </script>

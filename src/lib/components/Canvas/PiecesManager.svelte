@@ -5,7 +5,6 @@
     const canvasSotre = getContext('canvasStore');
     let selectedPiece = null;
     let pieces = [];
-    let pointToPieceMap = {}; // x,y->[p]
 
     export function addPiece() {
         pieces = [...pieces, {component:null}];
@@ -15,8 +14,6 @@
         if (pieces.length && pieces[pieces.length-1].component) {
             let p = pieces[pieces.length-1].component;
             p.addPoint();
-            let k = pointToPieceMapKey();
-            pointToPieceMap[k] = p;
         }
     }
 
@@ -31,13 +28,17 @@
         // Deselect old selected piece
         if (selectedPiece) {
             selectedPiece.deselect();
+            selectedPiece = undefined;
         }
         // Select new piece
-        let k = pointToPieceMapKey();
-        if (pointToPieceMap[k]) {
-            pointToPieceMap[k].select();
+        for (let piece of pieces) {
+            if (piece.component.isPointInPath()) {
+                console.log('SELECTED');
+                selectedPiece = piece.component;
+                selectedPiece.select();
+            }
         }
-        selectedPiece = pointToPieceMap[k];
+        
     }
 
     export function move() {
@@ -61,18 +62,8 @@
         console.log(latestPiece.component.getPoints());
     }
 
-    function updatePointToPieceMap(pointDetails) {
-        delete pointToPieceMap[pointToPieceMapKey(pointDetails.oldX, pointDetails.oldY)];
-        pointToPieceMap[pointToPieceMapKey(pointDetails.x, pointDetails.y)] = selectedPiece;
-    }
-
-    function pointToPieceMapKey(x=null, y=null) {
-        x = x ? x : $canvasSotre.mouseX;
-        y = y ? y : $canvasSotre.mouseY;
-        return `${x},${y}`;
-    }
 </script>
 
 {#each pieces as p}
-    <Piece bind:this={p.component} on:move={(e)=>updatePointToPieceMap(e.detail)} />
+    <Piece bind:this={p.component} />
 {/each}

@@ -69,7 +69,7 @@
     });
 
     async function loop() {
-        draw();
+        await draw();
         framesDone++;
         setTimeout(loop, 0);
     }
