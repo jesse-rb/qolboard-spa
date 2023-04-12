@@ -1,19 +1,12 @@
 <script>
-    import { getContext, createEventDispatcher } from "svelte";
+    import { getContext } from "svelte";
 
-    const dispatch = createEventDispatcher();
-
-    export let size = 5;
-    export let color = '#af8a8a';
+    export let settings = {};
     export let selected = false;
 
     const canvasStore = getContext('canvasStore');
 
     let path = new Path2D();
-    let lowest;
-    let highest;
-    let leftMost;
-    let rightMost;
 
     const ctx = $canvasStore.ctx;
 
@@ -26,9 +19,9 @@
     export function draw() {
         ctx.lineCap = 'round';
         ctx.lineJoin = 'bevel';
-        ctx.strokeStyle = color;
-        ctx.lineWidth = size;
-        ctx.shadowColor = color;
+        ctx.strokeStyle = settings.color;
+        ctx.lineWidth = settings.size;
+        ctx.shadowColor = settings.color;
         ctx.shadowBlur = 0;
         if (selected) {
             ctx.strokeStyle = '#FF0000';

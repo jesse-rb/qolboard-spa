@@ -24,7 +24,21 @@
     let fps = 0;
     let framesDone = 0;
 
-    const store = writable({activeMode:activeMode, mouseDown:false, mouseX:0, mouseY:0, prevMouseX:0, prevMouseY:0, ctx: ctx});
+    let pieceSettings = {
+        size: 5,
+        color: '#af8a8a'
+    }
+
+    const store = writable({
+        activeMode:activeMode,
+        mouseDown:false,
+        mouseX:0,
+        mouseY:0,
+        prevMouseX:0,
+        prevMouseY:0,
+        ctx: ctx,
+        pieceSettings: pieceSettings
+    });
     setContext('canvasStore', store);
 
     $: $store.activeMode = activeMode;
@@ -34,6 +48,7 @@
     $: $store.prevMouseX = prevMouseX;
     $: $store.prevMouseY = prevMouseY;
     $: $store.ctx = ctx;
+    $: $store.pieceSettings = pieceSettings;
 
     // Draw mode
     $: if (activeMode == 'draw' && mouseDown) {
@@ -45,11 +60,11 @@
     }
 
     // Move mode
-    $: if (activeMode == 'move' && mouseDown) {
+    $: if (activeMode == 'grab' && mouseDown) {
         piecesManager.select();
     }
 
-    $: if (activeMode == 'move' && (mouseDown && (mouseX || mouseY))) {
+    $: if (activeMode == 'grab' && (mouseDown && (mouseX || mouseY))) {
         if (piecesManager.getSelected()) {
             piecesManager.move();
         }
@@ -78,7 +93,6 @@
         await tick(); // If DOM falls behind... await tick();
         updateBackgroundColor();
         piecesManager.draw();
-        // TODO: only redraw in area in needs it
     }
 
     // Update fps

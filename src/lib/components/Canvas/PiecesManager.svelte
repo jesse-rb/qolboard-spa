@@ -1,4 +1,5 @@
 <script>
+    import { get } from "svelte/store";
     import { getContext } from "svelte";
     import Piece from "./Piece.svelte";
 
@@ -62,8 +63,13 @@
         console.log(latestPiece.component.getPoints());
     }
 
+    function initialPieceSettings() {
+        const canvasStoreCurrent = get(canvasSotre);
+        return canvasStoreCurrent.pieceSettings;
+    }
+
 </script>
 
 {#each pieces as p}
-    <Piece bind:this={p.component} />
+    <Piece bind:this={p.component} settings={{ ...initialPieceSettings() }} />
 {/each}
