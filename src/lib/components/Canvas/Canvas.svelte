@@ -26,8 +26,10 @@
 
     let pieceSettings = {
         size: 5,
-        color: '#af8a8a'
-    }
+        color: '#af8a8a',
+        shadowSize: 1,
+        shadowColor: '#af8a8a',
+    };
 
     const store = writable({
         activeMode:activeMode,

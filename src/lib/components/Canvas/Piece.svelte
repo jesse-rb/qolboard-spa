@@ -21,8 +21,8 @@
         ctx.lineJoin = 'bevel';
         ctx.strokeStyle = settings.color;
         ctx.lineWidth = settings.size;
-        ctx.shadowColor = settings.color;
-        ctx.shadowBlur = 0;
+        ctx.shadowColor = settings.shadowColor;
+        ctx.shadowBlur = settings.shadowSize;
         if (selected) {
             ctx.strokeStyle = '#FF0000';
         }

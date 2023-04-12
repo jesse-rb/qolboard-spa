@@ -25,6 +25,10 @@
 
     <div class="piece-settings">
         <input bind:value={$canvasStore.pieceSettings.size} type="range" min="1" step="1" max="100" >
+        <input bind:value={$canvasStore.pieceSettings.color} type="color" >
+        <input bind:value={$canvasStore.pieceSettings.shadowSize} type="range" min="0" step="1" max="100" >
+        <input bind:value={$canvasStore.pieceSettings.shadowColor} type="color" >
+
     </div>
 </div>
 
