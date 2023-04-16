@@ -3,7 +3,6 @@
     import { writable } from "svelte/store";
     import PiecesManager from "./PiecesManager.svelte";
     import ControlPanel from "./ControlPanel.svelte";
-    import Piece from "./Piece.svelte";
 
     let backgroundColor = '#30303f';
     let width = 100;
@@ -20,9 +19,6 @@
     let prevMouseX = 0;
     let prevMouseY = 0;
     let activeMode = 'draw';
-
-    let fps = 0;
-    let framesDone = 0;
 
     let pieceSettings = {
         size: 5,
@@ -82,28 +78,14 @@
 
         // Init canvas context
         ctx = elemCanvas.getContext('2d');
-
-        loop();
-        updateFPS();
+        draw();
     });
-
-    async function loop() {
-        await draw();
-        framesDone++;
-        setTimeout(loop, 0);
-    }
 
     async function draw() {
         await tick(); // If DOM falls behind... await tick();
+
         updateBackgroundColor();
         piecesManager.draw();
-    }
-
-    // Update fps
-    function updateFPS() {
-        fps = framesDone;
-        framesDone = 0; 
-        setTimeout(updateFPS, 1000);
     }
 
     function updateBackgroundColor() {
@@ -158,7 +140,7 @@
 <div class="canvas-component">
     <ControlPanel
         on:setActiveMode={(e)=>setActiveMode(e.detail)}/>
-    <span>fps: {fps}</span>
+
     <div bind:this={elemContaienr} class="canvas-container" >
         <canvas
             bind:this={elemCanvas}
@@ -168,8 +150,9 @@
             on:mouseup={(e)=>setMouseDown(e, false)} 
             on:mouseleave={(e)=>setMouseDown(e, false)} 
             on:mousemove={(e)=>setMousePos(e)} />
-            <PiecesManager bind:this={piecesManager} />
     </div>
+
+    <PiecesManager bind:this={piecesManager} />
 </div>
 
 <style>

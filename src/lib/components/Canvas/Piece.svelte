@@ -7,29 +7,70 @@
     const canvasStore = getContext('canvasStore');
 
     let path = new Path2D();
-    let latestPointX = 0;
-    let latestPointY = 0;
+
+    let latestPointX = $canvasStore.mouseX;
+    let latestPointY = $canvasStore.mouseY;
+
+    let leftMost;
+    let rightMost;
+    let topMost;
+    let bottomMost;
 
     const ctx = $canvasStore.ctx;
 
-    export function isPointInPath() {
-        const x = $canvasStore.mouseX;
-        const y = $canvasStore.mouseY;
-        return ctx.isPointInPath(path, x, y);
-    }
-
-    export function draw() {
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'bevel';
-        ctx.strokeStyle = settings.color;
-        ctx.lineWidth = settings.size;
-        ctx.shadowColor = settings.shadowColor;
-        ctx.shadowBlur = settings.shadowSize;
+    function setDrawSettings(reset=false) {
+        ctx.lineCap = reset ? '' : 'round';
+        ctx.lineJoin = reset ? '' : 'bevel';
+        ctx.strokeStyle = reset ? $canvasStore.backgroundColor : settings.color;
+        ctx.lineWidth = reset ? 1 : settings.size;
+        ctx.shadowColor = reset ? $canvasStore.backgroundColor : settings.shadowColor;
+        ctx.shadowBlur = reset ? 0 : settings.shadowSize;
         if (selected) {
             ctx.strokeStyle = '#FF0000';
         }
-            
-        ctx.stroke(path);
+    }
+
+    function updateBoundingBox(x, y) {
+        leftMost = leftMost < x ? leftMost : x;
+        rightMost = rightMost > x ? rightMost : x;
+        topMost = topMost < y ? topMost : y;
+        bottomMost = bottomMost > y ? bottomMost : y;
+        console.log()
+    }
+
+    export function isPointInStroke(x, y) {
+        setDrawSettings();
+        return ctx.isPointInStroke(path, x, y);
+    }
+
+
+    export function draw(p=null) {
+        if (!p) {
+            p = path;
+        }
+        setDrawSettings();
+        ctx.stroke(p);
+    }
+
+    export function drawBoundingBox() {
+        const clearMargin = (settings.shadowSize+settings.size)*1.1;
+
+        const x = leftMost-clearMargin;
+        const y = topMost-clearMargin;
+
+        const width = (rightMost-leftMost)+clearMargin*2;
+        const height = (bottomMost-topMost)+clearMargin*2;
+
+        console.log((rightMost-leftMost), width)
+
+        setDrawSettings(true);
+        ctx.fillRect(x, y, width, height);
+
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.rect(x, y, width, height);
+
+        setDrawSettings();
+        draw();
     }
 
     export function addPoint() {
@@ -56,9 +97,13 @@
             console.log('event: adding point');
 
             path.lineTo(newX, newY);
+            updateBoundingBox(newX, newY);
+            drawBoundingBox();
+            
             latestPointX = newX;
             latestPointY = newY;
         }
+
     }
 
     export function select() {
@@ -87,3 +132,11 @@
         path = updatedPath;
     }
 </script>
+
+<div>
+    <span>Piece</span>
+</div>
+
+<style>
+
+</style>
