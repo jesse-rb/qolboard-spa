@@ -29,6 +29,8 @@
         color: '#af8a8a',
         shadowSize: 1,
         shadowColor: '#af8a8a',
+        resX: 1,
+        resY: 1
     };
 
     const store = writable({

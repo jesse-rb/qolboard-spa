@@ -7,6 +7,8 @@
     const canvasStore = getContext('canvasStore');
 
     let path = new Path2D();
+    let latestPointX = 0;
+    let latestPointY = 0;
 
     const ctx = $canvasStore.ctx;
 
@@ -31,10 +33,32 @@
     }
 
     export function addPoint() {
-        let mouseX = $canvasStore.mouseX;
-        let mouseY = $canvasStore.mouseY;
-        console.log('event: adding point');
-        path.lineTo(mouseX, mouseY);
+        const mouseX = $canvasStore.mouseX;
+        const mouseY = $canvasStore.mouseY;
+
+        const resX = settings.resX;
+        const resY = settings.resY;
+
+        let thereIsChangeOnX = mouseX >= latestPointX+resX || mouseX <= latestPointX-resX;
+        let thereIsChangeOnY = mouseY >= latestPointY+resY || mouseY <= latestPointY-resY;
+
+        let newX = latestPointX;
+        let newY = latestPointY;
+
+        if (thereIsChangeOnX) {
+            newX = mouseX;
+        }
+        if (thereIsChangeOnY) {
+            newY = mouseY;
+        }
+
+        if (thereIsChangeOnX || thereIsChangeOnY) {
+            console.log('event: adding point');
+
+            path.lineTo(newX, newY);
+            latestPointX = newX;
+            latestPointY = newY;
+        }
     }
 
     export function select() {
