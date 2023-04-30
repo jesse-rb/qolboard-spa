@@ -21,12 +21,12 @@
     let activeMode = 'draw';
 
     let pieceSettings = {
-        size: 5,
+        size: 20,
         color: '#af8a8a',
-        shadowSize: 1,
+        shadowSize: 0,
         shadowColor: '#af8a8a',
-        resX: 1,
-        resY: 1
+        resX: 5,
+        resY: 5
     };
 
     const store = writable({
@@ -86,6 +86,8 @@
 
         updateBackgroundColor();
         piecesManager.draw();
+
+        window.requestAnimationFrame(draw);
     }
 
     function updateBackgroundColor() {

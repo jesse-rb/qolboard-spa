@@ -25,9 +25,6 @@
         ctx.lineWidth = reset ? 1 : settings.size;
         ctx.shadowColor = reset ? $canvasStore.backgroundColor : settings.shadowColor;
         ctx.shadowBlur = reset ? 0 : settings.shadowSize;
-        if (selected) {
-            ctx.strokeStyle = '#FF0000';
-        }
     }
 
     function updateBoundingBox(x, y) {
@@ -35,7 +32,6 @@
         rightMost = rightMost > x ? rightMost : x;
         topMost = topMost < y ? topMost : y;
         bottomMost = bottomMost > y ? bottomMost : y;
-        console.log()
     }
 
     export function isPointInStroke(x, y) {
@@ -43,6 +39,15 @@
         return ctx.isPointInStroke(path, x, y);
     }
 
+    export function doesBoundingBoxOverlap(p) {
+        const [x, y, width, height] = getBoundingBox();
+        const [_x, _y, _width, _height] = p.getBoundingBox();
+
+        const xOverlap = x > _x && x < _x+_width || x+width > _x && x+width < _x+_width;
+        const yOverlap = y > _y && y < _y+_height || y+height > _y && y+height < _y+_height;
+
+        return xOverlap && yOverlap;
+    }
 
     export function draw(p=null) {
         if (!p) {
@@ -50,9 +55,12 @@
         }
         setDrawSettings();
         ctx.stroke(p);
+        if (selected) {
+            drawBoundingBoxBorder();
+        }
     }
 
-    export function drawBoundingBox() {
+    export function getBoundingBox() {
         const clearMargin = (settings.shadowSize+settings.size)*1.1;
 
         const x = leftMost-clearMargin;
@@ -61,16 +69,24 @@
         const width = (rightMost-leftMost)+clearMargin*2;
         const height = (bottomMost-topMost)+clearMargin*2;
 
-        console.log((rightMost-leftMost), width)
+        return [x, y, width, height];
+    }
+
+    export function clearBoundingBox() {
+        const [x, y, width, height] = getBoundingBox();
 
         setDrawSettings(true);
         ctx.fillRect(x, y, width, height);
+    }
 
+    export function drawBoundingBoxBorder() {
+        const [x, y, width, height] = getBoundingBox();
+        ctx.beginPath();
+        setDrawSettings(true);
         ctx.strokeStyle = '#FFFFFF';
         ctx.rect(x, y, width, height);
-
-        setDrawSettings();
-        draw();
+        ctx.closePath();
+        ctx.stroke();
     }
 
     export function addPoint() {
@@ -98,7 +114,6 @@
 
             path.lineTo(newX, newY);
             updateBoundingBox(newX, newY);
-            drawBoundingBox();
             
             latestPointX = newX;
             latestPointY = newY;
@@ -127,16 +142,24 @@
         let m = new DOMMatrix();
         m.translateSelf(dx, dy);
 
+        leftMost += dx;
+        rightMost += dx;
+        topMost += dy;
+        bottomMost += dy;
+
         let updatedPath = new Path2D();
         updatedPath.addPath(path, m);
         path = updatedPath;
     }
 </script>
 
-<div>
+<div class="piece">
     <span>Piece</span>
+    <i class="material-icons" on:click={()=>{console.log('TODO: delete piece');}} >delete</i>
 </div>
 
 <style>
-
+    .piece {
+        display: flex;
+    }
 </style>

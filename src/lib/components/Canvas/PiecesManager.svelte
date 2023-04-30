@@ -28,16 +28,16 @@
         console.log('event: selecting piece');
         // Deselect old selected piece
         if (selectedPiece) {
-            selectedPiece.deselect();
-            selectedPiece = undefined;
+            selectedPiece.component.deselect();
+            selectedPiece = null;
         }
         // Select new piece
-        for (let i=pieces.length-1; i>0; i--) {
+        for (let i=pieces.length-1; i>=0; i--) {
             const piece = pieces[i];
             if (piece.component.isPointInStroke($canvasSotre.mouseX, $canvasSotre.mouseY)) {
                 console.log('SELECTED');
-                selectedPiece = piece.component;
-                selectedPiece.select();
+                selectedPiece = piece;
+                selectedPiece.component.select();
                 return;
             }
         }
@@ -47,7 +47,8 @@
     export function move() {
         if (selectedPiece) {
             console.log('event: moving piece');
-            selectedPiece.move();
+
+            selectedPiece.component.move();
         }
     }
 
