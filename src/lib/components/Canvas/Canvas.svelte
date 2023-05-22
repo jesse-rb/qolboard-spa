@@ -21,12 +21,12 @@
     let activeMode = 'draw';
 
     let pieceSettings = {
-        size: 20,
+        size: 10,
         color: '#af8a8a',
         shadowSize: 0,
         shadowColor: '#af8a8a',
-        resX: 5,
-        resY: 5
+        resX: 1,
+        resY: 1
     };
 
     const store = writable({
