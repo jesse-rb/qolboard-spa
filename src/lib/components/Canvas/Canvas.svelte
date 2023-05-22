@@ -112,10 +112,13 @@
     function setMousePos(e) {
         const canvasOffsetLeft = elemCanvas.offsetLeft;
         const canvasOffsetTop = elemCanvas.offsetTop;
+        const scrollOffsetX = document.documentElement.scrollLeft;
+        const scrollOffsetY = document.documentElement.scrollTop;
         prevMouseX = mouseX;
         prevMouseY = mouseY;
-        mouseX = e.clientX - canvasOffsetLeft;
-        mouseY = e.clientY - canvasOffsetTop;
+        mouseX = e.clientX - canvasOffsetLeft + scrollOffsetX;
+        mouseY = e.clientY - canvasOffsetTop + scrollOffsetY;
+
     }
 
     function setActiveMode(mode) {
