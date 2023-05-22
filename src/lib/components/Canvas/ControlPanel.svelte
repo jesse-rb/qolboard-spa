@@ -106,6 +106,7 @@
         margin: 0 1rem 0 1rem;
         padding: 1rem 0 1rem 0;
         display: flex;
+        flex-wrap: wrap;
     }
     .control-group.lock {
         border-bottom: 0.1rem solid green;

@@ -28,15 +28,17 @@
         console.log('event: selecting piece');
         // Deselect old selected piece
         if (selectedPiece) {
-            selectedPiece.deselect();
-            selectedPiece = undefined;
+            selectedPiece.component.deselect();
+            selectedPiece = null;
         }
         // Select new piece
-        for (let piece of pieces) {
-            if (piece.component.isPointInPath()) {
+        for (let i=pieces.length-1; i>=0; i--) {
+            const piece = pieces[i];
+            if (piece.component.isPointInStroke($canvasSotre.mouseX, $canvasSotre.mouseY)) {
                 console.log('SELECTED');
-                selectedPiece = piece.component;
-                selectedPiece.select();
+                selectedPiece = piece;
+                selectedPiece.component.select();
+                return;
             }
         }
         
@@ -45,7 +47,8 @@
     export function move() {
         if (selectedPiece) {
             console.log('event: moving piece');
-            selectedPiece.move();
+
+            selectedPiece.component.move();
         }
     }
 
@@ -70,6 +73,14 @@
 
 </script>
 
-{#each pieces as p}
-    <Piece bind:this={p.component} settings={{ ...initialPieceSettings() }} />
-{/each}
+<div id="pieces">
+    {#each pieces as p}
+        <Piece bind:this={p.component} settings={{ ...initialPieceSettings() }} />
+    {/each}
+</div>
+
+<style>
+    div#pieces {
+        background-color: var(--color-back-2);
+    }
+</style>

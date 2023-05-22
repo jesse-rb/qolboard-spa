@@ -6,12 +6,12 @@ body {
     --color-back-autofill: #e9f0fd;
     --color-fore: #4fbb7c;
     margin: 0;
-    font-family: 'Lucida Sans';
     background-color: var(--color-back);
     color: var(--color-fore);
 }
 
 * {
+    font-family: Verdana, sans-serif;
     box-sizing: border-box;
 }
 

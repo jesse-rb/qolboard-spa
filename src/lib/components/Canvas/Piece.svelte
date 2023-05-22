@@ -7,29 +7,86 @@
     const canvasStore = getContext('canvasStore');
 
     let path = new Path2D();
-    let latestPointX = 0;
-    let latestPointY = 0;
+
+    let latestPointX = $canvasStore.mouseX;
+    let latestPointY = $canvasStore.mouseY;
+
+    let leftMost;
+    let rightMost;
+    let topMost;
+    let bottomMost;
 
     const ctx = $canvasStore.ctx;
 
-    export function isPointInPath() {
-        const x = $canvasStore.mouseX;
-        const y = $canvasStore.mouseY;
-        return ctx.isPointInPath(path, x, y);
+    function setDrawSettings(reset=false) {
+        ctx.lineCap = reset ? '' : 'round';
+        ctx.lineJoin = reset ? '' : 'bevel';
+        ctx.strokeStyle = reset ? $canvasStore.backgroundColor : settings.color;
+        ctx.lineWidth = reset ? 1 : settings.size;
+        ctx.shadowColor = reset ? $canvasStore.backgroundColor : settings.shadowColor;
+        ctx.shadowBlur = reset ? 0 : settings.shadowSize;
     }
 
-    export function draw() {
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'bevel';
-        ctx.strokeStyle = settings.color;
-        ctx.lineWidth = settings.size;
-        ctx.shadowColor = settings.shadowColor;
-        ctx.shadowBlur = settings.shadowSize;
-        if (selected) {
-            ctx.strokeStyle = '#FF0000';
+    function updateBoundingBox(x, y) {
+        leftMost = leftMost < x ? leftMost : x;
+        rightMost = rightMost > x ? rightMost : x;
+        topMost = topMost < y ? topMost : y;
+        bottomMost = bottomMost > y ? bottomMost : y;
+    }
+
+    export function isPointInStroke(x, y) {
+        setDrawSettings();
+        return ctx.isPointInStroke(path, x, y);
+    }
+
+    export function doesBoundingBoxOverlap(p) {
+        const [x, y, width, height] = getBoundingBox();
+        const [_x, _y, _width, _height] = p.getBoundingBox();
+
+        const xOverlap = x > _x && x < _x+_width || x+width > _x && x+width < _x+_width;
+        const yOverlap = y > _y && y < _y+_height || y+height > _y && y+height < _y+_height;
+
+        return xOverlap && yOverlap;
+    }
+
+    export function draw(p=null) {
+        if (!p) {
+            p = path;
         }
-            
-        ctx.stroke(path);
+        setDrawSettings();
+        ctx.stroke(p);
+        if (selected) {
+            drawBoundingBoxBorder();
+        }
+    }
+
+    export function getBoundingBox() {
+        const clearMargin = (settings.shadowSize+settings.size)*1.1;
+
+        const x = leftMost-clearMargin;
+        const y = topMost-clearMargin;
+
+        const width = (rightMost-leftMost)+clearMargin*2;
+        const height = (bottomMost-topMost)+clearMargin*2;
+
+        return [x, y, width, height];
+    }
+
+    export function clearBoundingBox() {
+        const [x, y, width, height] = getBoundingBox();
+
+        setDrawSettings(true);
+        ctx.fillRect(x, y, width, height);
+    }
+
+    export function drawBoundingBoxBorder() {
+        const [x, y, width, height] = getBoundingBox();
+        ctx.beginPath();
+        setDrawSettings(true);
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.rect(x, y, width, height);
+        ctx.closePath();
+        ctx.stroke();
     }
 
     export function addPoint() {
@@ -56,9 +113,12 @@
             console.log('event: adding point');
 
             path.lineTo(newX, newY);
+            updateBoundingBox(newX, newY);
+            
             latestPointX = newX;
             latestPointY = newY;
         }
+
     }
 
     export function select() {
@@ -82,8 +142,24 @@
         let m = new DOMMatrix();
         m.translateSelf(dx, dy);
 
+        leftMost += dx;
+        rightMost += dx;
+        topMost += dy;
+        bottomMost += dy;
+
         let updatedPath = new Path2D();
         updatedPath.addPath(path, m);
         path = updatedPath;
     }
 </script>
+
+<div class="piece">
+    <span>Piece</span>
+    <i class="material-icons" on:click={()=>{console.log('TODO: delete piece');}} >delete</i>
+</div>
+
+<style>
+    .piece {
+        display: flex;
+    }
+</style>
