@@ -1,9 +1,12 @@
 <script>
     import { getContext, createEventDispatcher } from "svelte";
     import Button from "../Button.svelte";
+    import Modal from "../Modal.svelte";
 
     const canvasStore = getContext('canvasStore');
     const dispatch = createEventDispatcher();
+
+    let controlsModal;
 
     let resIsLocked = true;
     let colorIsLocked = true;
@@ -47,16 +50,30 @@
 <div class="control-panel">
     <!--modes-->
     <div class="control-group">
-        <Button icon="draw" active={$canvasStore.activeMode=='draw'} label="draw tool" onclick={()=>dispatchSetActiveMode('draw')} />
-        <Button icon="pan_tool" active={$canvasStore.activeMode=='grab'} label="grab tool" onclick={()=>dispatchSetActiveMode('grab')} />
-        <Button icon="delete" active={$canvasStore.activeMode=='delete'} label="delete tool" onclick={()=>dispatchSetActiveMode('delete')} />
+        <Button icon="brush" active={$canvasStore.activeMode=='draw'} label="draw" onclick={()=>dispatchSetActiveMode('draw')} />
+        <Button icon="pan_tool_alt" active={$canvasStore.activeMode=='grab'} label="grab" onclick={()=>dispatchSetActiveMode('grab')} />
+        <Button icon="delete" active={$canvasStore.activeMode=='remove'} label="remove" onclick={()=>dispatchSetActiveMode('remove')} />
     </div>
 
     <!--global actions-->
     <div class="control-group">
-        <Button icon="clear_all" label="clear all" />
+        <div class="control">
+            <label for="">background color</label>
+            <input bind:value={$canvasStore.backgroundColor} type="color" >
+        </div>
+        <div class="control">
+            <Button icon="clear_all" label="clear all" />
+        </div>
     </div>
 
+    <div class="control-group">
+        <Button label="tune brush" icon="tunebrush" onclick={()=>{ controlsModal.toggle(); }} />
+        <Button label="tune canvas" icon="tunenote_alt" onclick={()=>{ controlsModal.toggle(); }} />
+    </div>
+    
+</div>
+
+<Modal bind:this={controlsModal}>
     <div class="control-group">
         <div class="control-group">
             <div class="control">
@@ -97,11 +114,15 @@
 
             <Button icon={resIsLocked ? 'lock' : 'lock_open'} onclick={toggleResLock}/>
         </div>
-        
     </div>
-</div>
+</Modal>
 
 <style>
+    .control-panel {
+        height: 100px;
+        display: flex;
+        column-gap: 1em;
+    }
     .control-group {
         margin: 0 1rem 0 1rem;
         padding: 1rem 0 1rem 0;

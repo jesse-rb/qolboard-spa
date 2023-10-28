@@ -4,7 +4,6 @@
     import PiecesManager from "./PiecesManager.svelte";
     import ControlPanel from "./ControlPanel.svelte";
 
-    let backgroundColor = '#30303f';
     let width = 100;
     let height = 100;
     let elemContaienr;
@@ -21,10 +20,10 @@
     let activeMode = 'draw';
 
     let pieceSettings = {
-        size: 10,
-        color: '#af8a8a',
+        size: 5,
+        color: '#D55C1A',
         shadowSize: 0,
-        shadowColor: '#af8a8a',
+        shadowColor: '#D55C1A',
         resX: 1,
         resY: 1
     };
@@ -37,6 +36,7 @@
         prevMouseX:0,
         prevMouseY:0,
         ctx: ctx,
+        backgroundColor: '#1A1A1A',
         pieceSettings: pieceSettings
     });
     setContext('canvasStore', store);
@@ -73,7 +73,16 @@
         }
     }
 
-    onMount(()=>{
+    // Delete mode
+    $: if (activeMode == 'remove' && (mouseDown && (mouseX || mouseY))) {
+        piecesManager.select();
+        piecesManager.remove();
+    }
+
+    $: backroundColor = $store.backgroundColor;
+    $: backroundColor && draw();
+
+    onMount(() => {
         let elemContainerResizeObserver = new ResizeObserver(updateCanvasSize).observe(elemContaienr);
 
         // Init canvas context
@@ -87,19 +96,20 @@
         updateBackgroundColor();
         piecesManager.draw();
 
-        window.requestAnimationFrame(draw);
+        // window.requestAnimationFrame(draw);
     }
 
     function updateBackgroundColor() {
-        ctx.fillStyle = backgroundColor;
+        ctx.fillStyle = $store.backgroundColor;
         ctx.fillRect(0, 0, width, height);
     }
 
     function updateCanvasSize() {
+        console.log('event: updating canvas size')
         let box = elemContaienr.getBoundingClientRect();
         if (box) {
-            width = box.width-10;
-            height = box.height-10;
+            width = box.width;
+            height = box.height;
             draw();
         }
     }
@@ -117,7 +127,7 @@
         prevMouseX = mouseX;
         prevMouseY = mouseY;
         mouseX = e.clientX - canvasOffsetLeft + scrollOffsetX;
-        mouseY = e.clientY - canvasOffsetTop + scrollOffsetY;
+        mouseY = e.clientY - canvasOffsetTop + scrollOffsetY - 200; // subtract canvas absolute top offset
 
     }
 
@@ -143,9 +153,6 @@
 </script>
 
 <div class="canvas-component">
-    <ControlPanel
-        on:setActiveMode={(e)=>setActiveMode(e.detail)}/>
-
     <div bind:this={elemContaienr} class="canvas-container" >
         <canvas
             bind:this={elemCanvas}
@@ -158,17 +165,22 @@
     </div>
 
     <PiecesManager bind:this={piecesManager} />
+
+    <ControlPanel
+        on:setActiveMode={(e)=>setActiveMode(e.detail)}/>
 </div>
 
 <style>
     .canvas-container {
-        margin: 30px;
-        resize: both;
-        overflow: auto;
-        height: 50vh;
+        position: absolute;
+        top: 200px;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: -1;
     }
     canvas {
-        border: 1px solid var(--color-back-3);
+        position: absolute;
     }
     canvas:hover {
         cursor: crosshair;

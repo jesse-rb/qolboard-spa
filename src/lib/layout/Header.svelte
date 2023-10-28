@@ -46,6 +46,7 @@
         align-items: center;
         background-color: var(--color-back-2);
         align-items: stretch;
+        height: 100px;
     }
     .banner {
         display: flex;

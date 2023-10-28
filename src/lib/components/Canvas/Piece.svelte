@@ -20,7 +20,7 @@
 
     function setDrawSettings(reset=false) {
         ctx.lineCap = reset ? '' : 'round';
-        ctx.lineJoin = reset ? '' : 'bevel';
+        ctx.lineJoin = reset ? '' : 'round';
         ctx.strokeStyle = reset ? $canvasStore.backgroundColor : settings.color;
         ctx.lineWidth = reset ? 1 : settings.size;
         ctx.shadowColor = reset ? $canvasStore.backgroundColor : settings.shadowColor;
@@ -43,8 +43,8 @@
         const [x, y, width, height] = getBoundingBox();
         const [_x, _y, _width, _height] = p.getBoundingBox();
 
-        const xOverlap = x > _x && x < _x+_width || x+width > _x && x+width < _x+_width;
-        const yOverlap = y > _y && y < _y+_height || y+height > _y && y+height < _y+_height;
+        const xOverlap = (x < _x+_width) && (x+width > _x);
+        const yOverlap = (y < _y+_height) && (y+height > _y);
 
         return xOverlap && yOverlap;
     }
@@ -84,7 +84,7 @@
         ctx.beginPath();
         setDrawSettings(true);
         ctx.strokeStyle = '#FFFFFF';
-        ctx.rect(x, y, width, height);
+        ctx.rect(x+10, y+10, width-20, height-20);
         ctx.closePath();
         ctx.stroke();
     }
@@ -114,11 +114,21 @@
 
             path.lineTo(newX, newY);
             updateBoundingBox(newX, newY);
+
+            const addedPath = new Path2D();
+            addedPath.moveTo(latestPointX, latestPointY);
+            addedPath.lineTo(newX, newY);
+            draw(addedPath);
             
             latestPointX = newX;
             latestPointY = newY;
         }
 
+        return [newX, newY];
+    }
+
+    export function close() {
+        path.closePath();
     }
 
     export function select() {
@@ -152,14 +162,3 @@
         path = updatedPath;
     }
 </script>
-
-<div class="piece">
-    <span>Piece</span>
-    <i class="material-icons" on:click={()=>{console.log('TODO: delete piece');}} >delete</i>
-</div>
-
-<style>
-    .piece {
-        display: flex;
-    }
-</style>
