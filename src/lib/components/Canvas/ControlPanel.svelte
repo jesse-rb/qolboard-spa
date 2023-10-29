@@ -81,7 +81,7 @@
         <div class="control-group">
             <div class="control">
                 <label for="">color</label>
-                <input bind:value={$canvasStore.pieceSettings.color} type="color" on:input={()=>updateLockedColor()} >
+                <input bind:value={$canvasStore.pieceSettings.color} type="color" >
             </div>
         </div>
 
@@ -102,25 +102,5 @@
 </Modal>
 
 <style>
-    .control-panel {
-        height: 100px;
-        display: flex;
-        column-gap: 1em;
-    }
-    .control-group {
-        padding: 1rem 0 1rem 0;
-        display: flex;
-        flex-wrap: wrap;
-        column-gap: 1em;
-    }
-    .control-group.lock {
-        border-bottom: 0.1rem solid green;
-    }
-    .control-group>:global(.button-component) {
-        margin: 2px;
-    }
-    .control {
-        display: flex;
-        flex-direction: column;
-    }
+    
 </style>

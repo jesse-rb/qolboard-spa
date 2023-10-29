@@ -180,7 +180,7 @@
 <style>
     .canvas-container {
         position: absolute;
-        top: 200px;
+        top: var(--canvas-offset);
         right: 0;
         bottom: 0;
         left: 0;

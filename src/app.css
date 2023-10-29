@@ -5,6 +5,11 @@ body {
     --color-back-4: #4c4660;
     --color-back-autofill: #e9f0fd;
     --color-fore: #4fbb7c;
+
+    --header-height: 100px;
+    --control-panel-height: 100px;
+    --canvas-offset: calc( var(--header-height) + var(--control-panel-height) );
+
     margin: 0;
     background-color: var(--color-back);
     color: var(--color-fore);
@@ -21,4 +26,27 @@ a {
 
 #page {
     margin: 0;
+}
+
+.control-panel {
+    height: var(--control-panel-height);
+    display: flex;
+    column-gap: 1em;
+    align-items: center;
+}
+.control-group {
+    padding: 1rem 0 1rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 1em;
+}
+.control-group.lock {
+    border-bottom: 0.1rem solid green;
+}
+.control-group>:global(.button-component) {
+    margin: 2px;
+}
+.control {
+    display: flex;
+    flex-direction: column;
 }

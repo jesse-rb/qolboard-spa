@@ -1,10 +1,14 @@
 <script>
-    import { getContext } from "svelte";
+    import { createEventDispatcher, getContext } from "svelte";
+    import Button from "../Button.svelte";
+    import Modal from "../Modal.svelte";
 
     export let settings = {};
     export let selected = false;
 
     const canvasStore = getContext('canvasStore');
+    const dispatch = createEventDispatcher();
+    const ctx = $canvasStore.ctx;
 
     let path = new Path2D();
 
@@ -16,7 +20,11 @@
     let topMost;
     let bottomMost;
 
-    const ctx = $canvasStore.ctx;
+    let pieceSettingsModal;
+
+    function dispatchUpdate(redrawPiece) {
+        dispatch('update', redrawPiece);
+    }
 
     function setDrawSettings(reset=false) {
         ctx.lineCap = reset ? '' : 'round';
@@ -160,4 +168,40 @@
         updatedPath.addPath(path, m);
         path = updatedPath;
     }
+
+    function updateSettings(setting, value) {
+        dispatchUpdate(false);
+        settings[setting] = value;
+        dispatchUpdate(true);
+    }
 </script>
+
+{#if selected}
+    <div class="piece-settings control-panel" style="top: calc({bottomMost}px + var(--canvas-offset)); left: {leftMost}px;">
+        <div class="control-group">
+            <div class="control">
+                <label for="">size</label>
+                <input value={settings.size} type="range" min="1" step="1" max="100" on:input={(e) => updateSettings('size', e.target.value)} >
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="control">
+                <label for="">color</label>
+                <input value={settings.color} type="color" on:input={(e) => updateSettings('color', e.target.value)} >
+            </div>
+        </div>
+    </div>
+{/if}
+
+<style>
+    .piece-settings {
+        margin-top: 1em;
+        position: absolute;
+        background-color: var(--color-back-2);
+        padding: 0 1em 0 1em;
+        border-radius: 5px;
+        border-top: 10px var(--color-back-3) solid;
+        border-bottom: 10px var(--color-back-3) solid;
+    }
+</style>
