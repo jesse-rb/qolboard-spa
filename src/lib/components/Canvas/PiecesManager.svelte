@@ -8,6 +8,11 @@
     let selectedPieceIndex = null;
     let pieces = [];
 
+    export function clear() {
+        deselect();
+        pieces = [];
+    }
+
     export function addPiece() {
         deselect();
         const newPiece = {component:null};

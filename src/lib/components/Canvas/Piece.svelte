@@ -23,8 +23,6 @@
         ctx.lineJoin = reset ? '' : 'round';
         ctx.strokeStyle = reset ? $canvasStore.backgroundColor : settings.color;
         ctx.lineWidth = reset ? 1 : settings.size;
-        ctx.shadowColor = reset ? $canvasStore.backgroundColor : settings.shadowColor;
-        ctx.shadowBlur = reset ? 0 : settings.shadowSize;
     }
 
     function updateBoundingBox(x, y) {
@@ -61,7 +59,7 @@
     }
 
     export function getBoundingBox() {
-        const clearMargin = (settings.shadowSize+settings.size)*1.1;
+        const clearMargin = (settings.size);
 
         const x = leftMost-clearMargin;
         const y = topMost-clearMargin;
@@ -80,11 +78,12 @@
     }
 
     export function drawBoundingBoxBorder() {
+        const clearMargin = 1;
         const [x, y, width, height] = getBoundingBox();
         ctx.beginPath();
         setDrawSettings(true);
         ctx.strokeStyle = '#FFFFFF';
-        ctx.rect(x+10, y+10, width-20, height-20);
+        ctx.rect(x+clearMargin, y+clearMargin, width-(clearMargin*2), height-(clearMargin*2));
         ctx.closePath();
         ctx.stroke();
     }
