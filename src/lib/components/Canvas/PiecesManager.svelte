@@ -8,6 +8,11 @@
     let selectedPieceIndex = null;
     let pieces = [];
 
+    export function clear() {
+        deselect();
+        pieces = [];
+    }
+
     export function addPiece() {
         deselect();
         const newPiece = {component:null};
@@ -21,9 +26,6 @@
         if (pieces.length && pieces[pieces.length-1].component) {
             let p = pieces[pieces.length-1].component;
             p.addPoint();
-            // p.select();
-
-            // reDrawSelectedChunk();
         }
     }
 
@@ -33,17 +35,23 @@
         }
     }
 
+    export function redrawPieceChunk(piece, redrawPiece=true) {
+        piece.component.clearBoundingBox();
+        // Only redraw pieces that are inbound of section
+        for (const p of pieces) {
+            if ( !redrawPiece && p === piece ) {
+                continue;
+            }
+            if (piece.component.doesBoundingBoxOverlap(p.component)) {
+                p.component.draw();
+            }
+        }
+    }
+
     export function reDrawSelectedChunk() {
         // Draw only section background
         if (selectedPiece) {
-            selectedPiece.component.clearBoundingBox();
-
-            // Only redraw pieces that are inbound of section
-            for (const p of pieces) {
-                if (selectedPiece.component.doesBoundingBoxOverlap(p.component)) {
-                    p.component.draw();
-                }
-            }
+            redrawPieceChunk(selectedPiece);
         }
     }
 
@@ -119,7 +127,7 @@
 
 <div id="pieces">
     {#each pieces as p (p)}
-        <Piece bind:this={p.component} settings={{ ...initialPieceSettings() }} />
+        <Piece bind:this={p.component} settings={{ ...initialPieceSettings() }} on:update={(e) => redrawPieceChunk(p, e.detail)} />
     {/each}
 </div>
 

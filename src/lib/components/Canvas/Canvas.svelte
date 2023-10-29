@@ -22,8 +22,6 @@
     let pieceSettings = {
         size: 5,
         color: '#D55C1A',
-        shadowSize: 0,
-        shadowColor: '#D55C1A',
         resX: 1,
         resY: 1
     };
@@ -135,6 +133,13 @@
         activeMode = mode;
     }
 
+    function action(action) {
+        if (action === 'clear') {
+            piecesManager.clear();
+            draw();
+        }
+    }
+
     // Get rgba of pixel at coord (or set)
     function coord(x, y, rgba, set=false) {
         let imageData = ctx.getImageData();
@@ -167,13 +172,15 @@
     <PiecesManager bind:this={piecesManager} />
 
     <ControlPanel
-        on:setActiveMode={(e)=>setActiveMode(e.detail)}/>
+        on:setActiveMode={(e)=>setActiveMode(e.detail)}
+        on:action={(e)=>action(e.detail)}
+    />
 </div>
 
 <style>
     .canvas-container {
         position: absolute;
-        top: 200px;
+        top: var(--canvas-offset);
         right: 0;
         bottom: 0;
         left: 0;

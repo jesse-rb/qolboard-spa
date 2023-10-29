@@ -1,10 +1,14 @@
 <script>
-    import { getContext } from "svelte";
+    import { createEventDispatcher, getContext } from "svelte";
+    import Button from "../Button.svelte";
+    import Modal from "../Modal.svelte";
 
     export let settings = {};
     export let selected = false;
 
     const canvasStore = getContext('canvasStore');
+    const dispatch = createEventDispatcher();
+    const ctx = $canvasStore.ctx;
 
     let path = new Path2D();
 
@@ -16,15 +20,17 @@
     let topMost;
     let bottomMost;
 
-    const ctx = $canvasStore.ctx;
+    let pieceSettingsModal;
+
+    function dispatchUpdate(redrawPiece) {
+        dispatch('update', redrawPiece);
+    }
 
     function setDrawSettings(reset=false) {
         ctx.lineCap = reset ? '' : 'round';
         ctx.lineJoin = reset ? '' : 'round';
         ctx.strokeStyle = reset ? $canvasStore.backgroundColor : settings.color;
         ctx.lineWidth = reset ? 1 : settings.size;
-        ctx.shadowColor = reset ? $canvasStore.backgroundColor : settings.shadowColor;
-        ctx.shadowBlur = reset ? 0 : settings.shadowSize;
     }
 
     function updateBoundingBox(x, y) {
@@ -61,7 +67,7 @@
     }
 
     export function getBoundingBox() {
-        const clearMargin = (settings.shadowSize+settings.size)*1.1;
+        const clearMargin = (settings.size);
 
         const x = leftMost-clearMargin;
         const y = topMost-clearMargin;
@@ -80,11 +86,12 @@
     }
 
     export function drawBoundingBoxBorder() {
+        const clearMargin = 1;
         const [x, y, width, height] = getBoundingBox();
         ctx.beginPath();
         setDrawSettings(true);
         ctx.strokeStyle = '#FFFFFF';
-        ctx.rect(x+10, y+10, width-20, height-20);
+        ctx.rect(x+clearMargin, y+clearMargin, width-(clearMargin*2), height-(clearMargin*2));
         ctx.closePath();
         ctx.stroke();
     }
@@ -161,4 +168,40 @@
         updatedPath.addPath(path, m);
         path = updatedPath;
     }
+
+    function updateSettings(setting, value) {
+        dispatchUpdate(false);
+        settings[setting] = value;
+        dispatchUpdate(true);
+    }
 </script>
+
+{#if selected}
+    <div class="piece-settings control-panel" style="top: calc({bottomMost}px + var(--canvas-offset)); left: {leftMost}px;">
+        <div class="control-group">
+            <div class="control">
+                <label for="">size</label>
+                <input value={settings.size} type="range" min="1" step="1" max="100" on:input={(e) => updateSettings('size', e.target.value)} >
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="control">
+                <label for="">color</label>
+                <input value={settings.color} type="color" on:input={(e) => updateSettings('color', e.target.value)} >
+            </div>
+        </div>
+    </div>
+{/if}
+
+<style>
+    .piece-settings {
+        margin-top: 1em;
+        position: absolute;
+        background-color: var(--color-back-2);
+        padding: 0 1em 0 1em;
+        border-radius: 5px;
+        border-top: 10px var(--color-back-3) solid;
+        border-bottom: 10px var(--color-back-3) solid;
+    }
+</style>
