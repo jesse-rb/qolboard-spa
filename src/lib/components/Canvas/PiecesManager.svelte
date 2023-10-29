@@ -1,12 +1,30 @@
 <script>
     import { get } from "svelte/store";
-    import { getContext } from "svelte";
+    import { getContext, tick } from "svelte";
     import Piece from "./Piece.svelte";
 
     const canvasSotre = getContext('canvasStore');
     let selectedPiece = null;
     let selectedPieceIndex = null;
     let pieces = [];
+
+    export function serialize() {
+        const s = [];
+        for (const p of pieces) {
+            const serializedPiece = p.component.serialize();
+            s.push(serializedPiece);
+        }
+        return s;
+    }
+
+    export async function deserialize(s) {
+        for (const serializedPiece of s) {
+            const p = {component:null};
+            pieces = [...pieces, p];
+            await tick();
+            p.component.deserialize(serializedPiece);
+        }
+    }
 
     export function clear() {
         deselect();

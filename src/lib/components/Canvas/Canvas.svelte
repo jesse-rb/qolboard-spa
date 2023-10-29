@@ -63,6 +63,7 @@
 
     $: if (activeMode == 'draw' && (mouseDown && (mouseX || mouseY))) {
         piecesManager.addPointToLatestPiece();
+        saveToSessionStorage();
     }
 
     // Move mode
@@ -73,6 +74,7 @@
     $: if (activeMode == 'grab' && (mouseDown && (mouseX || mouseY))) {
         if (piecesManager.getSelected()) {
             piecesManager.move();
+            saveToSessionStorage();
         }
         else {
             piecesManager.select();
@@ -102,7 +104,7 @@
     $: backroundColor = $store.backgroundColor;
     $: backroundColor && draw();
 
-    onMount(() => {
+    onMount(async () => {
         let elemContainerResizeObserver = new ResizeObserver(updateCanvasSize).observe(elemContaienr);
 
         // Init canvas context
@@ -136,9 +138,38 @@
             keyDown = null;
         });
 
+        await restoreFromSessionStorage();
+
         // Initial draw
         draw();
     });
+
+    async function saveToSessionStorage() {
+        await tick();
+        window.sessionStorage.setItem('canvas', JSON.stringify(serialize()));
+    }
+
+    async function restoreFromSessionStorage() {
+        // Restore canvas state from session storage
+        const state = JSON.parse(window.sessionStorage.getItem('canvas'));
+        if (state !== null) {
+            await deserialize(state);
+        }
+    }
+
+    function serialize() {
+        const s = {
+            store: $store,
+            piecesManager: piecesManager.serialize()
+        }
+        return s;
+    }
+
+    async function deserialize(s) {
+        $store = s.store;
+        activeMode = $store.activeMode;
+        await piecesManager.deserialize(s.piecesManager);
+    }
 
     async function draw() {
         await tick(); // If DOM falls behind... await tick();

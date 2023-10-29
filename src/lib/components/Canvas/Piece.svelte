@@ -8,6 +8,9 @@
     const dispatch = createEventDispatcher();
     const ctx = $canvasStore.ctx;
 
+    let serializedPath = "";
+    let serializedMove = new DOMMatrix();
+    let serializedPan = new DOMMatrix();
     let path = new Path2D();
 
     let latestPointX = $canvasStore.mouseX;
@@ -17,8 +20,6 @@
     let rightMost;
     let topMost;
     let bottomMost;
-
-    let pieceSettingsModal;
 
     function dispatchUpdate(redrawPiece) {
         dispatch('update', redrawPiece);
@@ -36,6 +37,39 @@
         rightMost = rightMost > x ? rightMost : x;
         topMost = topMost < y ? topMost : y;
         bottomMost = bottomMost > y ? bottomMost : y;
+    }
+
+    export function serialize() {
+        const s = {
+            settings: settings,
+            path: serializedPath,
+            move: serializedMove.toJSON(),
+            pan: serializedPan.toJSON(),
+            leftMost: leftMost,
+            rightMost: rightMost,
+            topMost: topMost,
+            bottomMost: bottomMost
+        };
+
+        return s;
+    }
+
+    export function deserialize(s) {
+        settings = s.settings;
+
+        serializedPath = s.path;
+        path = new Path2D(s.path+"C");
+
+        serializedMove = DOMMatrix.fromMatrix(s.move);
+        let updatedPath = new Path2D();
+        updatedPath.addPath(path, serializedMove);
+        updatedPath.addPath(updatedPath, serializedPan);
+        path = updatedPath;
+
+        leftMost = s.leftMost;
+        rightMost = s.rightMost;
+        topMost = s.topMost;
+        bottomMost = s.bottomMost;
     }
 
     export function isPointInStroke(x, y) {
@@ -122,6 +156,10 @@
             const addedPath = new Path2D();
             addedPath.moveTo(latestPointX, latestPointY);
             addedPath.lineTo(newX, newY);
+
+            // Serialize path
+            serializedPath += `M${latestPointX} ${latestPointY} L${newX} ${newY}`;
+
             draw(addedPath);
             
             latestPointX = newX;
@@ -129,10 +167,6 @@
         }
 
         return [newX, newY];
-    }
-
-    export function close() {
-        path.closePath();
     }
 
     export function select() {
@@ -143,7 +177,7 @@
         selected = false;
     }
 
-    export function move() {
+    export function move(isPan = false) {
         let mouseX = $canvasStore.mouseX;
         let mouseY = $canvasStore.mouseY;
 
@@ -155,6 +189,13 @@
 
         let m = new DOMMatrix();
         m.translateSelf(dx, dy);
+        
+        if (isPan) {
+            serializedPan.translateSelf(dx, dy);
+        }
+        else {
+            serializedMove.translateSelf(dx, dy);
+        }
 
         leftMost += dx;
         rightMost += dx;
