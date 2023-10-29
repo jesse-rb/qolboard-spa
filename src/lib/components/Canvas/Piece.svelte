@@ -1,7 +1,5 @@
 <script>
     import { createEventDispatcher, getContext } from "svelte";
-    import Button from "../Button.svelte";
-    import Modal from "../Modal.svelte";
 
     export let settings = {};
     export let selected = false;
@@ -117,7 +115,6 @@
         }
 
         if (thereIsChangeOnX || thereIsChangeOnY) {
-            console.log('event: adding point');
 
             path.lineTo(newX, newY);
             updateBoundingBox(newX, newY);

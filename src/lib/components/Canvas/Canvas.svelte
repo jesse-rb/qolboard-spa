@@ -49,6 +49,10 @@
     $: $store.pieceSettings = pieceSettings;
 
     // Draw mode
+    $: if (activeMode == 'draw') {
+        piecesManager && piecesManager.deselect();
+    }
+
     $: if (activeMode == 'draw' && mouseDown) {
         piecesManager.addPiece();
     }
@@ -71,7 +75,21 @@
         }
     }
 
+    // Pan mode
+    $: if (activeMode == 'pan') {
+        piecesManager.deselect();
+    }
+
+    $: if (activeMode == 'pan' && (mouseDown && (mouseX || mouseY))) {
+        piecesManager.pan();
+        updateBackgroundColor();
+        piecesManager.draw();
+    }
+
     // Delete mode
+    $: if (activeMode == 'remove') {
+        piecesManager.deselect();
+    }
     $: if (activeMode == 'remove' && (mouseDown && (mouseX || mouseY))) {
         piecesManager.select();
         piecesManager.remove();
@@ -93,8 +111,6 @@
 
         updateBackgroundColor();
         piecesManager.draw();
-
-        // window.requestAnimationFrame(draw);
     }
 
     function updateBackgroundColor() {
@@ -103,7 +119,6 @@
     }
 
     function updateCanvasSize() {
-        console.log('event: updating canvas size')
         let box = elemContaienr.getBoundingClientRect();
         if (box) {
             width = box.width;
