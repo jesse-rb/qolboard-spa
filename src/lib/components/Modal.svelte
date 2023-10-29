@@ -41,7 +41,6 @@
         background-color: var(--color-back-2);
         border-radius: 5px;
         padding: 20px;
-        /* box-shadow: var(--color-back-2) 0 0 10px 20px; */
         border-top: var(--color-back-3) solid 10px;
         border-bottom: var(--color-back-3) solid 10px;
     }

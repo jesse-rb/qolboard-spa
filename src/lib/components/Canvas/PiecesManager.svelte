@@ -66,7 +66,6 @@
     }
 
     export function select() {
-        console.log('event: selecting piece');
         deselect();
         // Select new piece
         for (let i=pieces.length-1; i>=0; i--) {
@@ -83,9 +82,14 @@
         }
     }
 
+    export function pan() {
+        for (const p of pieces) {
+            p.component.move();
+        }
+    }
+
     export function move() {
         if (selectedPiece) {
-            console.log('event: moving piece');
             
             selectedPiece.component.clearBoundingBox();
             selectedPiece.component.move();
@@ -95,8 +99,6 @@
 
     export function remove() {
         if (selectedPieceIndex !== null) {
-            console.log('event: deleting selected peiece');
-
             pieces = [ ...pieces.slice(0, selectedPieceIndex), ...pieces.slice(selectedPieceIndex+1) ];
 
             reDrawSelectedChunk();

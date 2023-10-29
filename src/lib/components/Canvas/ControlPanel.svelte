@@ -46,6 +46,9 @@
             <Button icon="pan_tool_alt" active={$canvasStore.activeMode=='grab'} label="grab" onclick={()=>dispatchSetActiveMode('grab')} />
         </div>
         <div class="control">
+            <Button icon="pan_tool" active={$canvasStore.activeMode=='pan'} label="pan" onclick={()=>dispatchSetActiveMode('pan')} />
+        </div>
+        <div class="control">
             <Button icon="delete" active={$canvasStore.activeMode=='remove'} label="remove" onclick={()=>dispatchSetActiveMode('remove')} />
         </div>
     </div>
