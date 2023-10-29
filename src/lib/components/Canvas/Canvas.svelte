@@ -3,6 +3,7 @@
     import { writable } from "svelte/store";
     import PiecesManager from "./PiecesManager.svelte";
     import ControlPanel from "./ControlPanel.svelte";
+    import { space } from "svelte/internal";
 
     let width = 100;
     let height = 100;
@@ -12,12 +13,15 @@
 
     let piecesManager = null;
 
+    let keyDown = null;
+
     let mouseDown = false;
     let mouseX = 0;
     let mouseY = 0;
     let prevMouseX = 0;
     let prevMouseY = 0;
     let activeMode = 'draw';
+    let overiddenActiveMode = null;
 
     let pieceSettings = {
         size: 10,
@@ -103,6 +107,36 @@
 
         // Init canvas context
         ctx = elemCanvas.getContext('2d');
+
+        // Init global event listeners for things such as keyboard shortcuts
+        window.addEventListener('keydown', (e) => {
+            const key = e.key;
+
+            // Register keydown keyboard shortcuts
+            if (keyDown === null) {
+                keyDown = key;
+                console.log(`keypress: ${key}`);
+                if (key === ' ') {
+                    overiddenActiveMode = activeMode;
+                    activeMode = 'pan';
+                }
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            const key = e.key;
+
+            // Register keyup keyboard shortcuts
+            console.log(`keyup: ${key}`);
+            if (key === ' ') {
+                activeMode = overiddenActiveMode;
+                overiddenActiveMode = null;
+                console.log(activeMode);
+            }
+
+            keyDown = null;
+        });
+
+        // Initial draw
         draw();
     });
 
