@@ -20,7 +20,7 @@
     let activeMode = 'draw';
 
     let pieceSettings = {
-        size: 5,
+        size: 10,
         color: '#D55C1A',
         resX: 1,
         resY: 1
