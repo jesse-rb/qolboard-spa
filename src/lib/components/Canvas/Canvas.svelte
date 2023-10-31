@@ -3,7 +3,6 @@
     import { writable } from "svelte/store";
     import PiecesManager from "./PiecesManager.svelte";
     import ControlPanel from "./ControlPanel.svelte";
-    import { space } from "svelte/internal";
 
     let width = 100;
     let height = 100;
@@ -42,6 +41,8 @@
         pieceSettings: pieceSettings
     });
     setContext('canvasStore', store);
+
+    setContext('saveToSessionStorage', saveToSessionStorage);
 
     $: $store.activeMode = activeMode;
     $: $store.mouseDown = mouseDown;
@@ -90,6 +91,7 @@
         piecesManager.pan();
         updateBackgroundColor();
         piecesManager.draw();
+        saveToSessionStorage();
     }
 
     // Delete mode
@@ -99,10 +101,12 @@
     $: if (activeMode == 'remove' && (mouseDown && (mouseX || mouseY))) {
         piecesManager.select();
         piecesManager.remove();
+        saveToSessionStorage();
     }
 
     $: backroundColor = $store.backgroundColor;
     $: backroundColor && draw();
+    saveToSessionStorage();
 
     onMount(async () => {
         let elemContainerResizeObserver = new ResizeObserver(updateCanvasSize).observe(elemContaienr);
