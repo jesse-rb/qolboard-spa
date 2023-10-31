@@ -102,7 +102,7 @@
 
     export function pan() {
         for (const p of pieces) {
-            p.component.move();
+            p.component.move(true);
         }
     }
 

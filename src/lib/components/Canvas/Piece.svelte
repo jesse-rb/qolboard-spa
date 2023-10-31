@@ -61,9 +61,14 @@
         path = new Path2D(s.path+"C");
 
         serializedMove = DOMMatrix.fromMatrix(s.move);
+        serializedPan = DOMMatrix.fromMatrix(s.pan);
+
         let updatedPath = new Path2D();
         updatedPath.addPath(path, serializedMove);
-        updatedPath.addPath(updatedPath, serializedPan);
+        path = updatedPath;
+
+        updatedPath = new Path2D()
+        updatedPath.addPath(path, serializedPan);
         path = updatedPath;
 
         leftMost = s.leftMost;
