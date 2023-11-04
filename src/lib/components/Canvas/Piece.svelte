@@ -5,9 +5,14 @@
     export let selected = false;
 
     const canvasStore = getContext('canvasStore');
+    const saveToSessionStorage = getContext('saveToSessionStorage');
+
     const dispatch = createEventDispatcher();
     const ctx = $canvasStore.ctx;
 
+    let pathSVG = "";
+    let moveMatrix = new DOMMatrix();
+    let panMatrix = new DOMMatrix();
     let path = new Path2D();
 
     let latestPointX = $canvasStore.mouseX;
@@ -17,8 +22,6 @@
     let rightMost;
     let topMost;
     let bottomMost;
-
-    let pieceSettingsModal;
 
     function dispatchUpdate(redrawPiece) {
         dispatch('update', redrawPiece);
@@ -36,6 +39,44 @@
         rightMost = rightMost > x ? rightMost : x;
         topMost = topMost < y ? topMost : y;
         bottomMost = bottomMost > y ? bottomMost : y;
+    }
+
+    export function serialize() {
+        const s = {
+            settings: settings,
+            path: pathSVG,
+            move: moveMatrix.toJSON(),
+            pan: panMatrix.toJSON(),
+            leftMost: leftMost,
+            rightMost: rightMost,
+            topMost: topMost,
+            bottomMost: bottomMost
+        };
+
+        return s;
+    }
+
+    export function deserialize(s) {
+        settings = s.settings;
+
+        pathSVG = s.path;
+        path = new Path2D(s.path+"C");
+
+        moveMatrix = DOMMatrix.fromMatrix(s.move);
+        panMatrix = DOMMatrix.fromMatrix(s.pan);
+
+        let updatedPath = new Path2D();
+        updatedPath.addPath(path, moveMatrix);
+        path = updatedPath;
+
+        updatedPath = new Path2D()
+        updatedPath.addPath(path, panMatrix);
+        path = updatedPath;
+
+        leftMost = s.leftMost;
+        rightMost = s.rightMost;
+        topMost = s.topMost;
+        bottomMost = s.bottomMost;
     }
 
     export function isPointInStroke(x, y) {
@@ -122,6 +163,10 @@
             const addedPath = new Path2D();
             addedPath.moveTo(latestPointX, latestPointY);
             addedPath.lineTo(newX, newY);
+
+            // Serialize path
+            pathSVG += `M${latestPointX} ${latestPointY} L${newX} ${newY}`;
+
             draw(addedPath);
             
             latestPointX = newX;
@@ -129,10 +174,6 @@
         }
 
         return [newX, newY];
-    }
-
-    export function close() {
-        path.closePath();
     }
 
     export function select() {
@@ -143,7 +184,7 @@
         selected = false;
     }
 
-    export function move() {
+    export function move(isPan = false) {
         let mouseX = $canvasStore.mouseX;
         let mouseY = $canvasStore.mouseY;
 
@@ -155,6 +196,13 @@
 
         let m = new DOMMatrix();
         m.translateSelf(dx, dy);
+        
+        if (isPan) {
+            panMatrix.translateSelf(dx, dy);
+        }
+        else {
+            moveMatrix.translateSelf(dx, dy);
+        }
 
         leftMost += dx;
         rightMost += dx;
@@ -170,6 +218,7 @@
         dispatchUpdate(false);
         settings[setting] = value;
         dispatchUpdate(true);
+        saveToSessionStorage();
     }
 </script>
 

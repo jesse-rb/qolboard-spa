@@ -69,7 +69,6 @@
             <Button label="tune brush" icon="tunebrush" onclick={()=>{ brushSettingsModal.toggle(); }} />
         </div>
     </div>
-    
 </div>
 
 <Modal bind:this={brushSettingsModal}>

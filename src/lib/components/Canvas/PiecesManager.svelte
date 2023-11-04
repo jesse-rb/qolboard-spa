@@ -1,12 +1,32 @@
 <script>
     import { get } from "svelte/store";
-    import { getContext } from "svelte";
+    import { getContext, tick } from "svelte";
     import Piece from "./Piece.svelte";
 
-    const canvasSotre = getContext('canvasStore');
+    const canvasStore = getContext('canvasStore');
     let selectedPiece = null;
     let selectedPieceIndex = null;
     let pieces = [];
+
+    export function serialize() {
+        const s = [];
+        for (const p of pieces) {
+            if (p.component) {
+                const serializedPiece = p.component.serialize();
+                s.push(serializedPiece);
+            }
+        }
+        return s;
+    }
+
+    export async function deserialize(s) {
+        for (const serializedPiece of s) {
+            const p = {component:null};
+            pieces = [...pieces, p];
+            await tick();
+            p.component.deserialize(serializedPiece);
+        }
+    }
 
     export function clear() {
         deselect();
@@ -70,7 +90,7 @@
         // Select new piece
         for (let i=pieces.length-1; i>=0; i--) {
             const piece = pieces[i];
-            if (piece.component.isPointInStroke($canvasSotre.mouseX, $canvasSotre.mouseY)) {
+            if (piece.component.isPointInStroke($canvasStore.mouseX, $canvasStore.mouseY)) {
                 console.log('SELECTED');
                 selectedPiece = piece;
                 selectedPieceIndex = i;
@@ -84,7 +104,7 @@
 
     export function pan() {
         for (const p of pieces) {
-            p.component.move();
+            p.component.move(true);
         }
     }
 
@@ -121,7 +141,7 @@
     }
 
     function initialPieceSettings() {
-        const canvasStoreCurrent = get(canvasSotre);
+        const canvasStoreCurrent = get(canvasStore);
         return canvasStoreCurrent.pieceSettings;
     }
 

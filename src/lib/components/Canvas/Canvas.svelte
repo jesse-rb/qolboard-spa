@@ -3,7 +3,6 @@
     import { writable } from "svelte/store";
     import PiecesManager from "./PiecesManager.svelte";
     import ControlPanel from "./ControlPanel.svelte";
-    import { space } from "svelte/internal";
 
     let width = 100;
     let height = 100;
@@ -41,7 +40,11 @@
         backgroundColor: '#1A1A1A',
         pieceSettings: pieceSettings
     });
+
+    const canvasOffset = 200;
+
     setContext('canvasStore', store);
+    setContext('saveToSessionStorage', saveToSessionStorage);
 
     $: $store.activeMode = activeMode;
     $: $store.mouseDown = mouseDown;
@@ -63,6 +66,7 @@
 
     $: if (activeMode == 'draw' && (mouseDown && (mouseX || mouseY))) {
         piecesManager.addPointToLatestPiece();
+        saveToSessionStorage();
     }
 
     // Move mode
@@ -73,6 +77,7 @@
     $: if (activeMode == 'grab' && (mouseDown && (mouseX || mouseY))) {
         if (piecesManager.getSelected()) {
             piecesManager.move();
+            saveToSessionStorage();
         }
         else {
             piecesManager.select();
@@ -88,6 +93,7 @@
         piecesManager.pan();
         updateBackgroundColor();
         piecesManager.draw();
+        saveToSessionStorage();
     }
 
     // Delete mode
@@ -97,6 +103,7 @@
     $: if (activeMode == 'remove' && (mouseDown && (mouseX || mouseY))) {
         piecesManager.select();
         piecesManager.remove();
+        saveToSessionStorage();
     }
 
     $: backroundColor = $store.backgroundColor;
@@ -136,9 +143,57 @@
             keyDown = null;
         });
 
+        restoreFromSessionStorage();
+
         // Initial draw
         draw();
     });
+
+    function saveToSessionStorage() {
+        window.sessionStorage.setItem('canvas', JSON.stringify(serialize()));
+    }
+
+    async function restoreFromSessionStorage() {
+        // Restore canvas state from session storage
+        const state = JSON.parse(window.sessionStorage.getItem('canvas'));
+        if (state !== null) {
+            await deserialize(state);
+        }
+    }
+
+    function serialize() {
+        const s = {
+            store: {
+                activeMode: $store.activeMode,
+                mouseDown: $store.mouseDown,
+                mouseX: $store.mouseX,
+                mouseY: $store.mouseY,
+                prevMouseX: $store.prevMouseX,
+                prevMouseY: $store.prevMouseY,
+                ctx: $store.ctx,
+                backgroundColor: $store.backgroundColor,
+                pieceSettings: $store.pieceSettings
+            },
+            piecesManager: piecesManager.serialize()
+        }
+        return s;
+    }
+
+    async function deserialize(s) {
+        $store = {
+            activeMode: s.store.activeMode,
+            mouseDown: s.store.mouseDown,
+            mouseX: s.store.mouseX,
+            mouseY: s.store.mouseY,
+            prevMouseX: s.store.prevMouseX,
+            prevMouseY: s.store.prevMouseY,
+            ctx: s.store.ctx,
+            backgroundColor: s.store.backgroundColor,
+            pieceSettings: s.store.pieceSettings
+        };
+        activeMode = $store.activeMode;
+        await piecesManager.deserialize(s.piecesManager);
+    }
 
     async function draw() {
         await tick(); // If DOM falls behind... await tick();
@@ -174,7 +229,7 @@
         prevMouseX = mouseX;
         prevMouseY = mouseY;
         mouseX = e.clientX - canvasOffsetLeft + scrollOffsetX;
-        mouseY = e.clientY - canvasOffsetTop + scrollOffsetY - 200; // subtract canvas absolute top offset
+        mouseY = e.clientY - canvasOffsetTop + scrollOffsetY - canvasOffset // subtract canvas absolute top offset
 
     }
 
@@ -186,6 +241,7 @@
         if (action === 'clear') {
             piecesManager.clear();
             draw();
+            saveToSessionStorage();
         }
     }
 
