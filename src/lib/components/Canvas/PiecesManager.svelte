@@ -11,8 +11,10 @@
     export function serialize() {
         const s = [];
         for (const p of pieces) {
-            const serializedPiece = p.component.serialize();
-            s.push(serializedPiece);
+            if (p.component) {
+                const serializedPiece = p.component.serialize();
+                s.push(serializedPiece);
+            }
         }
         return s;
     }

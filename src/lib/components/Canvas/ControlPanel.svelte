@@ -69,10 +69,6 @@
             <Button label="tune brush" icon="tunebrush" onclick={()=>{ brushSettingsModal.toggle(); }} />
         </div>
     </div>
-    
-    <div class="control-group">
-        <Button label="(dev) clear session storage" icon="terminalclear" onclick={()=>window.sessionStorage.setItem('canvas', '')} />
-    </div>
 </div>
 
 <Modal bind:this={brushSettingsModal}>

@@ -40,8 +40,10 @@
         backgroundColor: '#1A1A1A',
         pieceSettings: pieceSettings
     });
-    setContext('canvasStore', store);
 
+    const canvasOffset = 200;
+
+    setContext('canvasStore', store);
     setContext('saveToSessionStorage', saveToSessionStorage);
 
     $: $store.activeMode = activeMode;
@@ -107,7 +109,7 @@
     $: backroundColor = $store.backgroundColor;
     $: backroundColor && draw();
 
-    onMount(async () => {
+    onMount(() => {
         let elemContainerResizeObserver = new ResizeObserver(updateCanvasSize).observe(elemContaienr);
 
         // Init canvas context
@@ -141,14 +143,13 @@
             keyDown = null;
         });
 
-        await restoreFromSessionStorage();
+        restoreFromSessionStorage();
 
         // Initial draw
         draw();
     });
 
-    async function saveToSessionStorage() {
-        await tick();
+    function saveToSessionStorage() {
         window.sessionStorage.setItem('canvas', JSON.stringify(serialize()));
     }
 
@@ -228,7 +229,7 @@
         prevMouseX = mouseX;
         prevMouseY = mouseY;
         mouseX = e.clientX - canvasOffsetLeft + scrollOffsetX;
-        mouseY = e.clientY - canvasOffsetTop + scrollOffsetY - 200; // subtract canvas absolute top offset
+        mouseY = e.clientY - canvasOffsetTop + scrollOffsetY - canvasOffset // subtract canvas absolute top offset
 
     }
 
