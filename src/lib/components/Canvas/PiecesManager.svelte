@@ -51,7 +51,7 @@
 
     export function draw() {
         for (let i = 0; i < pieces.length; i++) {
-            pieces[i].component.draw();
+            pieces[i].component && pieces[i].component.draw();
         }
     }
 
@@ -90,7 +90,7 @@
         // Select new piece
         for (let i=pieces.length-1; i>=0; i--) {
             const piece = pieces[i];
-            if (piece.component.isPointInStroke($canvasStore.mouseX, $canvasStore.mouseY)) {
+            if (piece.component.isPointInStroke($canvasStore.mouseX*$canvasStore.zoom, $canvasStore.mouseY*$canvasStore.zoom)) {
                 console.log('SELECTED');
                 selectedPiece = piece;
                 selectedPieceIndex = i;
@@ -102,9 +102,9 @@
         }
     }
 
-    export function pan() {
+    export function pan(dx = null, dy = null) {
         for (const p of pieces) {
-            p.component.move(true);
+            p.component.move(true, dx, dy);
         }
     }
 

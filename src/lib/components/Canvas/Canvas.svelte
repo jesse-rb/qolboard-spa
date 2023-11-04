@@ -38,7 +38,8 @@
         prevMouseY:0,
         ctx: ctx,
         backgroundColor: '#1A1A1A',
-        pieceSettings: pieceSettings
+        pieceSettings: pieceSettings,
+        zoom: 1
     });
 
     const canvasOffset = 200;
@@ -109,11 +110,11 @@
     $: backroundColor = $store.backgroundColor;
     $: backroundColor && draw();
 
-    onMount(() => {
-        let elemContainerResizeObserver = new ResizeObserver(updateCanvasSize).observe(elemContaienr);
-
+    onMount(async () => {
         // Init canvas context
         ctx = elemCanvas.getContext('2d');
+
+        await restoreFromSessionStorage();
 
         // Init global event listeners for things such as keyboard shortcuts
         window.addEventListener('keydown', (e) => {
@@ -137,16 +138,37 @@
             if (key === ' ') {
                 activeMode = overiddenActiveMode;
                 overiddenActiveMode = null;
-                console.log(activeMode);
             }
 
             keyDown = null;
         });
+        window.addEventListener("wheel", (e) => {
+            const wheelDeltaY = e.deltaY;
+            const zoom = wheelDeltaY < 0 ? 1.05 : 0.95;
+            ctx.scale(zoom, zoom);
+            $store.zoom = $store.zoom * zoom;
 
-        restoreFromSessionStorage();
+            // Pan according to zoom/mouse
+            
+            let dx = (width/45)/$store.zoom;
+            let dy = (height/45)/$store.zoom;
+
+            dx = dx * (wheelDeltaY > 0 ? 1 : -1);
+            dy = dy * (wheelDeltaY > 0 ? 1 : -1);
+
+            piecesManager.pan(dx, dy);
+            draw();
+            saveToSessionStorage();
+        });
+        updateCanvasSize();
 
         // Initial draw
-        draw();
+        await tick();
+        ctx.scale($store.zoom, $store.zoom);
+        
+        
+        await draw();
+        console.log($store.zoom);
     });
 
     function saveToSessionStorage() {
@@ -163,48 +185,27 @@
 
     function serialize() {
         const s = {
-            store: {
-                activeMode: $store.activeMode,
-                mouseDown: $store.mouseDown,
-                mouseX: $store.mouseX,
-                mouseY: $store.mouseY,
-                prevMouseX: $store.prevMouseX,
-                prevMouseY: $store.prevMouseY,
-                ctx: $store.ctx,
-                backgroundColor: $store.backgroundColor,
-                pieceSettings: $store.pieceSettings
-            },
+            store: $store,
             piecesManager: piecesManager.serialize()
         }
         return s;
     }
 
     async function deserialize(s) {
-        $store = {
-            activeMode: s.store.activeMode,
-            mouseDown: s.store.mouseDown,
-            mouseX: s.store.mouseX,
-            mouseY: s.store.mouseY,
-            prevMouseX: s.store.prevMouseX,
-            prevMouseY: s.store.prevMouseY,
-            ctx: s.store.ctx,
-            backgroundColor: s.store.backgroundColor,
-            pieceSettings: s.store.pieceSettings
-        };
+        $store = s.store;
         activeMode = $store.activeMode;
         await piecesManager.deserialize(s.piecesManager);
     }
 
     async function draw() {
         await tick(); // If DOM falls behind... await tick();
-
         updateBackgroundColor();
         piecesManager.draw();
     }
 
     function updateBackgroundColor() {
         ctx.fillStyle = $store.backgroundColor;
-        ctx.fillRect(0, 0, width, height);
+        ctx.fillRect(0, 0, width/$store.zoom, height/$store.zoom);
     }
 
     function updateCanvasSize() {
@@ -228,9 +229,12 @@
         const scrollOffsetY = document.documentElement.scrollTop;
         prevMouseX = mouseX;
         prevMouseY = mouseY;
-        mouseX = e.clientX - canvasOffsetLeft + scrollOffsetX;
-        mouseY = e.clientY - canvasOffsetTop + scrollOffsetY - canvasOffset // subtract canvas absolute top offset
 
+        mouseX = e.clientX - canvasOffsetLeft + scrollOffsetX;
+        mouseY = e.clientY - canvasOffsetTop + scrollOffsetY - canvasOffset; // subtract canvas absolute top offset
+
+        mouseX = mouseX/$store.zoom;
+        mouseY = mouseY/$store.zoom;
     }
 
     function setActiveMode(mode) {
