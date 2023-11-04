@@ -187,15 +187,17 @@
         selected = false;
     }
 
-    export function move(isPan = false) {
-        let mouseX = $canvasStore.mouseX;
-        let mouseY = $canvasStore.mouseY;
+    export function move(isPan = false, dx = null, dy = null) {
+        if (dx === null && dy === null) {
+            let mouseX = $canvasStore.mouseX;
+            let mouseY = $canvasStore.mouseY;
 
-        let prevMouseX = $canvasStore.prevMouseX;
-        let prevMouseY = $canvasStore.prevMouseY;
-        
-        let dx = mouseX-prevMouseX;
-        let dy = mouseY-prevMouseY;
+            let prevMouseX = $canvasStore.prevMouseX;
+            let prevMouseY = $canvasStore.prevMouseY;
+            
+            dx = mouseX-prevMouseX;
+            dy = mouseY-prevMouseY;
+        }
 
         let m = new DOMMatrix();
         m.translateSelf(dx, dy);

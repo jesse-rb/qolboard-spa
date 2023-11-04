@@ -51,6 +51,9 @@
         <div class="control">
             <Button icon="delete" active={$canvasStore.activeMode=='remove'} label="remove" onclick={()=>dispatchSetActiveMode('remove')} />
         </div>
+        <div class="control">
+            <p>(Use scroll wheel to zoom)</p>
+        </div>
     </div>
 
     <!--global actions-->

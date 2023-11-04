@@ -138,17 +138,25 @@
             if (key === ' ') {
                 activeMode = overiddenActiveMode;
                 overiddenActiveMode = null;
-                console.log(activeMode);
             }
 
             keyDown = null;
         });
         window.addEventListener("wheel", (e) => {
-            const dy = e.deltaY;
-            const zoom = dy < 0 ? 1.1 : 0.9;
+            const wheelDeltaY = e.deltaY;
+            const zoom = wheelDeltaY < 0 ? 1.05 : 0.95;
             ctx.scale(zoom, zoom);
             $store.zoom = $store.zoom * zoom;
-            console.log($store.zoom);
+
+            // Pan according to zoom/mouse
+            
+            let dx = (width/45)/$store.zoom;
+            let dy = (height/45)/$store.zoom;
+
+            dx = dx * (wheelDeltaY > 0 ? 1 : -1);
+            dy = dy * (wheelDeltaY > 0 ? 1 : -1);
+
+            piecesManager.pan(dx, dy);
             draw();
             saveToSessionStorage();
         });

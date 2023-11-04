@@ -102,9 +102,9 @@
         }
     }
 
-    export function pan() {
+    export function pan(dx = null, dy = null) {
         for (const p of pieces) {
-            p.component.move(true);
+            p.component.move(true, dx, dy);
         }
     }
 
