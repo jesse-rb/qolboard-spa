@@ -116,8 +116,6 @@
 
         await restoreFromSessionStorage();
 
-        let elemContainerResizeObserver = new ResizeObserver(updateCanvasSize).observe(elemContaienr);
-
         // Init global event listeners for things such as keyboard shortcuts
         window.addEventListener('keydown', (e) => {
             const key = e.key;
@@ -154,10 +152,13 @@
             draw();
             saveToSessionStorage();
         });
-        
+        updateCanvasSize();
+
         // Initial draw
         await tick();
-        ctx.scale(0.5, 0.5);
+        ctx.scale($store.zoom, $store.zoom);
+        
+        
         await draw();
         console.log($store.zoom);
     });
@@ -196,7 +197,7 @@
 
     function updateBackgroundColor() {
         ctx.fillStyle = $store.backgroundColor;
-        ctx.fillRect(0, 0, width, height);
+        ctx.fillRect(0, 0, width/$store.zoom, height/$store.zoom);
     }
 
     function updateCanvasSize() {

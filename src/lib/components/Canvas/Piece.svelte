@@ -9,7 +9,7 @@
 
     const dispatch = createEventDispatcher();
     const ctx = $canvasStore.ctx;
-
+    
     let pathSVG = "";
     let moveMatrix = new DOMMatrix();
     let panMatrix = new DOMMatrix();
@@ -39,6 +39,7 @@
         rightMost = rightMost > x ? rightMost : x;
         topMost = topMost < y ? topMost : y;
         bottomMost = bottomMost > y ? bottomMost : y;
+
     }
 
     export function serialize() {
@@ -118,17 +119,19 @@
     }
 
     export function clearBoundingBox() {
+        const clearMargin = 1/$canvasStore.zoom;
         const [x, y, width, height] = getBoundingBox();
 
         setDrawSettings(true);
-        ctx.fillRect(x, y, width, height);
+        ctx.fillRect(x-clearMargin, y-clearMargin, width+(clearMargin*2), height+(clearMargin*2));
     }
 
     export function drawBoundingBoxBorder() {
-        const clearMargin = 1;
+        const clearMargin = 1/$canvasStore.zoom;
         const [x, y, width, height] = getBoundingBox();
         ctx.beginPath();
         setDrawSettings(true);
+        ctx.lineWidth = 1/$canvasStore.zoom;
         ctx.strokeStyle = '#FFFFFF';
         ctx.rect(x+clearMargin, y+clearMargin, width-(clearMargin*2), height-(clearMargin*2));
         ctx.closePath();
@@ -223,7 +226,7 @@
 </script>
 
 {#if selected}
-    <div class="piece-settings control-panel" style="top: calc({bottomMost}px + var(--canvas-offset)); left: {leftMost}px;">
+    <div class="piece-settings control-panel" style="top: calc({bottomMost*$canvasStore.zoom}px + var(--canvas-offset)); left: {leftMost*$canvasStore.zoom}px;">
         <div class="control-group">
             <div class="control">
                 <label for="">size</label>

@@ -90,7 +90,7 @@
         // Select new piece
         for (let i=pieces.length-1; i>=0; i--) {
             const piece = pieces[i];
-            if (piece.component.isPointInStroke($canvasStore.mouseX, $canvasStore.mouseY)) {
+            if (piece.component.isPointInStroke($canvasStore.mouseX*$canvasStore.zoom, $canvasStore.mouseY*$canvasStore.zoom)) {
                 console.log('SELECTED');
                 selectedPiece = piece;
                 selectedPieceIndex = i;
