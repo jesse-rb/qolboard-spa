@@ -51,7 +51,7 @@
 
     export function draw() {
         for (let i = 0; i < pieces.length; i++) {
-            pieces[i].component.draw();
+            pieces[i].component && pieces[i].component.draw();
         }
     }
 
