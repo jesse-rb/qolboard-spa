@@ -10,9 +10,9 @@
     const dispatch = createEventDispatcher();
     const ctx = $canvasStore.ctx;
 
-    let serializedPath = "";
-    let serializedMove = new DOMMatrix();
-    let serializedPan = new DOMMatrix();
+    let pathSVG = "";
+    let moveMatrix = new DOMMatrix();
+    let panMatrix = new DOMMatrix();
     let path = new Path2D();
 
     let latestPointX = $canvasStore.mouseX;
@@ -44,9 +44,9 @@
     export function serialize() {
         const s = {
             settings: settings,
-            path: serializedPath,
-            move: serializedMove.toJSON(),
-            pan: serializedPan.toJSON(),
+            path: pathSVG,
+            move: moveMatrix.toJSON(),
+            pan: panMatrix.toJSON(),
             leftMost: leftMost,
             rightMost: rightMost,
             topMost: topMost,
@@ -59,18 +59,18 @@
     export function deserialize(s) {
         settings = s.settings;
 
-        serializedPath = s.path;
+        pathSVG = s.path;
         path = new Path2D(s.path+"C");
 
-        serializedMove = DOMMatrix.fromMatrix(s.move);
-        serializedPan = DOMMatrix.fromMatrix(s.pan);
+        moveMatrix = DOMMatrix.fromMatrix(s.move);
+        panMatrix = DOMMatrix.fromMatrix(s.pan);
 
         let updatedPath = new Path2D();
-        updatedPath.addPath(path, serializedMove);
+        updatedPath.addPath(path, moveMatrix);
         path = updatedPath;
 
         updatedPath = new Path2D()
-        updatedPath.addPath(path, serializedPan);
+        updatedPath.addPath(path, panMatrix);
         path = updatedPath;
 
         leftMost = s.leftMost;
@@ -165,7 +165,7 @@
             addedPath.lineTo(newX, newY);
 
             // Serialize path
-            serializedPath += `M${latestPointX} ${latestPointY} L${newX} ${newY}`;
+            pathSVG += `M${latestPointX} ${latestPointY} L${newX} ${newY}`;
 
             draw(addedPath);
             
@@ -198,10 +198,10 @@
         m.translateSelf(dx, dy);
         
         if (isPan) {
-            serializedPan.translateSelf(dx, dy);
+            panMatrix.translateSelf(dx, dy);
         }
         else {
-            serializedMove.translateSelf(dx, dy);
+            moveMatrix.translateSelf(dx, dy);
         }
 
         leftMost += dx;

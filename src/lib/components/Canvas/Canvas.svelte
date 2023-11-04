@@ -106,7 +106,6 @@
 
     $: backroundColor = $store.backgroundColor;
     $: backroundColor && draw();
-    saveToSessionStorage();
 
     onMount(async () => {
         let elemContainerResizeObserver = new ResizeObserver(updateCanvasSize).observe(elemContaienr);
@@ -163,14 +162,34 @@
 
     function serialize() {
         const s = {
-            store: $store,
+            store: {
+                activeMode: $store.activeMode,
+                mouseDown: $store.mouseDown,
+                mouseX: $store.mouseX,
+                mouseY: $store.mouseY,
+                prevMouseX: $store.prevMouseX,
+                prevMouseY: $store.prevMouseY,
+                ctx: $store.ctx,
+                backgroundColor: $store.backgroundColor,
+                pieceSettings: $store.pieceSettings
+            },
             piecesManager: piecesManager.serialize()
         }
         return s;
     }
 
     async function deserialize(s) {
-        $store = s.store;
+        $store = {
+            activeMode: s.store.activeMode,
+            mouseDown: s.store.mouseDown,
+            mouseX: s.store.mouseX,
+            mouseY: s.store.mouseY,
+            prevMouseX: s.store.prevMouseX,
+            prevMouseY: s.store.prevMouseY,
+            ctx: s.store.ctx,
+            backgroundColor: s.store.backgroundColor,
+            pieceSettings: s.store.pieceSettings
+        };
         activeMode = $store.activeMode;
         await piecesManager.deserialize(s.piecesManager);
     }
@@ -221,6 +240,7 @@
         if (action === 'clear') {
             piecesManager.clear();
             draw();
+            saveToSessionStorage();
         }
     }
 

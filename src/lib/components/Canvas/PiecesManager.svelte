@@ -3,7 +3,7 @@
     import { getContext, tick } from "svelte";
     import Piece from "./Piece.svelte";
 
-    const canvasSotre = getContext('canvasStore');
+    const canvasStore = getContext('canvasStore');
     let selectedPiece = null;
     let selectedPieceIndex = null;
     let pieces = [];
@@ -88,7 +88,7 @@
         // Select new piece
         for (let i=pieces.length-1; i>=0; i--) {
             const piece = pieces[i];
-            if (piece.component.isPointInStroke($canvasSotre.mouseX, $canvasSotre.mouseY)) {
+            if (piece.component.isPointInStroke($canvasStore.mouseX, $canvasStore.mouseY)) {
                 console.log('SELECTED');
                 selectedPiece = piece;
                 selectedPieceIndex = i;
@@ -139,7 +139,7 @@
     }
 
     function initialPieceSettings() {
-        const canvasStoreCurrent = get(canvasSotre);
+        const canvasStoreCurrent = get(canvasStore);
         return canvasStoreCurrent.pieceSettings;
     }
 
