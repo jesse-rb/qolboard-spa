@@ -3,6 +3,8 @@
     import { writable } from "svelte/store";
     import PiecesManager from "./PiecesManager.svelte";
     import ControlPanel from "./ControlPanel.svelte";
+    import { range } from "../../util";
+    import Ruler from "./Ruler.svelte";
 
     let width = 100;
     let height = 100;
@@ -30,12 +32,16 @@
     };
 
     const store = writable({
+        width: 0,
+        height: 0,
         activeMode:activeMode,
         mouseDown:false,
         mouseX:0,
         mouseY:0,
         prevMouseX:0,
         prevMouseY:0,
+        xPan: 0,
+        yPan: 0,
         ctx: ctx,
         backgroundColor: '#1A1A1A',
         pieceSettings: pieceSettings,
@@ -47,6 +53,8 @@
     setContext('canvasStore', store);
     setContext('saveToSessionStorage', saveToSessionStorage);
 
+    $: $store.width = width;
+    $: $store.height = height;
     $: $store.activeMode = activeMode;
     $: $store.mouseDown = mouseDown;
     $: $store.mouseX = mouseX;
@@ -94,6 +102,7 @@
         piecesManager.pan();
         updateBackgroundColor();
         piecesManager.draw();
+        $store.xPan += $store.mouseX - $store.prevMouseX;
         saveToSessionStorage();
     }
 
@@ -144,14 +153,16 @@
         });
         window.addEventListener("wheel", (e) => {
             const wheelDeltaY = e.deltaY;
-            const zoom = wheelDeltaY < 0 ? 1.05 : 0.95;
+            const zoom = wheelDeltaY < 0 ? 100/99 : 99/100; // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
             ctx.scale(zoom, zoom);
+
+            const oldZoom = $store.zoom;
             $store.zoom = $store.zoom * zoom;
 
-            // Pan according to zoom/mouse
+            // Pan according to zoom, to center canvas after zoom
             
-            let dx = (width/45)/$store.zoom;
-            let dy = (height/45)/$store.zoom;
+            let dx = Math.abs(width/$store.zoom-width/oldZoom)/2;
+            let dy = Math.abs(height/$store.zoom-height/oldZoom)/2;
 
             dx = dx * (wheelDeltaY > 0 ? 1 : -1);
             dy = dy * (wheelDeltaY > 0 ? 1 : -1);
@@ -284,6 +295,8 @@
         on:setActiveMode={(e)=>setActiveMode(e.detail)}
         on:action={(e)=>action(e.detail)}
     />
+
+    <!-- <Ruler /> -->
 </div>
 
 <style>

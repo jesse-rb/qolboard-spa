@@ -27,6 +27,10 @@
         dispatch('update', redrawPiece);
     }
 
+    function dispatchUpdateBoundingBox() {
+        dispatch('updateBoundingBox', {topMost, rightMost, bottomMost, leftMost});
+    }
+
     function setDrawSettings(reset=false) {
         ctx.lineCap = reset ? '' : 'round';
         ctx.lineJoin = reset ? '' : 'round';
@@ -40,6 +44,7 @@
         topMost = topMost < y ? topMost : y;
         bottomMost = bottomMost > y ? bottomMost : y;
 
+        dispatchUpdateBoundingBox();
     }
 
     export function serialize() {
