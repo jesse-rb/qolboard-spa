@@ -2,6 +2,7 @@
     import { getContext, createEventDispatcher } from "svelte";
     import Button from "../Button.svelte";
     import Modal from "../Modal.svelte";
+    import Dev from "../Dev.svelte";
 
     const canvasStore = getContext('canvasStore');
     const dispatch = createEventDispatcher();
@@ -65,6 +66,11 @@
         <div class="control">
             <Button icon="clear_all" label="clear all" onclick={()=>dispatchAction('clear')} />
         </div>
+        <Dev>
+            <div class="control">
+                <Button icon="layers_clear" label="clear session storage" onclick={()=>window.sessionStorage.clear()} />
+            </div>
+        </Dev>
     </div>
 
     <div class="control-group">

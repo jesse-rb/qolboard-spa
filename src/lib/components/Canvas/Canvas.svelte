@@ -296,7 +296,7 @@
         on:action={(e)=>action(e.detail)}
     />
 
-    <!-- <Ruler /> -->
+    <Ruler />
 </div>
 
 <style>

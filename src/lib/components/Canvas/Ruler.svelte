@@ -6,7 +6,7 @@
 
     $: stepX = 100;
 
-    $: panOffsetX = 0;//roundToInt($canvasStore.xPan, stepX);
+    $: panOffsetX = roundToInt($canvasStore.xPan, stepX);
 
     $: scaledWidth = $canvasStore.width/$canvasStore.zoom;
 
