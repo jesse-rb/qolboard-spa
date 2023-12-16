@@ -48,7 +48,7 @@
         zoom: 1
     });
 
-    const canvasOffset = 200;
+    const canvasOffset = 300;
 
     setContext('canvasStore', store);
     setContext('saveToSessionStorage', saveToSessionStorage);
@@ -136,6 +136,7 @@
                 if (key === ' ') {
                     overiddenActiveMode = activeMode;
                     activeMode = 'pan';
+                    mouseDown = true;
                 }
             }
         });
@@ -147,6 +148,7 @@
             if (key === ' ') {
                 activeMode = overiddenActiveMode;
                 overiddenActiveMode = null;
+                mouseDown = false;
             }
 
             keyDown = null;

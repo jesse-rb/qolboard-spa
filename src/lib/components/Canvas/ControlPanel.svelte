@@ -113,5 +113,28 @@
 </Modal>
 
 <style>
-    
+    .control-panel {
+        height: var(--control-panel-height);
+        display: flex;
+        column-gap: 1em;
+        align-items: center;
+        padding: 0 1rem 0 1rem;
+    }
+    .control-group {
+        padding: 1rem 0 1rem 0;
+        display: flex;
+        flex-wrap: wrap;
+        column-gap: 1em;
+        width: fit-content;
+    }
+    .control-group.lock {
+        border-bottom: 0.1rem solid green;
+    }
+    .control-group>:global(.button-component) {
+        margin: 2px;
+    }
+    .control {
+        display: flex;
+        flex-direction: column;
+    }
 </style>

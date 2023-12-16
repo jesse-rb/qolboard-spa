@@ -23,6 +23,7 @@
         font-size: large;
         display: inline-flex;
         align-items: center;
+        text-wrap: nowrap;
     }
     .icon {
         margin-right: 5px;
