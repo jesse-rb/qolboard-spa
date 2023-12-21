@@ -121,10 +121,12 @@
         padding: 0 1rem 0 1rem;
     }
     .control-group {
+        height: 100%;
         padding: 1rem 0 1rem 0;
         display: flex;
         flex-wrap: wrap;
-        column-gap: 1em;
+        column-gap: 0.2em;
+        row-gap: 0.2em;
         width: fit-content;
     }
     .control-group.lock {

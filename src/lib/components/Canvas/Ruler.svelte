@@ -1,37 +1,26 @@
 <script>
     import { range, roundToInt } from "../../util.js";
     import { getContext } from "svelte";
-
     const canvasStore = getContext('canvasStore');
-
     $: stepX = 100;
-
-    $: panOffsetX = $canvasStore.xPan;
-
+    $: toFromOffset = $canvasStore.xPan;
     $: scaledWidth = $canvasStore.width/$canvasStore.zoom;
-
-    $: toX = roundToInt(scaledWidth, stepX)-panOffsetX;
-    $: fromX = 0-panOffsetX;
-
+    $: toX = scaledWidth+toFromOffset;
+    $: fromX = 0+toFromOffset;
     $: rangeX = range(toX, fromX, 11, true);
-
-    $: console.log(fromX);
-    $: console.log(toX);
     $: console.log(rangeX);
-
 </script>
 
 <div class="x-ruler">
     {#each rangeX as i}
-        <!-- {@const iScaled = i/$canvasStore.zoom} -->
-        <!-- {@const iOffsetForDisplay = i-$canvasStore.width/2} -->
+        {@const iScaled = i/$canvasStore.zoom}
+        {@const iOffsetForDisplay = i-$canvasStore.width/2}
 
-        <!-- {@const pos = (iScaled+$canvasStore.xPan)} -->
-        <!-- {@const display = Math.round(roundToInt(iOffsetForDisplay, stepX)/$canvasStore.zoom)} -->
-        {@const pos = i+$canvasStore.xPan}
-        {@const display = roundToInt(i-(toX-fromX)/2, stepX)}
+        {@const pos = (iScaled)}
+        {@const display = Math.round(roundToInt(iOffsetForDisplay, stepX)/$canvasStore.zoom)}
 
         <span style="position: absolute; left: {pos}px;" >{display}</span>
+        <span style="position: absolute; left: {pos}px; top: 2em" >({Math.round(pos)})</span>
     {/each}
 </div>
 
@@ -50,3 +39,4 @@
         top: 0.5em;
     }
 </style>
+

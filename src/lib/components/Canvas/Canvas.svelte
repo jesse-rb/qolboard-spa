@@ -136,7 +136,6 @@
                 if (key === ' ') {
                     overiddenActiveMode = activeMode;
                     activeMode = 'pan';
-                    mouseDown = true;
                 }
             }
         });

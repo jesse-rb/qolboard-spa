@@ -7,7 +7,7 @@ export function range(to, from=0, step=1, interpolate=false) {
     }
     else {
         for (let i = 0; i <= step; i++) {
-            let point = i*((to-from+1)/step);
+            let point = from+i*((to-from)/step);
             range.push(point);
         }
     }
@@ -15,5 +15,5 @@ export function range(to, from=0, step=1, interpolate=false) {
 }
 
 export function roundToInt(value, target) {
-    return Math.ceil(value/target)*target
+    return Math.ceil(value/target)*target;
 }
