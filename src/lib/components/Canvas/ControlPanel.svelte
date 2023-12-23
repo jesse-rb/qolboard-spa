@@ -3,6 +3,8 @@
     import Button from "../Button.svelte";
     import Modal from "../Modal.svelte";
     import Dev from "../Dev.svelte";
+    import { Modes } from "./enums/modes";
+    import { Actions } from "./enums/actions";
 
     const canvasStore = getContext('canvasStore');
     const dispatch = createEventDispatcher();
@@ -41,16 +43,16 @@
     <!--modes-->
     <div class="control-group">
         <div class="control">
-            <Button icon="brush" active={$canvasStore.activeMode=='draw'} label="draw" onclick={()=>dispatchSetActiveMode('draw')} />
+            <Button icon="brush" active={$canvasStore.activeMode==Modes.Draw} label="draw" onclick={()=>dispatchSetActiveMode(Modes.Draw)} />
         </div>
         <div class="control">
-            <Button icon="pan_tool_alt" active={$canvasStore.activeMode=='grab'} label="grab" onclick={()=>dispatchSetActiveMode('grab')} />
+            <Button icon="pan_tool_alt" active={$canvasStore.activeMode==Modes.Grab} label="grab" onclick={()=>dispatchSetActiveMode(Modes.Grab)} />
         </div>
         <div class="control">
-            <Button icon="pan_tool" active={$canvasStore.activeMode=='pan'} label="pan (Hold Space)" onclick={()=>dispatchSetActiveMode('pan')} />
+            <Button icon="pan_tool" active={$canvasStore.activeMode==Modes.Pan} label="pan (Hold Space)" onclick={()=>dispatchSetActiveMode(Modes.Pan)} />
         </div>
         <div class="control">
-            <Button icon="delete" active={$canvasStore.activeMode=='remove'} label="remove" onclick={()=>dispatchSetActiveMode('remove')} />
+            <Button icon="delete" active={$canvasStore.activeMode==Modes.Remove} label="remove" onclick={()=>dispatchSetActiveMode(Modes.Remove)} />
         </div>
         <div class="control">
             <p>(Use scroll wheel to zoom)</p>
@@ -64,7 +66,7 @@
             <input bind:value={$canvasStore.backgroundColor} type="color" >
         </div>
         <div class="control">
-            <Button icon="clear_all" label="clear all" onclick={()=>dispatchAction('clear')} />
+            <Button icon="clear_all" label="clear all" onclick={()=>dispatchAction(Actions.Clear)} />
         </div>
         <Dev>
             <div class="control">

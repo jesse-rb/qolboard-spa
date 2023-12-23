@@ -1,28 +1,30 @@
-<script>
-    import { onMount, setContext, tick } from "svelte";
-    import { writable } from "svelte/store";
+<script lang="ts">
+    import { SvelteComponent, onMount, setContext, tick } from "svelte";
     import PiecesManager from "./PiecesManager.svelte";
     import ControlPanel from "./ControlPanel.svelte";
-    import { range } from "../../util";
     import Ruler from "./Ruler.svelte";
+    import { store } from "./store";
+    import { Modes } from "./enums/modes";
+    import type { Serialized } from "./types/canvas";
+    import type { Actions } from "./enums/actions";
 
-    let width = 100;
-    let height = 100;
-    let elemContaienr;
-    let elemCanvas;
-    let ctx;
+    let width:number = 100;
+    let height:number = 100;
+    let elemContaienr:HTMLDivElement;
+    let elemCanvas:HTMLCanvasElement;
+    let ctx:CanvasRenderingContext2D;
 
-    let piecesManager = null;
+    let piecesManager:SvelteComponent;
 
-    let keyDown = null;
+    let keyDown:string|null;
 
-    let mouseDown = false;
-    let mouseX = 0;
-    let mouseY = 0;
-    let prevMouseX = 0;
-    let prevMouseY = 0;
-    let activeMode = 'draw';
-    let overiddenActiveMode = null;
+    let mouseDown:boolean = false;
+    let mouseX:number = 0;
+    let mouseY:number = 0;
+    let prevMouseX:number = 0;
+    let prevMouseY:number = 0;
+    let activeMode:Modes = Modes.Draw;
+    let overiddenActiveMode:Modes|null;
 
     let pieceSettings = {
         size: 10,
@@ -30,23 +32,6 @@
         resX: 1,
         resY: 1
     };
-
-    const store = writable({
-        width: 0,
-        height: 0,
-        activeMode:activeMode,
-        mouseDown:false,
-        mouseX:0,
-        mouseY:0,
-        prevMouseX:0,
-        prevMouseY:0,
-        xPan: 0,
-        yPan: 0,
-        ctx: ctx,
-        backgroundColor: '#1A1A1A',
-        pieceSettings: pieceSettings,
-        zoom: 1
-    });
 
     const canvasOffset = 300;
 
@@ -65,25 +50,25 @@
     $: $store.pieceSettings = pieceSettings;
 
     // Draw mode
-    $: if (activeMode == 'draw') {
+    $: if (activeMode == Modes.Draw) {
         piecesManager && piecesManager.deselect();
     }
 
-    $: if (activeMode == 'draw' && mouseDown) {
+    $: if (activeMode == Modes.Draw && mouseDown) {
         piecesManager.addPiece();
     }
 
-    $: if (activeMode == 'draw' && (mouseDown && (mouseX || mouseY))) {
+    $: if (activeMode == Modes.Draw && (mouseDown && (mouseX || mouseY))) {
         piecesManager.addPointToLatestPiece();
         saveToSessionStorage();
     }
 
     // Move mode
-    $: if (activeMode == 'grab' && mouseDown) {
+    $: if (activeMode == Modes.Grab && mouseDown) {
         piecesManager.select();
     }
 
-    $: if (activeMode == 'grab' && (mouseDown && (mouseX || mouseY))) {
+    $: if (activeMode == Modes.Grab && (mouseDown && (mouseX || mouseY))) {
         if (piecesManager.getSelected()) {
             piecesManager.move();
             saveToSessionStorage();
@@ -94,11 +79,11 @@
     }
 
     // Pan mode
-    $: if (activeMode == 'pan') {
+    $: if (activeMode == Modes.Pan) {
         piecesManager.deselect();
     }
 
-    $: if (activeMode == 'pan' && (mouseDown && (mouseX || mouseY))) {
+    $: if (activeMode == Modes.Pan && (mouseDown && (mouseX || mouseY))) {
         piecesManager.pan();
         updateBackgroundColor();
         piecesManager.draw();
@@ -107,10 +92,10 @@
     }
 
     // Delete mode
-    $: if (activeMode == 'remove') {
+    $: if (activeMode == Modes.Remove) {
         piecesManager.deselect();
     }
-    $: if (activeMode == 'remove' && (mouseDown && (mouseX || mouseY))) {
+    $: if (activeMode == Modes.Remove && (mouseDown && (mouseX || mouseY))) {
         piecesManager.select();
         piecesManager.remove();
         saveToSessionStorage();
@@ -121,7 +106,13 @@
 
     onMount(async () => {
         // Init canvas context
-        ctx = elemCanvas.getContext('2d');
+        const _ctx = elemCanvas.getContext('2d');
+        if (_ctx) {
+            ctx = _ctx;
+        }
+        else {
+            throw new Error('2D canvas rendering context is not available');
+        }
 
         await restoreFromSessionStorage();
 
@@ -135,7 +126,7 @@
                 console.log(`keypress: ${key}`);
                 if (key === ' ') {
                     overiddenActiveMode = activeMode;
-                    activeMode = 'pan';
+                    activeMode = Modes.Pan;
                 }
             }
         });
@@ -145,7 +136,7 @@
             // Register keyup keyboard shortcuts
             console.log(`keyup: ${key}`);
             if (key === ' ') {
-                activeMode = overiddenActiveMode;
+                activeMode = overiddenActiveMode ?? activeMode;
                 overiddenActiveMode = null;
                 mouseDown = false;
             }
@@ -189,21 +180,27 @@
 
     async function restoreFromSessionStorage() {
         // Restore canvas state from session storage
-        const state = JSON.parse(window.sessionStorage.getItem('canvas'));
-        if (state !== null) {
-            await deserialize(state);
+        const serializedStateString = window.sessionStorage.getItem('canvas');
+        if (serializedStateString === null) {
+            console.log('Canvas does not yet have a saved state!');
+        }
+        else {
+            const state = JSON.parse(serializedStateString);
+            if (state !== null) {
+                await deserialize(state);
+            }
         }
     }
 
     function serialize() {
-        const s = {
+        const s:Serialized = {
             store: $store,
             piecesManager: piecesManager.serialize()
         }
         return s;
     }
 
-    async function deserialize(s) {
+    async function deserialize(s:Serialized) {
         $store = s.store;
         activeMode = $store.activeMode;
         await piecesManager.deserialize(s.piecesManager);
@@ -229,12 +226,12 @@
         }
     }
 
-    function setMouseDown(e, _mouseDown) {
+    function setMouseDown(e:MouseEvent, _mouseDown:boolean) {
         e.preventDefault();
         mouseDown = _mouseDown;
     }
 
-    function setMousePos(e) {
+    function setMousePos(e:MouseEvent) {
         const canvasOffsetLeft = elemCanvas.offsetLeft;
         const canvasOffsetTop = elemCanvas.offsetTop;
         const scrollOffsetX = document.documentElement.scrollLeft;
@@ -249,11 +246,11 @@
         mouseY = mouseY/$store.zoom;
     }
 
-    function setActiveMode(mode) {
+    function setActiveMode(mode:Modes) {
         activeMode = mode;
     }
 
-    function action(action) {
+    function action(action:Actions) {
         if (action === 'clear') {
             piecesManager.clear();
             draw();
@@ -261,9 +258,9 @@
         }
     }
 
-    // Get rgba of pixel at coord (or set)
-    function coord(x, y, rgba, set=false) {
-        let imageData = ctx.getImageData();
+    // Get or set rgba value of pixel at given coordinates
+    function coord(x:number, y:number, rgba:Array<number>, set:boolean=false): Array<number> {
+        let imageData = ctx.getImageData(0, 0, $store.width, $store.height);
         const colorsOffset = 4; // RGBA
         const rx = x*colorsOffset;
         const ry = y*width*colorsOffset;
