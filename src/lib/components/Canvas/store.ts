@@ -1,6 +1,6 @@
 import { writable, type Writable } from "svelte/store";
-import { Modes } from "./enums/modes";
-import type { Store as StoreTypeDef } from "./types/canvas";
+import { CanvasModes } from "./enums/modes";
+import type { CanvasStore as StoreTypeDef } from "./types/canvas";
 
 /**
  * The store for a canvas
@@ -8,7 +8,7 @@ import type { Store as StoreTypeDef } from "./types/canvas";
 export const store:Writable<StoreTypeDef> = writable({
     width: 0,
     height: 0,
-    activeMode:Modes.Draw,
+    activeMode:CanvasModes.Draw,
     mouseDown:false,
     mouseX:0,
     mouseY:0,

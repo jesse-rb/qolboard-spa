@@ -1,6 +1,6 @@
-import type { Serialized as SerializedPiece } from "./piece";
+import type { PieceSerialized as SerializedPiece } from "./piece";
 
-export type Serialized = {
+export type PiecesManagerSerialized = {
     pieces: Array<SerializedPiece>
     leftMost: number
     rightMost: number

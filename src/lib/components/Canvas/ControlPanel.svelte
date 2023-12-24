@@ -1,23 +1,25 @@
-<script>
-    import { getContext, createEventDispatcher } from "svelte";
+<script lang="ts">
+    import { getContext, createEventDispatcher, SvelteComponent } from "svelte";
     import Button from "../Button.svelte";
     import Modal from "../Modal.svelte";
     import Dev from "../Dev.svelte";
-    import { Modes } from "./enums/modes";
-    import { Actions } from "./enums/actions";
+    import { CanvasModes } from "./enums/modes";
+    import { CanvasActions } from "./enums/actions";
+    import type { CanvasStore as CanvasStore } from "./types/canvas";
+    import type { Writable } from "svelte/store";
 
-    const canvasStore = getContext('canvasStore');
+    const canvasStore:Writable<CanvasStore> = getContext('canvasStore');
     const dispatch = createEventDispatcher();
 
-    let brushSettingsModal;
+    let brushSettingsModal:SvelteComponent;
 
-    let resIsLocked = true;
+    let resIsLocked:boolean = true;
 
-    function dispatchSetActiveMode(mode) {
+    function dispatchSetActiveMode(mode: CanvasModes) {
         dispatch('setActiveMode', mode);
     }
 
-    function dispatchAction(action) {
+    function dispatchAction(action: CanvasActions) {
         dispatch('action', action);
     }
 
@@ -43,16 +45,16 @@
     <!--modes-->
     <div class="control-group">
         <div class="control">
-            <Button icon="brush" active={$canvasStore.activeMode==Modes.Draw} label="draw" onclick={()=>dispatchSetActiveMode(Modes.Draw)} />
+            <Button icon="brush" active={$canvasStore.activeMode==CanvasModes.Draw} label="draw" onclick={()=>dispatchSetActiveMode(CanvasModes.Draw)} />
         </div>
         <div class="control">
-            <Button icon="pan_tool_alt" active={$canvasStore.activeMode==Modes.Grab} label="grab" onclick={()=>dispatchSetActiveMode(Modes.Grab)} />
+            <Button icon="pan_tool_alt" active={$canvasStore.activeMode==CanvasModes.Grab} label="grab" onclick={()=>dispatchSetActiveMode(CanvasModes.Grab)} />
         </div>
         <div class="control">
-            <Button icon="pan_tool" active={$canvasStore.activeMode==Modes.Pan} label="pan (Hold Space)" onclick={()=>dispatchSetActiveMode(Modes.Pan)} />
+            <Button icon="pan_tool" active={$canvasStore.activeMode==CanvasModes.Pan} label="pan (Hold Space)" onclick={()=>dispatchSetActiveMode(CanvasModes.Pan)} />
         </div>
         <div class="control">
-            <Button icon="delete" active={$canvasStore.activeMode==Modes.Remove} label="remove" onclick={()=>dispatchSetActiveMode(Modes.Remove)} />
+            <Button icon="delete" active={$canvasStore.activeMode==CanvasModes.Remove} label="remove" onclick={()=>dispatchSetActiveMode(CanvasModes.Remove)} />
         </div>
         <div class="control">
             <p>(Use scroll wheel to zoom)</p>
@@ -66,7 +68,7 @@
             <input bind:value={$canvasStore.backgroundColor} type="color" >
         </div>
         <div class="control">
-            <Button icon="clear_all" label="clear all" onclick={()=>dispatchAction(Actions.Clear)} />
+            <Button icon="clear_all" label="clear all" onclick={()=>dispatchAction(CanvasActions.Clear)} />
         </div>
         <Dev>
             <div class="control">

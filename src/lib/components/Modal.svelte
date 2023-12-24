@@ -42,7 +42,7 @@
     }
     .outer {
         z-index: unset;
-        background-color: #5d5d5d;
+        background-color: #303030;
         opacity: 0.5;
     }
     .inner {

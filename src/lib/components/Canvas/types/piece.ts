@@ -5,7 +5,7 @@ export type PieceSettings = {
     resY: number
 };
 
-export type Serialized = {
+export type PieceSerialized = {
     settings: PieceSettings
     path: string
     move: string

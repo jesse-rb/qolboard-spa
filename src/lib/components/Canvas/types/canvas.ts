@@ -1,10 +1,11 @@
-import type { Modes } from "../enums/modes"
-import type { Serialized as SerializedPiecesManager } from "./piecesManager";
+import type { CanvasModes } from "../enums/modes"
+import type { PieceSettings } from "./piece";
+import type { PiecesManagerSerialized as SerializedPiecesManager } from "./piecesManager";
 
-export type Store = {
+export type CanvasStore = {
     width: number
     height: number
-    activeMode: Modes
+    activeMode: CanvasModes
     mouseDown: boolean
     mouseX: number
     mouseY: number
@@ -14,11 +15,11 @@ export type Store = {
     yPan: number
     ctx?: CanvasRenderingContext2D
     backgroundColor: string
-    pieceSettings: object // TODO
+    pieceSettings: PieceSettings
     zoom: number
 };
 
-export type Serialized = {
-    store: Store
+export type CanvasSerialized = {
+    store: CanvasStore
     piecesManager: SerializedPiecesManager
 };

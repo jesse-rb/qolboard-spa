@@ -4,9 +4,9 @@
     import ControlPanel from "./ControlPanel.svelte";
     import Ruler from "./Ruler.svelte";
     import { store } from "./store";
-    import { Modes } from "./enums/modes";
-    import type { Serialized } from "./types/canvas";
-    import type { Actions } from "./enums/actions";
+    import { CanvasModes } from "./enums/modes";
+    import type { CanvasSerialized } from "./types/canvas";
+    import type { CanvasActions } from "./enums/actions";
 
     let width:number = 100;
     let height:number = 100;
@@ -23,8 +23,8 @@
     let mouseY:number = 0;
     let prevMouseX:number = 0;
     let prevMouseY:number = 0;
-    let activeMode:Modes = Modes.Draw;
-    let overiddenActiveMode:Modes|null;
+    let activeMode:CanvasModes = CanvasModes.Draw;
+    let overiddenActiveMode:CanvasModes|null;
 
     let pieceSettings = {
         size: 10,
@@ -50,25 +50,25 @@
     $: $store.pieceSettings = pieceSettings;
 
     // Draw mode
-    $: if (activeMode == Modes.Draw) {
+    $: if (activeMode == CanvasModes.Draw) {
         piecesManager && piecesManager.deselect();
     }
 
-    $: if (activeMode == Modes.Draw && mouseDown) {
+    $: if (activeMode == CanvasModes.Draw && mouseDown) {
         piecesManager.addPiece();
     }
 
-    $: if (activeMode == Modes.Draw && (mouseDown && (mouseX || mouseY))) {
+    $: if (activeMode == CanvasModes.Draw && (mouseDown && (mouseX || mouseY))) {
         piecesManager.addPointToLatestPiece();
         saveToSessionStorage();
     }
 
     // Move mode
-    $: if (activeMode == Modes.Grab && mouseDown) {
+    $: if (activeMode == CanvasModes.Grab && mouseDown) {
         piecesManager.select();
     }
 
-    $: if (activeMode == Modes.Grab && (mouseDown && (mouseX || mouseY))) {
+    $: if (activeMode == CanvasModes.Grab && (mouseDown && (mouseX || mouseY))) {
         if (piecesManager.getSelected()) {
             piecesManager.move();
             saveToSessionStorage();
@@ -79,11 +79,11 @@
     }
 
     // Pan mode
-    $: if (activeMode == Modes.Pan) {
+    $: if (activeMode == CanvasModes.Pan) {
         piecesManager.deselect();
     }
 
-    $: if (activeMode == Modes.Pan && (mouseDown && (mouseX || mouseY))) {
+    $: if (activeMode == CanvasModes.Pan && (mouseDown && (mouseX || mouseY))) {
         piecesManager.pan();
         updateBackgroundColor();
         piecesManager.draw();
@@ -92,10 +92,10 @@
     }
 
     // Delete mode
-    $: if (activeMode == Modes.Remove) {
+    $: if (activeMode == CanvasModes.Remove) {
         piecesManager.deselect();
     }
-    $: if (activeMode == Modes.Remove && (mouseDown && (mouseX || mouseY))) {
+    $: if (activeMode == CanvasModes.Remove && (mouseDown && (mouseX || mouseY))) {
         piecesManager.select();
         piecesManager.remove();
         saveToSessionStorage();
@@ -126,7 +126,7 @@
                 console.log(`keypress: ${key}`);
                 if (key === ' ') {
                     overiddenActiveMode = activeMode;
-                    activeMode = Modes.Pan;
+                    activeMode = CanvasModes.Pan;
                 }
             }
         });
@@ -193,14 +193,14 @@
     }
 
     function serialize() {
-        const s:Serialized = {
+        const s:CanvasSerialized = {
             store: $store,
             piecesManager: piecesManager.serialize()
         }
         return s;
     }
 
-    async function deserialize(s:Serialized) {
+    async function deserialize(s:CanvasSerialized) {
         $store = s.store;
         activeMode = $store.activeMode;
         await piecesManager.deserialize(s.piecesManager);
@@ -246,11 +246,11 @@
         mouseY = mouseY/$store.zoom;
     }
 
-    function setActiveMode(mode:Modes) {
+    function setActiveMode(mode:CanvasModes) {
         activeMode = mode;
     }
 
-    function action(action:Actions) {
+    function action(action:CanvasActions) {
         if (action === 'clear') {
             piecesManager.clear();
             draw();

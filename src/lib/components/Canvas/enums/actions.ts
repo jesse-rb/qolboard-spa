@@ -1,3 +1,3 @@
-export enum Actions {
+export enum CanvasActions {
     Clear = 'clear'
 };
