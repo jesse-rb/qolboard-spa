@@ -11,11 +11,10 @@
     let rangeX:Array<number> = [];
     let adder = 0;
     
-    $: scaledWidth = $canvasStore.width/$canvasStore.zoom;
-    $: toX = scaledWidth + adder;
-    $: fromX = 0 + adder;
+    $: toX = ($canvasStore.width + adder)/$canvasStore.zoom;
+    $: fromX = (0 + adder)/$canvasStore.zoom;
 
-    $: rangeX = range(toX, fromX, 11, true);
+    $: rangeX = range(toX, fromX, 11/$canvasStore.zoom, true);
 
     $: if ((-1)*$canvasStore.xPan > adder+stepX) {
         adder += stepX;
@@ -27,10 +26,9 @@
 
 <div class="x-ruler">
     {#each rangeX as i}
-        {@const iScaled = i/$canvasStore.zoom}
         {@const iOffsetForDisplay = i-$canvasStore.width/2}
 
-        {@const pos = ( iScaled + $canvasStore.xPan )}
+        {@const pos = i+$canvasStore.xPan}
         {@const display = Math.round(roundToInt(iOffsetForDisplay, stepX)/$canvasStore.zoom)}
 
         <span style="position: absolute; left: {pos}px;" >{display}</span>
