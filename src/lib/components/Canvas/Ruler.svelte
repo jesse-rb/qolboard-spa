@@ -9,26 +9,26 @@
     let toX:number = 0;
     let fromX:number = 0;
     let rangeX:Array<number> = [];
-    let adder = 0;
-    
-    $: toX = ($canvasStore.width + adder)/$canvasStore.zoom;
-    $: fromX = (0 + adder)/$canvasStore.zoom;
+    let adder:number = 0;
 
-    $: rangeX = range(toX, fromX, 11/$canvasStore.zoom, true);
+    $: toX = ($canvasStore.width + adder);
+    $: fromX = (0 + adder);
 
-    $: if ((-1)*$canvasStore.xPan > adder+stepX) {
+    $: rangeX = range(toX, fromX, stepX / 10 + 1, true);
+
+    $: if (((-1) * $canvasStore.xPan)/$canvasStore.zoom > (adder + stepX)/$canvasStore.zoom) {
         adder += stepX;
     }
-    $: if ((-1)*$canvasStore.xPan < adder-stepX) {
+    $: if (((-1) * $canvasStore.xPan)/$canvasStore.zoom < (adder - stepX)/$canvasStore.zoom) {
         adder -= stepX;
     }
 </script>
 
 <div class="x-ruler">
     {#each rangeX as i}
-        {@const iOffsetForDisplay = i-$canvasStore.width/2}
+        {@const iOffsetForDisplay = i - $canvasStore.width / 2}
 
-        {@const pos = i+$canvasStore.xPan}
+        {@const pos = ( (i) + ($canvasStore.xPan*$canvasStore.zoom) )}
         {@const display = Math.round(roundToInt(iOffsetForDisplay, stepX)/$canvasStore.zoom)}
 
         <span style="position: absolute; left: {pos}px;" >{display}</span>
