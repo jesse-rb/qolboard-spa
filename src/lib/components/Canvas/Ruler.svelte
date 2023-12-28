@@ -6,20 +6,24 @@
     const canvasStore:Writable<CanvasStore> = getContext('canvasStore');
     const stepX:number = 100;
     let scaledWidth:number = 0;
+    let scaledPan:number = 0;
     let toX:number = 0;
     let fromX:number = 0;
     let rangeX:Array<number> = [];
     let adder:number = 0;
 
-    $: toX = ($canvasStore.width + adder);
+    $: scaledWidth = $canvasStore.width/$canvasStore.zoom;
+    
+
+    $: toX = (scaledWidth + adder);
     $: fromX = (0 + adder);
 
-    $: rangeX = range(toX, fromX, stepX / 10 + 1, true);
+    $: rangeX = range(toX, fromX, 11, true);
 
-    $: if (((-1) * $canvasStore.xPan)/$canvasStore.zoom > (adder + stepX)/$canvasStore.zoom) {
+    $: if (((-1) * $canvasStore.xPan) > (adder + stepX)) {
         adder += stepX;
     }
-    $: if (((-1) * $canvasStore.xPan)/$canvasStore.zoom < (adder - stepX)/$canvasStore.zoom) {
+    $: if (((-1) * $canvasStore.xPan) < (adder - stepX)) {
         adder -= stepX;
     }
 </script>
