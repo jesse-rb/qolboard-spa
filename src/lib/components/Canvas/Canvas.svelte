@@ -276,8 +276,9 @@
 </script>
 
 <div class="canvas-component">
-    <div bind:this={elemContaienr} class="canvas-container" >
+    <div bind:this={elemContaienr} class="canvas-container absolute right-0 bottom-0 left-0 -z-10" >
         <canvas
+            class="absolute hover:cursor-crosshair"
             bind:this={elemCanvas}
             width="{width}px"
             height="{height}px"
@@ -295,21 +296,12 @@
     />
 
     <Ruler />
+
+    <p class="text-2xl mt-10" >zoom: {$store.zoom}</p>
 </div>
 
 <style>
     .canvas-container {
-        position: absolute;
         top: var(--canvas-offset);
-        right: 0;
-        bottom: 0;
-        left: 0;
-        z-index: -1;
-    }
-    canvas {
-        position: absolute;
-    }
-    canvas:hover {
-        cursor: crosshair;
     }
 </style>

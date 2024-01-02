@@ -15,5 +15,5 @@ export function range(to, from=0, step=1, interpolate=false) {
 }
 
 export function roundToInt(value, target) {
-    return Math.ceil(value/target)*target;
+    return Math.round(value/target)*target;
 }

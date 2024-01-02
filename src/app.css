@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
     --color-back: #222222;
     --color-back-2: #2e2e2e;
