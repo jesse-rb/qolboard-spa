@@ -31,3 +31,8 @@ a {
 #page {
     margin: 0;
 }
+
+em {
+    font-weight: 800;
+    font-style: normal;
+}

@@ -149,7 +149,7 @@
             ctx.scale(zoom, zoom);
 
             const oldZoom = $store.zoom;
-            $store.zoom = $store.zoom * zoom;
+            $store.zoom = parseFloat(($store.zoom * zoom).toFixed(2));
 
             // Pan according to zoom, to center canvas after zoom
             
@@ -171,7 +171,6 @@
         
         
         await draw();
-        console.log($store.zoom);
     });
 
     function saveToSessionStorage() {
@@ -296,8 +295,6 @@
     />
 
     <Ruler />
-
-    <p class="text-2xl mt-10" >zoom: {$store.zoom}</p>
 </div>
 
 <style>

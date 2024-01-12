@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { range, roundToInt } from "../../util.js";
+    import { invertColor, range, roundToInt } from "../../util.js";
     import { getContext } from "svelte";
     import type { CanvasStore } from "./types/canvas.js";
     import type { Writable } from "svelte/store";
@@ -20,16 +20,22 @@
 
     // Update our ruler to/form range when panning the canvas
     $: if (((-1) * $canvasStore.xPan) > (adder + stepX)) {
-        adder += stepX;
+        adder = (adder + stepX);
     }
     $: if (((-1) * $canvasStore.xPan) < (adder - stepX)) {
-        adder -= stepX;
+        adder = (adder - stepX);
     }
 
-    $: console.log(rangeX);
+    // $: if ( (Math.round($canvasStore.zoom * 100) / 100) % 10 === 0 ) {
+    //     stepX = $canvasStore.zoom * 100;
+    // }
+
+    // $: stepX = roundToInt($canvasStore.zoom / 100, 100);
+
+    $: console.log(stepX);
 </script>
 
-<div class="x-ruler">
+<div class="x-ruler pointer-events-none" style="color: {invertColor($canvasStore.backgroundColor)};">
     {#each rangeX as i}
         {@const iOffsetForDisplay = i - (scaledWidth / 2)}
 
@@ -45,12 +51,10 @@
     .x-ruler {
         width: 100%;
         height: 0.1em;
-        background-color: var(--color-fore);
         font-size: small;
         position: relative;
         margin-top: 0.5em;
         overflow-x: clip;
-        opacity: 0.5;
     }
     .x-ruler span {
         top: 0.5em;

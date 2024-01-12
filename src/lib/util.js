@@ -15,5 +15,17 @@ export function range(to, from=0, step=1, interpolate=false) {
 }
 
 export function roundToInt(value, target) {
-    return Math.round(value/target)*target;
+    return Math.ceil(value/target)*target;
+}
+
+export function invertColor(c) {
+    // Convert color to integer
+    c = c.substring(1);
+    c = parseInt(c, 16);
+    c = 0xFFFFFF ^ c; // Invert using xor
+    // onvert back to string
+    c = c.toString(16); // Ensure only 256 bits
+    c = ("000000" + c).slice(-6); // Add padded zeros
+    c = "#" + c;
+    return c;
 }

@@ -57,7 +57,9 @@
             <Button icon="delete" active={$canvasStore.activeMode==CanvasModes.Remove} label="remove" onclick={()=>dispatchSetActiveMode(CanvasModes.Remove)} />
         </div>
         <div class="control">
-            <p>(Use scroll wheel to zoom)</p>
+            <p>
+                (Use scroll wheel to zoom <input type="text" bind:value={$canvasStore.zoom}>)
+            </p>
         </div>
     </div>
 
