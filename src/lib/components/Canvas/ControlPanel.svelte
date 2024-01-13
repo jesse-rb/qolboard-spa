@@ -58,7 +58,7 @@
         </div>
         <div class="control">
             <p>
-                (Use scroll wheel to zoom <input type="text" bind:value={$canvasStore.zoom}>)
+                (Use scroll wheel to zoom <em>{$canvasStore.zoom.toFixed(2)}</em>)
             </p>
         </div>
     </div>
@@ -118,31 +118,31 @@
     </div>
 </Modal>
 
-<style>
+<style lang="postcss">
     .control-panel {
         height: var(--control-panel-height);
-        display: flex;
-        column-gap: 1em;
-        align-items: center;
-        padding: 0 1rem 0 1rem;
+        @apply flex;
+        @apply gap-2;
+        @apply px-4;
     }
     .control-group {
-        height: 100%;
-        padding: 1rem 0 1rem 0;
-        display: flex;
-        flex-wrap: wrap;
-        column-gap: 0.2em;
-        row-gap: 0.2em;
-        width: fit-content;
+        @apply flex-1;
+        @apply h-fit;
+        @apply w-fit;
+        @apply py-4;
+        @apply flex;
+        @apply flex-wrap;
+        @apply gap-2;
     }
     .control-group.lock {
-        border-bottom: 0.1rem solid green;
+        @apply border-b-2;
+        @apply border-green-500;
     }
     .control-group>:global(.button-component) {
-        margin: 2px;
+        @apply m-2;
     }
     .control {
-        display: flex;
-        flex-direction: column;
+        @apply flex;
+        @apply flex-col;
     }
 </style>

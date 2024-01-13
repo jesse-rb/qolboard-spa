@@ -88,6 +88,7 @@
         updateBackgroundColor();
         piecesManager.draw();
         $store.xPan += $store.mouseX - $store.prevMouseX;
+        $store.yPan += $store.mouseY - $store.prevMouseY;
         saveToSessionStorage();
     }
 
@@ -149,16 +150,17 @@
             ctx.scale(zoom, zoom);
 
             const oldZoom = $store.zoom;
-            $store.zoom = parseFloat(($store.zoom * zoom).toFixed(2));
+            $store.zoom = $store.zoom * zoom;
 
             // Pan according to zoom, to center canvas after zoom
-            
             let dx = Math.abs(width/$store.zoom-width/oldZoom)/2;
             let dy = Math.abs(height/$store.zoom-height/oldZoom)/2;
 
             dx = dx * (wheelDeltaY > 0 ? 1 : -1);
             dy = dy * (wheelDeltaY > 0 ? 1 : -1);
 
+            $store.xPan += dx;
+            $store.yPan += dy;
             piecesManager.pan(dx, dy);
             draw();
             saveToSessionStorage();

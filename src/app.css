@@ -9,6 +9,7 @@ body {
     --color-back-4: #4c4660;
     --color-back-autofill: #e9f0fd;
     --color-fore: #4fbb7c;
+    --color-fore-2: #71bb4f;
 
     --header-height: 100px;
     --control-panel-height: 200px;
@@ -20,12 +21,40 @@ body {
 }
 
 * {
-    font-family: Verdana, sans-serif;
+    @apply font-sans;
     box-sizing: border-box;
 }
 
+h1 {
+    @apply text-4xl;
+}
+h2 {
+    @apply text-2xl;
+}
+h3 {
+    @apply text-lg;
+}
+
+h1, h2, h3 {
+    font-weight: 700;
+}
+
+h1, h2, h3, p {
+    @apply mt-2;
+    @apply mb-2;
+}
+
+input[type="text"] {
+    background-color: var(--color-back-3);
+    @apply rounded-md;
+    @apply text-white;
+    @apply m-1;
+    @apply p-2;
+}
+
 a {
-    color: var(--color-fore);
+    color: var(--color-fore-2);
+    @apply underline;
 }
 
 #page {
@@ -33,6 +62,6 @@ a {
 }
 
 em {
-    font-weight: 800;
+    font-weight: 700;
     font-style: normal;
 }

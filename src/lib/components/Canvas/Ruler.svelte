@@ -1,49 +1,64 @@
 <script lang="ts">
-    import { invertColor, range, roundToInt } from "../../util.js";
+    import { colorIsDark, range, roundToInt } from "../../util";
     import { getContext } from "svelte";
     import type { CanvasStore } from "./types/canvas.js";
     import type { Writable } from "svelte/store";
     const canvasStore:Writable<CanvasStore> = getContext('canvasStore');
     let stepX:number = 100;
-    let scaledWidth:number = 0;
-    let toX:number = 0;
+    let toX:number = $canvasStore.width;
     let fromX:number = 0;
     let rangeX:Array<number> = [];
-    let adder:number = 0;
+    let adderPanX:number = 0;
 
     $: scaledWidth = $canvasStore.width / $canvasStore.zoom;
     
-    $: toX = (scaledWidth + adder);
-    $: fromX = (0 + adder);
+    $: toX = ($canvasStore.width + adderPanX);
+    $: fromX = (0 + adderPanX);
+
+    // $: stepX = 100 + adderZoom;
 
     $: rangeX = range(toX, fromX, stepX, false);
 
     // Update our ruler to/form range when panning the canvas
-    $: if (((-1) * $canvasStore.xPan) > (adder + stepX)) {
-        adder = (adder + stepX);
+    $: if (((-1) * $canvasStore.xPan) > (adderPanX + stepX)) {
+        adderPanX = (adderPanX + stepX);
     }
-    $: if (((-1) * $canvasStore.xPan) < (adder - stepX)) {
-        adder = (adder - stepX);
+    $: if (((-1) * $canvasStore.xPan) < (adderPanX - stepX)) {
+        adderPanX = (adderPanX - stepX);
     }
 
-    // $: if ( (Math.round($canvasStore.zoom * 100) / 100) % 10 === 0 ) {
-    //     stepX = $canvasStore.zoom * 100;
+    $: if ($canvasStore.zoom > 1) {
+        if ($canvasStore.zoom*100 > stepX) {
+            // stepX = stepX / 2;
+            
+        }
+        if ($canvasStore.zoom*100 < stepX) {
+            // stepX = stepX * 2;
+        }
+    }
+    // $: if ($canvasStore.zoom < 1) {
+    //     if ($canvasStore.zoom*100 > stepX) {
+    //         stepX = 100;
+    //     }
+    //     if ($canvasStore.zoom*100 < stepX) {
+    //         stepX -= 100;
+    //     }
     // }
 
-    // $: stepX = roundToInt($canvasStore.zoom / 100, 100);
-
+    $: console.log($canvasStore.zoom*10);
     $: console.log(stepX);
 </script>
 
-<div class="x-ruler pointer-events-none" style="color: {invertColor($canvasStore.backgroundColor)};">
-    {#each rangeX as i}
-        {@const iOffsetForDisplay = i - (scaledWidth / 2)}
 
-        {@const pos = ( (i) + ($canvasStore.xPan) )*$canvasStore.zoom}
+<div class="x-ruler pointer-events-none {colorIsDark($canvasStore.backgroundColor) ? 'text-white' : 'text-black'}">
+    {#each rangeX as i}
+        {@const iOffsetForDisplay = i - (toX - fromX)/2}
+
+        {@const pos = ( (i) + ($canvasStore.xPan) ) * $canvasStore.zoom}
         {@const display = roundToInt(iOffsetForDisplay, stepX)}
 
-        <span style="position: absolute; left: {pos}px;" >{display}</span>
-        <span style="position: absolute; left: {pos}px; top: 2em" >({Math.round(pos)})</span>
+        <span class="absolute font-mono" style="left: {pos}px;" >{display.toFixed(0)}</span>
+        <span class="absolute font-mono" style="left: {pos}px; top: 2em" >({Math.round(pos)})</span>
     {/each}
 </div>
 
