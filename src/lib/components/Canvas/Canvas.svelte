@@ -7,8 +7,6 @@
     import { CanvasModes } from "./enums/modes";
     import type { CanvasSerialized } from "./types/canvas";
     import type { CanvasActions } from "./enums/actions";
-    import type { PieceSettings } from "./types/piece";
-    import type { RulerSettings } from "./types/ruler";
 
     let elemContaienr:HTMLDivElement;
     let elemCanvas:HTMLCanvasElement;
