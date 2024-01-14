@@ -23,6 +23,10 @@
         dispatch('action', action);
     }
 
+    function dispatchUpdatedBackgroundColor() {
+        dispatch('updatedBackgroundColor');
+    }
+
     function toggleResLock() {
         resIsLocked = !resIsLocked;
         updateLockedRes();
@@ -67,7 +71,7 @@
     <div class="control-group">
         <div class="control">
             <label for="">background color</label>
-            <input bind:value={$canvasStore.backgroundColor} type="color" >
+            <input bind:value={$canvasStore.backgroundColor} type="color" on:input={dispatchUpdatedBackgroundColor} >
         </div>
         <div class="control">
             <Button icon="clear_all" label="clear all" onclick={()=>dispatchAction(CanvasActions.Clear)} />

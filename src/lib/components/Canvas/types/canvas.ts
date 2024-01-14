@@ -1,6 +1,7 @@
 import type { CanvasModes } from "../enums/modes"
 import type { PieceSettings } from "./piece";
 import type { PiecesManagerSerialized as SerializedPiecesManager } from "./piecesManager";
+import type { RulerSettings } from "./ruler";
 
 export type CanvasStore = {
     width: number
@@ -16,6 +17,7 @@ export type CanvasStore = {
     ctx?: CanvasRenderingContext2D
     backgroundColor: string
     pieceSettings: PieceSettings
+    rulerSettings: RulerSettings
     zoom: number
 };
 

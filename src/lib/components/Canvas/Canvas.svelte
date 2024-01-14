@@ -7,114 +7,33 @@
     import { CanvasModes } from "./enums/modes";
     import type { CanvasSerialized } from "./types/canvas";
     import type { CanvasActions } from "./enums/actions";
+    import type { PieceSettings } from "./types/piece";
+    import type { RulerSettings } from "./types/ruler";
 
-    let width:number = 100;
-    let height:number = 100;
     let elemContaienr:HTMLDivElement;
     let elemCanvas:HTMLCanvasElement;
-    let ctx:CanvasRenderingContext2D;
-
+    
     let piecesManager:SvelteComponent;
-
+    
     let keyDown:string|null;
-
-    let mouseDown:boolean = false;
-    let mouseX:number = 0;
-    let mouseY:number = 0;
-    let prevMouseX:number = 0;
-    let prevMouseY:number = 0;
-    let activeMode:CanvasModes = CanvasModes.Draw;
+    
     let overiddenActiveMode:CanvasModes|null;
-
-    let pieceSettings = {
-        size: 10,
-        color: '#D55C1A',
-        resX: 1,
-        resY: 1
-    };
-
+    
     const canvasOffset = 300;
-
+    
     setContext('canvasStore', store);
     setContext('saveToSessionStorage', saveToSessionStorage);
-
-    $: $store.width = width;
-    $: $store.height = height;
-    $: $store.activeMode = activeMode;
-    $: $store.mouseDown = mouseDown;
-    $: $store.mouseX = mouseX;
-    $: $store.mouseY = mouseY;
-    $: $store.prevMouseX = prevMouseX;
-    $: $store.prevMouseY = prevMouseY;
-    $: $store.ctx = ctx;
-    $: $store.pieceSettings = pieceSettings;
-
-    // Draw mode
-    $: if (activeMode == CanvasModes.Draw) {
-        piecesManager && piecesManager.deselect();
-    }
-
-    $: if (activeMode == CanvasModes.Draw && mouseDown) {
-        piecesManager.addPiece();
-    }
-
-    $: if (activeMode == CanvasModes.Draw && (mouseDown && (mouseX || mouseY))) {
-        piecesManager.addPointToLatestPiece();
-        saveToSessionStorage();
-    }
-
-    // Move mode
-    $: if (activeMode == CanvasModes.Grab && mouseDown) {
-        piecesManager.select();
-    }
-
-    $: if (activeMode == CanvasModes.Grab && (mouseDown && (mouseX || mouseY))) {
-        if (piecesManager.getSelected()) {
-            piecesManager.move();
-            saveToSessionStorage();
-        }
-        else {
-            piecesManager.select();
-        }
-    }
-
-    // Pan mode
-    $: if (activeMode == CanvasModes.Pan) {
-        piecesManager.deselect();
-    }
-
-    $: if (activeMode == CanvasModes.Pan && (mouseDown && (mouseX || mouseY))) {
-        piecesManager.pan();
-        updateBackgroundColor();
-        piecesManager.draw();
-        $store.xPan += $store.mouseX - $store.prevMouseX;
-        $store.yPan += $store.mouseY - $store.prevMouseY;
-        saveToSessionStorage();
-    }
-
-    // Delete mode
-    $: if (activeMode == CanvasModes.Remove) {
-        piecesManager.deselect();
-    }
-    $: if (activeMode == CanvasModes.Remove && (mouseDown && (mouseX || mouseY))) {
-        piecesManager.select();
-        piecesManager.remove();
-        saveToSessionStorage();
-    }
-
-    $: backroundColor = $store.backgroundColor;
-    $: backroundColor && draw();
 
     onMount(async () => {
         // Init canvas context
         const _ctx = elemCanvas.getContext('2d');
         if (_ctx) {
-            ctx = _ctx;
+            $store.ctx = _ctx;
         }
         else {
             throw new Error('2D canvas rendering context is not available');
         }
-
+        
         await restoreFromSessionStorage();
 
         // Init global event listeners for things such as keyboard shortcuts
@@ -126,8 +45,8 @@
                 keyDown = key;
                 console.log(`keypress: ${key}`);
                 if (key === ' ') {
-                    overiddenActiveMode = activeMode;
-                    activeMode = CanvasModes.Pan;
+                    overiddenActiveMode = $store.activeMode;
+                    setActiveMode(CanvasModes.Pan);
                 }
             }
         });
@@ -137,9 +56,11 @@
             // Register keyup keyboard shortcuts
             console.log(`keyup: ${key}`);
             if (key === ' ') {
-                activeMode = overiddenActiveMode ?? activeMode;
+                if (overiddenActiveMode) {
+                    setActiveMode(overiddenActiveMode);
+                }
                 overiddenActiveMode = null;
-                mouseDown = false;
+                $store.mouseDown = false;
             }
 
             keyDown = null;
@@ -147,14 +68,14 @@
         window.addEventListener("wheel", (e) => {
             const wheelDeltaY = e.deltaY;
             const zoom = wheelDeltaY < 0 ? 100/99 : 99/100; // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
-            ctx.scale(zoom, zoom);
+            $store.ctx?.scale(zoom, zoom);
 
             const oldZoom = $store.zoom;
             $store.zoom = $store.zoom * zoom;
 
             // Pan according to zoom, to center canvas after zoom
-            let dx = Math.abs(width/$store.zoom-width/oldZoom)/2;
-            let dy = Math.abs(height/$store.zoom-height/oldZoom)/2;
+            let dx = Math.abs($store.width/$store.zoom-$store.width/oldZoom)/2;
+            let dy = Math.abs($store.height/$store.zoom-$store.height/oldZoom)/2;
 
             dx = dx * (wheelDeltaY > 0 ? 1 : -1);
             dy = dy * (wheelDeltaY > 0 ? 1 : -1);
@@ -169,8 +90,7 @@
 
         // Initial draw
         await tick();
-        ctx.scale($store.zoom, $store.zoom);
-        
+        $store.ctx.scale($store.zoom, $store.zoom);
         
         await draw();
     });
@@ -203,7 +123,6 @@
 
     async function deserialize(s:CanvasSerialized) {
         $store = s.store;
-        activeMode = $store.activeMode;
         await piecesManager.deserialize(s.piecesManager);
     }
 
@@ -214,22 +133,32 @@
     }
 
     function updateBackgroundColor() {
-        ctx.fillStyle = $store.backgroundColor;
-        ctx.fillRect(0, 0, width/$store.zoom, height/$store.zoom);
+        if ($store.ctx !== undefined) {
+            $store.ctx.fillStyle = $store.backgroundColor;
+            $store.ctx?.fillRect(0, 0, $store.width/$store.zoom, $store.height/$store.zoom);
+        }
     }
 
     function updateCanvasSize() {
         let box = elemContaienr.getBoundingClientRect();
         if (box) {
-            width = box.width;
-            height = box.height;
+            $store.width = box.width;
+            $store.height = box.height;
             draw();
         }
     }
 
     function setMouseDown(e:MouseEvent, _mouseDown:boolean) {
         e.preventDefault();
-        mouseDown = _mouseDown;
+        $store.mouseDown = _mouseDown;
+
+        if ($store.activeMode === CanvasModes.Draw && $store.mouseDown) {
+            piecesManager.addPiece();
+        }
+
+        if ($store.activeMode == CanvasModes.Grab && $store.mouseDown) {
+            piecesManager.select();
+        }
     }
 
     function setMousePos(e:MouseEvent) {
@@ -237,18 +166,49 @@
         const canvasOffsetTop = elemCanvas.offsetTop;
         const scrollOffsetX = document.documentElement.scrollLeft;
         const scrollOffsetY = document.documentElement.scrollTop;
-        prevMouseX = mouseX;
-        prevMouseY = mouseY;
+        $store.prevMouseX = $store.mouseX;
+        $store.prevMouseY = $store.mouseY;
 
-        mouseX = e.clientX - canvasOffsetLeft + scrollOffsetX;
-        mouseY = e.clientY - canvasOffsetTop + scrollOffsetY - canvasOffset; // subtract canvas absolute top offset
+        $store.mouseX = e.clientX - canvasOffsetLeft + scrollOffsetX;
+        $store.mouseY = e.clientY - canvasOffsetTop + scrollOffsetY - canvasOffset; // subtract canvas absolute top offset
 
-        mouseX = mouseX/$store.zoom;
-        mouseY = mouseY/$store.zoom;
+        $store.mouseX = $store.mouseX/$store.zoom;
+        $store.mouseY = $store.mouseY/$store.zoom;
+
+        if ($store.activeMode == CanvasModes.Draw && $store.mouseDown) {
+            piecesManager.addPointToLatestPiece();
+            saveToSessionStorage();
+        }
+
+        if ($store.activeMode == CanvasModes.Grab && $store.mouseDown) {
+            if (piecesManager.getSelected()) {
+                piecesManager.move();
+                saveToSessionStorage();
+            }
+            else {
+                piecesManager.select();
+            }
+        }
+
+        if ($store.activeMode == CanvasModes.Pan && $store.mouseDown) {
+            piecesManager.pan();
+            updateBackgroundColor();
+            piecesManager.draw();
+            $store.xPan += $store.mouseX - $store.prevMouseX;
+            $store.yPan += $store.mouseY - $store.prevMouseY;
+            saveToSessionStorage();
+        }
+
+        if ($store.activeMode == CanvasModes.Remove && $store.mouseDown) {
+            piecesManager.select();
+            piecesManager.remove();
+            saveToSessionStorage();
+        }
     }
 
     function setActiveMode(mode:CanvasModes) {
-        activeMode = mode;
+        $store.activeMode = mode;
+        piecesManager && piecesManager.deselect();
     }
 
     function action(action:CanvasActions) {
@@ -261,16 +221,18 @@
 
     // Get or set rgba value of pixel at given coordinates
     function coord(x:number, y:number, rgba:Array<number>, set:boolean=false): Array<number> {
-        let imageData = ctx.getImageData(0, 0, $store.width, $store.height);
+        let imageData = $store.ctx?.getImageData(0, 0, $store.width, $store.height);
         const colorsOffset = 4; // RGBA
         const rx = x*colorsOffset;
-        const ry = y*width*colorsOffset;
+        const ry = y*$store.width*colorsOffset;
         const _rgba = [];
-        for (let i = 0; i < colorsOffset; i++) {
-            if (set) {
-                imageData.data[rx+ry+i] = rgba[i];
+        if (imageData) {
+            for (let i = 0; i < colorsOffset; i++) {
+                if (set) {
+                    imageData.data[rx+ry+i] = rgba[i];
+                }
+                _rgba.push(imageData.data[rx+ry+i]);
             }
-            _rgba.push(imageData.data[rx+ry+i]);
         }
         return _rgba;
     }
@@ -281,8 +243,8 @@
         <canvas
             class="absolute hover:cursor-crosshair"
             bind:this={elemCanvas}
-            width="{width}px"
-            height="{height}px"
+            width="{$store.width}px"
+            height="{$store.height}px"
             on:mousedown={(e)=>setMouseDown(e, true)}
             on:mouseup={(e)=>setMouseDown(e, false)} 
             on:mouseleave={(e)=>setMouseDown(e, false)} 
@@ -294,6 +256,7 @@
     <ControlPanel
         on:setActiveMode={(e)=>setActiveMode(e.detail)}
         on:action={(e)=>action(e.detail)}
+        on:updatedBackgroundColor={draw}
     />
 
     <Ruler />

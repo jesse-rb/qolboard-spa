@@ -18,6 +18,15 @@ export const store:Writable<StoreTypeDef> = writable({
     yPan: 0,
     ctx: undefined,
     backgroundColor: '#1A1A1A',
-    pieceSettings: {},
+    pieceSettings: {
+        size: 10,
+        color: '#D55C1A',
+        resX: 1,
+        resY: 1
+    },
+    rulerSettings: {
+        showUnits: true,
+        showLines: false,
+    },
     zoom: 1
 });
