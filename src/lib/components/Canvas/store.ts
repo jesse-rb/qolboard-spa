@@ -16,7 +16,7 @@ export const store:Writable<StoreTypeDef> = writable({
     prevMouseY:0,
     xPan: 0,
     yPan: 0,
-    ctx: undefined,
+    ctx: null,
     backgroundColor: '#1A1A1A',
     pieceSettings: {
         size: 10,

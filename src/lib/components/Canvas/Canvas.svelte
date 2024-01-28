@@ -13,7 +13,7 @@
     
     let piecesManager:SvelteComponent;
     
-    let keyDown:string|null;
+    let keyDown:string|null = null;
     
     let overiddenActiveMode:CanvasModes|null;
     
@@ -121,19 +121,22 @@
 
     async function deserialize(s:CanvasSerialized) {
         $store = s.store;
+        $store.ctx = elemCanvas.getContext('2d');
         await piecesManager.deserialize(s.piecesManager);
     }
 
     async function draw() {
-        await tick(); // If DOM falls behind... await tick();
-        updateBackgroundColor();
-        piecesManager.draw();
+        if ($store.ctx !== null) {
+            await tick(); // If DOM falls behind... await tick();
+            updateBackgroundColor();
+            piecesManager.draw();
+        }
     }
 
     function updateBackgroundColor() {
-        if ($store.ctx !== undefined) {
+        if ($store.ctx !== null) {
             $store.ctx.fillStyle = $store.backgroundColor;
-            $store.ctx?.fillRect(0, 0, $store.width/$store.zoom, $store.height/$store.zoom);
+            $store.ctx.fillRect(0, 0, $store.width/$store.zoom, $store.height/$store.zoom);
         }
     }
 
@@ -154,9 +157,11 @@
             piecesManager.addPiece();
         }
 
-        if ($store.activeMode == CanvasModes.Grab && $store.mouseDown) {
+        if ($store.activeMode === CanvasModes.Grab && $store.mouseDown) {
             piecesManager.select();
         }
+
+        saveToSessionStorage();
     }
 
     function setMousePos(e:MouseEvent) {

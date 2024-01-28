@@ -14,7 +14,7 @@ export type CanvasStore = {
     prevMouseY: number
     xPan: number
     yPan: number
-    ctx?: CanvasRenderingContext2D
+    ctx: null|CanvasRenderingContext2D
     backgroundColor: string
     pieceSettings: PieceSettings
     rulerSettings: RulerSettings

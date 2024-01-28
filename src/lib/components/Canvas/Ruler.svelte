@@ -9,21 +9,14 @@
     let fromX:number = 0;
     let rangeX:Array<number> = [];
     let adderPanX:number = 0;
-    let originalCenter:number = 0;
 
     $: scaledWidth = $canvasStore.width / $canvasStore.zoom;
     
-    $: toX = (scaledWidth + adderPanX);
+    $: toX = ($canvasStore.width + adderPanX);
     $: fromX = (0 + adderPanX);
 
     $: rangeX = range(toX, fromX, stepX, false);
-    $: if (rangeX.length % 2 === 0) {
-        rangeX = [...rangeX, rangeX[rangeX.length-1]+stepX];
-    }
-    $: if (originalCenter === 0) {
-        originalCenter = rangeX[Math.floor(rangeX.length/2)]
-    }
- 
+
     // Update our ruler to/form range when panning the canvas
     $: if (((-1) * $canvasStore.xPan) > (adderPanX + stepX)) {
         adderPanX = (adderPanX + stepX);
@@ -32,14 +25,10 @@
         adderPanX = (adderPanX - stepX);
     }
 
-    // $: stepX = 100 * Math.floor((1/$canvasStore.zoom)/1);
+    $: stepX = 100/$canvasStore.zoom;
 
-    function test(a) {
-        if (!isFinite(a)) return 0;
-        var e = 1, p = 0;
-        while (Math.round(a * e) / e !== a) { e *= 10; p++; }
-        return p;
-    }
+    $: console.log(rangeX);
+    $: console.log(stepX);
 </script>
 
 <div class="x-ruler pointer-events-none {colorIsDark($canvasStore.backgroundColor) ? 'text-white' : 'text-black'}">
