@@ -28,5 +28,7 @@ export const store:Writable<StoreTypeDef> = writable({
         showUnits: true,
         showLines: false,
     },
-    zoom: 1
+    zoom: 1,
+    zoomDx: 0,
+    zoomDy: 0
 });

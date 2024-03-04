@@ -78,8 +78,9 @@
             dx = dx * (wheelDeltaY > 0 ? 1 : -1);
             dy = dy * (wheelDeltaY > 0 ? 1 : -1);
 
-            $store.xPan += dx;
-            $store.yPan += dy;
+            $store.zoomDx += dx;
+            $store.zoomDy += dy;
+
             piecesManager.pan(dx, dy);
             draw();
             saveToSessionStorage();

@@ -19,6 +19,8 @@ export type CanvasStore = {
     pieceSettings: PieceSettings
     rulerSettings: RulerSettings
     zoom: number
+    zoomDx: number
+    zoomDy: number
 };
 
 export type CanvasSerialized = {

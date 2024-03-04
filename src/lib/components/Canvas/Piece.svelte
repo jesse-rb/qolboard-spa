@@ -234,6 +234,11 @@
 
 {#if selected}
     <div class="piece-settings control-panel" style="top: calc({bottomMost*$canvasStore.zoom}px + var(--canvas-offset)); left: {leftMost*$canvasStore.zoom}px;">
+        <div class="flex gap-4">
+            <span>x: {leftMost.toFixed(0)}</span>
+            <span>y: {topMost.toFixed(0)}</span>
+        </div>
+
         <div class="control-group">
             <div class="control">
                 <label for="">size</label>
