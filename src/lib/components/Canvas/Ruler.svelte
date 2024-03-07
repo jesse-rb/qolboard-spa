@@ -10,12 +10,13 @@
     let rangeX:Array<number> = [];
     let adderPanX:number = 0;
 
-    $: scaledWidth = $canvasStore.width / $canvasStore.zoom;
+    $: scaleOffsetX = ($canvasStore.width / $canvasStore.zoom)/2;
     
-    $: toX = ($canvasStore.width + adderPanX)+roundToInt(100/$canvasStore.zoom, 100);
-    $: fromX = (0 + adderPanX)-roundToInt(100/$canvasStore.zoom, 100);
+    $: toX = ($canvasStore.width + adderPanX);
+    $: fromX = (0 + adderPanX);
 
     $: rangeX = range(toX, fromX, stepX, false);
+    $: console.log(rangeX);
 
     // Update our ruler to/form range when panning the canvas
     $: if (((-1) * $canvasStore.xPan+$canvasStore.zoomDx) > (adderPanX + stepX)) {
@@ -25,7 +26,82 @@
         adderPanX = (adderPanX - stepX);
     }
 
-    $: console.log(rangeX);
+    $: if (rangeX.length % 2 === 0) {
+        rangeX.unshift(rangeX[0]-stepX);
+    }
+
+    // IF zoom has increased by >= .5 of zoom
+    //  THEN range start/end needs .25 of range trimmed off either end
+    //  AND stepX needs to decrease by .5*stepX
+    // IF zoom has decreased by >= 0.1
+    //  THEN range start/end needs .5 of range added to either end
+    //  AND stepX needs to be extended by 2*stepX
+
+    let nextRangeZoomIn = $canvasStore.zoom * 1.5;
+    let nextRangeZoomOut = $canvasStore.zoom;
+
+    $: if ($canvasStore.zoom >= nextRangeZoomIn) {
+        zoomInRange();
+    }
+
+    $: if ($canvasStore.zoom < nextRangeZoomOut) {
+        zoomOutRange();
+    }
+
+    function zoomInRange() {
+        // Set the next range zoom stepping points
+        nextRangeZoomOut = nextRangeZoomIn;
+        nextRangeZoomIn = nextRangeZoomIn * 1.5;
+        
+        // Trim range
+        const trimAmount = Math.floor(rangeX.length/4)*stepX;
+        
+        fromX += trimAmount;
+        toX -= trimAmount;
+
+        // Update stepX
+        stepX *= 0.5;
+
+        console.log('HIT ZOOM IN POINT: ↓↓↓');
+        console.log('nextRangeZoomIn: ↓');
+        console.log(nextRangeZoomIn);
+        console.log('nextRangeZoomOut: ↓');
+        console.log(nextRangeZoomOut);
+        console.log('trimAmount: ↓');
+        console.log(trimAmount);
+        console.log('stepX: ↓');
+        console.log(stepX);
+        console.log('rangeX: ↓');
+        console.log(rangeX);
+    }
+
+    function zoomOutRange() {
+        // Set the next range zoom stepping points
+        nextRangeZoomIn = nextRangeZoomOut;
+        nextRangeZoomOut = nextRangeZoomOut * 0.5;
+        
+        // Extend range
+        const extendAmount = Math.ceil(rangeX.length/4)*stepX;
+
+        fromX -= extendAmount;
+        toX += extendAmount;
+
+        // Update stepX
+        stepX *= 2;
+
+        console.log('HIT ZOOM OUT POINT: ↓↓↓');
+        console.log('nextRangeZoomIn: ↓');
+        console.log(nextRangeZoomIn);
+        console.log('nextRangeZoomOut: ↓');
+        console.log(nextRangeZoomOut);
+        console.log('extendAmount: ↓');
+        console.log(extendAmount);
+        console.log('stepX: ↓');
+        console.log(stepX);
+        console.log('rangeX: ↓');
+        console.log(rangeX);
+    }
+
 </script>
 
 <div class="x-ruler pointer-events-none {colorIsDark($canvasStore.backgroundColor) ? 'text-white' : 'text-black'}">
@@ -37,7 +113,7 @@
 
         <span class="absolute font-mono" style="left: {pos}px;" >{display.toFixed(0)}</span>
         <span class="absolute font-mono" style="left: {pos}px; top: 2em" >i: ({Math.round(i)})</span>
-        <span class="absolute font-mono" style="left: {pos}px; top: 3em" >pan({Math.round($canvasStore.xPan)})</span>
+        <!-- <span class="absolute font-mono" style="left: {pos}px; top: 3em" >pan({Math.round($canvasStore.xPan)})</span> -->
         <span class="absolute font-mono" style="left: {pos}px; top: 4em" >pos: ({Math.round(pos)})</span>
     {/each}
 </div>
