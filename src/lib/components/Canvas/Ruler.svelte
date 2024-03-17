@@ -48,9 +48,9 @@
         stepX = stepX;
     }
 
-    $: console.log(`fromX: ${fromX}`);
-    $: console.log(`toX: ${toX}`);
-    $: console.log(rangeX);
+    // $: console.log(`fromX: ${fromX}`);
+    // $: console.log(`toX: ${toX}`);
+    // $: console.log(rangeX);
 
     // function zoomInRange() {
     //     // Set the next range zoom stepping points

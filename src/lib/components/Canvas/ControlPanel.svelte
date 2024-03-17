@@ -7,9 +7,14 @@
     import { CanvasActions } from "./enums/actions";
     import type { CanvasStore as CanvasStore } from "./types/canvas";
     import type { Writable } from "svelte/store";
+    import { store as appStore } from '../../store';
 
     const canvasStore:Writable<CanvasStore> = getContext('canvasStore');
     const dispatch = createEventDispatcher();
+
+    $: if ($appStore.controlPanelHeight) {
+        document.body.style.setProperty('--control-panel-height', `${$appStore.controlPanelHeight}px`);
+    }
 
     let brushSettingsModal:SvelteComponent;
 
@@ -45,7 +50,7 @@
 
 </script>
 
-<div class="control-panel">
+<div bind:clientHeight={$appStore.controlPanelHeight} class="control-panel">
     <!--modes-->
     <div class="control-group">
         <div class="control">
@@ -124,8 +129,8 @@
 
 <style lang="postcss">
     .control-panel {
-        height: var(--control-panel-height);
         @apply flex;
+        @apply flex-wrap;
         @apply gap-2;
         @apply px-4;
     }

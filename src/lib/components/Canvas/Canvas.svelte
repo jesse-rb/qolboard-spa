@@ -7,6 +7,7 @@
     import { CanvasModes } from "./enums/modes";
     import type { CanvasSerialized } from "./types/canvas";
     import type { CanvasActions } from "./enums/actions";
+    import { store as appStore } from "../../store";
 
     let elemContaienr:HTMLDivElement;
     let elemCanvas:HTMLCanvasElement;
@@ -17,10 +18,17 @@
     
     let overiddenActiveMode:CanvasModes|null;
     
-    const canvasOffset = 300;
+    let width:number;
+    let height:number;
     
     setContext('canvasStore', store);
     setContext('saveToSessionStorage', saveToSessionStorage);
+
+    $: canvasOffset = $appStore.headerHeight + $appStore.controlPanelHeight;
+
+    $: if (width && height) {
+        updateCanvasSize(width, height);
+    }
 
     onMount(async () => {
         // Init canvas context
@@ -85,7 +93,6 @@
             draw();
             saveToSessionStorage();
         });
-        updateCanvasSize();
 
         // Initial draw
         await tick();
@@ -127,6 +134,8 @@
     }
 
     async function draw() {
+        console.log($store.width);
+        console.log($store.height);
         if ($store.ctx !== null) {
             await tick(); // If DOM falls behind... await tick();
             updateBackgroundColor();
@@ -141,13 +150,12 @@
         }
     }
 
-    function updateCanvasSize() {
-        let box = elemContaienr.getBoundingClientRect();
-        if (box) {
-            $store.width = box.width;
-            $store.height = box.height;
-            draw();
-        }
+    async function updateCanvasSize(width:number, height:number) {
+        $store.width = width;
+        $store.height = height;
+        await tick();
+        $store.ctx?.scale($store.zoom, $store.zoom);
+        draw();
     }
 
     function setMouseDown(e:MouseEvent, _mouseDown:boolean) {
@@ -243,7 +251,7 @@
 </script>
 
 <div class="canvas-component">
-    <div bind:this={elemContaienr} class="canvas-container absolute right-0 bottom-0 left-0 -z-10" >
+    <div bind:clientWidth={width} bind:clientHeight={height} bind:this={elemContaienr} class="canvas-container absolute right-0 bottom-0 left-0 -z-10" >
         <canvas
             class="absolute hover:cursor-crosshair"
             bind:this={elemCanvas}

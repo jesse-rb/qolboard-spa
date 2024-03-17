@@ -5,8 +5,6 @@
 
     let aboutModal;
 
-    let loginEmail = "";
-
     // Load cached store
     let cachedStore = window.localStorage.getItem('store');
     if (cachedStore) {
@@ -15,9 +13,13 @@
     
     // Cahce store
     $: window.localStorage.setItem('store', JSON.stringify($store));
+
+    $: if ($store.headerHeight) {
+        document.body.style.setProperty('--header-height', `${$store.headerHeight}px`);
+    }
 </script>
 
-<div class="header-layout">
+<div bind:clientHeight={$store.headerHeight} class="header-layout">
     <div class="banner">
         <h1>Welcome to qolboard 2.0</h1>
 
@@ -46,7 +48,6 @@
         align-items: center;
         background-color: var(--color-back-2);
         align-items: stretch;
-        height: var(--header-height);
     }
     .banner {
         display: flex;
