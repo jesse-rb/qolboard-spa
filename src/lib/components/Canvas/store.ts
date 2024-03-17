@@ -19,7 +19,7 @@ export const store:Writable<StoreTypeDef> = writable({
     ctx: null,
     backgroundColor: '#1A1A1A',
     pieceSettings: {
-        size: 10,
+        size: 20,
         color: '#D55C1A',
         resX: 1,
         resY: 1
