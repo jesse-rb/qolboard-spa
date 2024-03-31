@@ -21,8 +21,16 @@
         fromX = (0 + adderPanX + adderZoomX);
     }
 
-    $: rangeX = range(toX, fromX, stepX, false);
-    $: console.log(rangeX);
+    let ZERO = 0;
+    $: if (toX, fromX, stepX) {
+        rangeX = range(toX, fromX, stepX);
+        console.log(rangeX);
+
+        if (!ZERO) {
+            const i = Math.floor(rangeX.length/2);
+            ZERO = rangeX[i];
+        }
+    }
 
     // Update our ruler to/form range when panning the canvas
     $: if (((-1) * $canvasStore.xPan+$canvasStore.zoomDx) > ((adderPanX-adderZoomX) + stepX)) {
@@ -40,7 +48,7 @@
     //  AND stepX needs to be extended by 2*stepX
 
     $: if ($canvasStore.zoom >= nextRangeZoomIn) {
-        zoomInRange();
+        // zoomInRange();
     }
 
     $: if ($canvasStore.zoom < nextRangeZoomOut) {
@@ -72,7 +80,7 @@
         const newStepX = stepX * 2;
         
         // Extend range
-        adderZoomX -= stepX;
+        adderZoomX -= stepX*4;
         
         // Update stepX
         stepX = newStepX;
@@ -82,15 +90,10 @@
 
 <div class="x-ruler pointer-events-none {colorIsDark($canvasStore.backgroundColor) ? 'text-white' : 'text-black'}">
     {#each rangeX as i}
-        {@const iOffsetForDisplay = i - $canvasStore.width/2}
-
-        {@const display = roundToInt(iOffsetForDisplay, stepX) }
+        {@const display = i - ZERO}
         {@const pos = ( (i + $canvasStore.xPan + $canvasStore.zoomDx) * $canvasStore.zoom ) }
 
         <span class="absolute font-mono" style="left: {pos}px;" >{display.toFixed(0)}</span>
-        <span class="absolute font-mono" style="left: {pos}px; top: 2em" >i: ({Math.round(i)})</span>
-        <span class="absolute font-mono" style="left: {pos}px; top: 4em" >i: ({Math.round(iOffsetForDisplay)})</span>
-        <!-- <span class="absolute font-mono" style="left: {pos}px; top: 4em" >pos: ({Math.round(pos)})</span> -->
     {/each}
 </div>
 

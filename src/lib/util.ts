@@ -1,15 +1,7 @@
-export function range(to:number, from:number=0, step:number=1, interpolate:boolean=false):Array<number> {
+export function range(to:number, from:number=0, step:number=1):Array<number> {
     const range:Array<number> = [];
-    if (!interpolate) {
-        for (let i:number = from; i <= to; i += step) {
-            range.push(i);
-        }
-    }
-    else {
-        for (let i:number = 0; i <= step; i++) {
-            let point:number = from+i*((to-from)/step);
-            range.push(point);
-        }
+    for (let i:number = from; i <= to; i += step) {
+        range.push(i);
     }
     return range;
 }

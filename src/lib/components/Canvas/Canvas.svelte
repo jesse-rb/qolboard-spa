@@ -134,8 +134,6 @@
     }
 
     async function draw() {
-        console.log($store.width);
-        console.log($store.height);
         if ($store.ctx !== null) {
             await tick(); // If DOM falls behind... await tick();
             updateBackgroundColor();
