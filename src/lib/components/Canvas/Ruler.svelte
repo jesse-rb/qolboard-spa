@@ -87,7 +87,7 @@
 
 <div class="{isHorizontal ? 'x' : 'y'} ruler pointer-events-none {colorIsDark($canvasStore.backgroundColor) ? 'text-white' : 'text-black'}">
     {#each rangeX as i}
-        {@const pos = ( (i + pan + zoomDelta) * $canvasStore.zoom ) }
+        {@const pos = ( (i + pan + zoomDelta) * $canvasStore.zoom )}
         <span class="absolute font-mono" style="{isHorizontal ? 'left' : 'top'}: {pos}px;" >{i}</span>
     {/each}
 </div>

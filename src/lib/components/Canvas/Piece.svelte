@@ -1,5 +1,6 @@
 <script>
     import { createEventDispatcher, getContext } from "svelte";
+    import { roundToTarget } from "../../util";
 
     export let settings = {};
     export let selected = false;
@@ -233,10 +234,10 @@
 </script>
 
 {#if selected}
-    <div class="piece-settings control-panel" style="top: calc({bottomMost*$canvasStore.zoom}px + var(--canvas-offset)); left: {leftMost*$canvasStore.zoom}px;">
+    <div class="piece-settings control-panel z-10" style="bottom: min({$canvasStore.height - topMost*$canvasStore.zoom}px, {$canvasStore.height}px); left: {Math.max(leftMost*$canvasStore.zoom, 0)}px;">
         <div class="flex gap-4">
-            <span>x: {leftMost.toFixed(0)}</span>
-            <span>y: {topMost.toFixed(0)}</span>
+            <span>x: {Math.round((leftMost - $canvasStore.xPan - $canvasStore.zoomDx)*$canvasStore.zoom)}</span>
+            <span>y: {Math.round((topMost - $canvasStore.yPan - $canvasStore.zoomDy)*$canvasStore.zoom)}</span>
         </div>
 
         <div class="control-group">
@@ -257,7 +258,6 @@
 
 <style>
     .piece-settings {
-        margin-top: 1em;
         position: absolute;
         background-color: var(--color-back-2);
         padding: 0 1em 0 1em;
