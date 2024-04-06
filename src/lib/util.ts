@@ -6,7 +6,7 @@ export function range(to:number, from:number=0, step:number=1):Array<number> {
     return range;
 }
 
-export function roundToInt(value:number, target:number):number {
+export function roundToTarget(value:number, target:number):number {
     return Math.ceil(value/target)*target;
 }
 

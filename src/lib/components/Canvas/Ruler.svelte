@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { colorIsDark, range } from "../../util";
+    import { colorIsDark, range, roundToTarget } from "../../util";
     import { getContext, onMount } from "svelte";
     import type { CanvasStore } from "./types/canvas.js";
     import type { Writable } from "svelte/store";
@@ -69,17 +69,17 @@
     function zoomInRange() {
         // Set the next range zoom stepping points
         nextRangeZoomOut = nextRangeZoomIn;
-        nextRangeZoomIn = nextRangeZoomIn * 1.5;
-
-        const newStepX = stepX * 0.5;
-        
-        // Update stepX
-        stepX = newStepX;
+        nextRangeZoomIn = nextRangeZoomIn * 2;
 
         // Update range start/end
         const iEnd = rangeX.length - 1;
-        const end = rangeX[iEnd] - stepX*4;
-        const start = rangeX[0] + stepX*4;
+        const end = rangeX[iEnd]*0.5;
+        const start = rangeX[0]*0.5;
+
+        const newStepX = stepX * 0.5;
+
+        // Update stepX
+        stepX = newStepX;
 
         // Update range
         rangeX = range(end, start, stepX);
@@ -98,8 +98,8 @@
 
         // Update range start/end
         const iEnd = rangeX.length - 1;
-        const end = rangeX[iEnd] + stepX*4;
-        const start = rangeX[0] - stepX*4;
+        const end = roundToTarget(rangeX[iEnd]*2, stepX);
+        const start = roundToTarget(rangeX[0]*2, stepX);
 
         // Update range
         rangeX = range(end, start, stepX);
@@ -110,9 +110,10 @@
 
 <div class="x-ruler pointer-events-none {colorIsDark($canvasStore.backgroundColor) ? 'text-white' : 'text-black'}">
     {#each rangeX as i}
+        <!-- {@const roundedToTarget = roundToTarget(i, stepX)} -->
         {@const pos = ( (i + $canvasStore.xPan + $canvasStore.zoomDx) * $canvasStore.zoom ) }
 
-        <span class="absolute font-mono" style="left: {pos}px;" >{i.toFixed(0)}</span>
+        <span class="absolute font-mono" style="left: {pos}px;" >{i}</span>
     {/each}
 </div>
 
