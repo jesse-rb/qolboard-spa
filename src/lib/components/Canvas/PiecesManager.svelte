@@ -8,19 +8,44 @@
     let selectedPieceIndex = null;
     let pieces = [];
 
+    let leftMost;
+    let rightMost;
+    let topMost;
+    let bottomMost;
+
+    function updateBoundingBox(topRightBottomLeft) {
+        const {top, right, bottom, left} = topRightBottomLeft;
+        topMost = topMost < top ? topMost : top;
+        rightMost = rightMost > right ? rightMost : right;
+        bottomMost = bottomMost > bottom ? bottomMost : bottom;
+        leftMost = leftMost < left ? leftMost : left;
+    }
+
     export function serialize() {
-        const s = [];
+        const s = {
+            pieces: [],
+            leftMost: leftMost,
+            rightMost: rightMost,
+            topMost: topMost,
+            bottomMost: bottomMost
+        };
+        
         for (const p of pieces) {
             if (p.component) {
                 const serializedPiece = p.component.serialize();
-                s.push(serializedPiece);
+                s.pieces.push(serializedPiece);
             }
         }
         return s;
     }
 
     export async function deserialize(s) {
-        for (const serializedPiece of s) {
+        leftMost = s.leftMost;
+        rightMost = s.rightMost;
+        topMost = s.topMost;
+        bottomMost = s.bottomMost;
+    
+        for (const serializedPiece of s.pieces) {
             const p = {component:null};
             pieces = [...pieces, p];
             await tick();
@@ -149,7 +174,12 @@
 
 <div id="pieces">
     {#each pieces as p (p)}
-        <Piece bind:this={p.component} settings={{ ...initialPieceSettings() }} on:update={(e) => redrawPieceChunk(p, e.detail)} />
+        <Piece 
+            bind:this={p.component} 
+            settings={{ ...initialPieceSettings() }} 
+            on:update={(e) => redrawPieceChunk(p, e.detail)} 
+            on:updateBoundingBox={(e) => updateBoundingBox(e.detail)}
+        />
     {/each}
 </div>
 

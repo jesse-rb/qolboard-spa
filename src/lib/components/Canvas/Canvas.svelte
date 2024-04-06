@@ -1,119 +1,45 @@
-<script>
-    import { onMount, setContext, tick } from "svelte";
-    import { writable } from "svelte/store";
+<script lang="ts">
+    import { SvelteComponent, onMount, setContext, tick } from "svelte";
     import PiecesManager from "./PiecesManager.svelte";
     import ControlPanel from "./ControlPanel.svelte";
+    import Ruler from "./Ruler.svelte";
+    import { store } from "./store";
+    import { CanvasModes } from "./enums/modes";
+    import type { CanvasSerialized } from "./types/canvas";
+    import type { CanvasActions } from "./enums/actions";
+    import { store as appStore } from "../../store";
 
-    let width = 100;
-    let height = 100;
-    let elemContaienr;
-    let elemCanvas;
-    let ctx;
-
-    let piecesManager = null;
-
-    let keyDown = null;
-
-    let mouseDown = false;
-    let mouseX = 0;
-    let mouseY = 0;
-    let prevMouseX = 0;
-    let prevMouseY = 0;
-    let activeMode = 'draw';
-    let overiddenActiveMode = null;
-
-    let pieceSettings = {
-        size: 10,
-        color: '#D55C1A',
-        resX: 1,
-        resY: 1
-    };
-
-    const store = writable({
-        activeMode:activeMode,
-        mouseDown:false,
-        mouseX:0,
-        mouseY:0,
-        prevMouseX:0,
-        prevMouseY:0,
-        ctx: ctx,
-        backgroundColor: '#1A1A1A',
-        pieceSettings: pieceSettings,
-        zoom: 1
-    });
-
-    const canvasOffset = 200;
-
+    let elemContaienr:HTMLDivElement;
+    let elemCanvas:HTMLCanvasElement;
+    
+    let piecesManager:SvelteComponent;
+    
+    let keyDown:string|null = null;
+    
+    let overiddenActiveMode:CanvasModes|null;
+    
+    let width:number;
+    let height:number;
+    
     setContext('canvasStore', store);
     setContext('saveToSessionStorage', saveToSessionStorage);
 
-    $: $store.activeMode = activeMode;
-    $: $store.mouseDown = mouseDown;
-    $: $store.mouseX = mouseX;
-    $: $store.mouseY = mouseY;
-    $: $store.prevMouseX = prevMouseX;
-    $: $store.prevMouseY = prevMouseY;
-    $: $store.ctx = ctx;
-    $: $store.pieceSettings = pieceSettings;
+    $: canvasOffset = $appStore.headerHeight + $appStore.controlPanelHeight;
 
-    // Draw mode
-    $: if (activeMode == 'draw') {
-        piecesManager && piecesManager.deselect();
+    $: if (width && height) {
+        updateCanvasSize(width, height);
     }
-
-    $: if (activeMode == 'draw' && mouseDown) {
-        piecesManager.addPiece();
-    }
-
-    $: if (activeMode == 'draw' && (mouseDown && (mouseX || mouseY))) {
-        piecesManager.addPointToLatestPiece();
-        saveToSessionStorage();
-    }
-
-    // Move mode
-    $: if (activeMode == 'grab' && mouseDown) {
-        piecesManager.select();
-    }
-
-    $: if (activeMode == 'grab' && (mouseDown && (mouseX || mouseY))) {
-        if (piecesManager.getSelected()) {
-            piecesManager.move();
-            saveToSessionStorage();
-        }
-        else {
-            piecesManager.select();
-        }
-    }
-
-    // Pan mode
-    $: if (activeMode == 'pan') {
-        piecesManager.deselect();
-    }
-
-    $: if (activeMode == 'pan' && (mouseDown && (mouseX || mouseY))) {
-        piecesManager.pan();
-        updateBackgroundColor();
-        piecesManager.draw();
-        saveToSessionStorage();
-    }
-
-    // Delete mode
-    $: if (activeMode == 'remove') {
-        piecesManager.deselect();
-    }
-    $: if (activeMode == 'remove' && (mouseDown && (mouseX || mouseY))) {
-        piecesManager.select();
-        piecesManager.remove();
-        saveToSessionStorage();
-    }
-
-    $: backroundColor = $store.backgroundColor;
-    $: backroundColor && draw();
 
     onMount(async () => {
         // Init canvas context
-        ctx = elemCanvas.getContext('2d');
-
+        const _ctx = elemCanvas.getContext('2d');
+        if (_ctx) {
+            $store.ctx = _ctx;
+        }
+        else {
+            throw new Error('2D canvas rendering context is not available');
+        }
+        
         await restoreFromSessionStorage();
 
         // Init global event listeners for things such as keyboard shortcuts
@@ -125,8 +51,8 @@
                 keyDown = key;
                 console.log(`keypress: ${key}`);
                 if (key === ' ') {
-                    overiddenActiveMode = activeMode;
-                    activeMode = 'pan';
+                    overiddenActiveMode = $store.activeMode;
+                    setActiveMode(CanvasModes.Pan);
                 }
             }
         });
@@ -136,39 +62,43 @@
             // Register keyup keyboard shortcuts
             console.log(`keyup: ${key}`);
             if (key === ' ') {
-                activeMode = overiddenActiveMode;
+                if (overiddenActiveMode) {
+                    setActiveMode(overiddenActiveMode);
+                }
                 overiddenActiveMode = null;
+                $store.mouseDown = false;
             }
 
             keyDown = null;
         });
         window.addEventListener("wheel", (e) => {
             const wheelDeltaY = e.deltaY;
-            const zoom = wheelDeltaY < 0 ? 1.05 : 0.95;
-            ctx.scale(zoom, zoom);
+            const zoom = wheelDeltaY < 0 ? 100/99 : 99/100; // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
+            $store.ctx?.scale(zoom, zoom);
+
+            const oldZoom = $store.zoom;
             $store.zoom = $store.zoom * zoom;
 
-            // Pan according to zoom/mouse
-            
-            let dx = (width/45)/$store.zoom;
-            let dy = (height/45)/$store.zoom;
+            // Pan according to zoom, to center canvas after zoom
+            let dx = Math.abs($store.width/$store.zoom-$store.width/oldZoom)/2;
+            let dy = Math.abs($store.height/$store.zoom-$store.height/oldZoom)/2;
 
             dx = dx * (wheelDeltaY > 0 ? 1 : -1);
             dy = dy * (wheelDeltaY > 0 ? 1 : -1);
+
+            $store.zoomDx += dx;
+            $store.zoomDy += dy;
 
             piecesManager.pan(dx, dy);
             draw();
             saveToSessionStorage();
         });
-        updateCanvasSize();
 
         // Initial draw
         await tick();
-        ctx.scale($store.zoom, $store.zoom);
-        
+        $store.ctx.scale($store.zoom, $store.zoom);
         
         await draw();
-        console.log($store.zoom);
     });
 
     function saveToSessionStorage() {
@@ -177,71 +107,121 @@
 
     async function restoreFromSessionStorage() {
         // Restore canvas state from session storage
-        const state = JSON.parse(window.sessionStorage.getItem('canvas'));
-        if (state !== null) {
-            await deserialize(state);
+        const serializedStateString = window.sessionStorage.getItem('canvas');
+        if (serializedStateString === null) {
+            console.log('Canvas does not yet have a saved state!');
+        }
+        else {
+            const state = JSON.parse(serializedStateString);
+            if (state !== null) {
+                await deserialize(state);
+            }
         }
     }
 
     function serialize() {
-        const s = {
+        const s:CanvasSerialized = {
             store: $store,
             piecesManager: piecesManager.serialize()
         }
         return s;
     }
 
-    async function deserialize(s) {
+    async function deserialize(s:CanvasSerialized) {
         $store = s.store;
-        activeMode = $store.activeMode;
+        $store.ctx = elemCanvas.getContext('2d');
         await piecesManager.deserialize(s.piecesManager);
     }
 
     async function draw() {
-        await tick(); // If DOM falls behind... await tick();
-        updateBackgroundColor();
-        piecesManager.draw();
-    }
-
-    function updateBackgroundColor() {
-        ctx.fillStyle = $store.backgroundColor;
-        ctx.fillRect(0, 0, width/$store.zoom, height/$store.zoom);
-    }
-
-    function updateCanvasSize() {
-        let box = elemContaienr.getBoundingClientRect();
-        if (box) {
-            width = box.width;
-            height = box.height;
-            draw();
+        if ($store.ctx !== null) {
+            await tick(); // If DOM falls behind... await tick();
+            updateBackgroundColor();
+            piecesManager.draw();
         }
     }
 
-    function setMouseDown(e, _mouseDown) {
-        e.preventDefault();
-        mouseDown = _mouseDown;
+    function updateBackgroundColor() {
+        if ($store.ctx !== null) {
+            $store.ctx.fillStyle = $store.backgroundColor;
+            $store.ctx.fillRect(0, 0, $store.width/$store.zoom, $store.height/$store.zoom);
+        }
     }
 
-    function setMousePos(e) {
+    async function updateCanvasSize(width:number, height:number) {
+        $store.width = width;
+        $store.height = height;
+        await tick();
+        $store.ctx?.scale($store.zoom, $store.zoom);
+        draw();
+    }
+
+    function setMouseDown(e:MouseEvent, _mouseDown:boolean) {
+        e.preventDefault();
+        $store.mouseDown = _mouseDown;
+
+        if ($store.activeMode === CanvasModes.Draw && $store.mouseDown) {
+            piecesManager.addPiece();
+        }
+
+        if ($store.activeMode === CanvasModes.Grab && $store.mouseDown) {
+            piecesManager.select();
+        }
+
+        saveToSessionStorage();
+    }
+
+    function setMousePos(e:MouseEvent) {
         const canvasOffsetLeft = elemCanvas.offsetLeft;
         const canvasOffsetTop = elemCanvas.offsetTop;
         const scrollOffsetX = document.documentElement.scrollLeft;
         const scrollOffsetY = document.documentElement.scrollTop;
-        prevMouseX = mouseX;
-        prevMouseY = mouseY;
+        $store.prevMouseX = $store.mouseX;
+        $store.prevMouseY = $store.mouseY;
 
-        mouseX = e.clientX - canvasOffsetLeft + scrollOffsetX;
-        mouseY = e.clientY - canvasOffsetTop + scrollOffsetY - canvasOffset; // subtract canvas absolute top offset
+        $store.mouseX = e.clientX - canvasOffsetLeft + scrollOffsetX;
+        $store.mouseY = e.clientY - canvasOffsetTop + scrollOffsetY - canvasOffset; // subtract canvas absolute top offset
 
-        mouseX = mouseX/$store.zoom;
-        mouseY = mouseY/$store.zoom;
+        $store.mouseX = $store.mouseX/$store.zoom;
+        $store.mouseY = $store.mouseY/$store.zoom;
+
+        if ($store.activeMode == CanvasModes.Draw && $store.mouseDown) {
+            piecesManager.addPointToLatestPiece();
+            saveToSessionStorage();
+        }
+
+        if ($store.activeMode == CanvasModes.Grab && $store.mouseDown) {
+            if (piecesManager.getSelected()) {
+                piecesManager.move();
+                saveToSessionStorage();
+            }
+            else {
+                piecesManager.select();
+            }
+        }
+
+        if ($store.activeMode == CanvasModes.Pan && $store.mouseDown) {
+            piecesManager.pan();
+            updateBackgroundColor();
+            piecesManager.draw();
+            $store.xPan += $store.mouseX - $store.prevMouseX;
+            $store.yPan += $store.mouseY - $store.prevMouseY;
+            saveToSessionStorage();
+        }
+
+        if ($store.activeMode == CanvasModes.Remove && $store.mouseDown) {
+            piecesManager.select();
+            piecesManager.remove();
+            saveToSessionStorage();
+        }
     }
 
-    function setActiveMode(mode) {
-        activeMode = mode;
+    function setActiveMode(mode:CanvasModes) {
+        $store.activeMode = mode;
+        piecesManager && piecesManager.deselect();
     }
 
-    function action(action) {
+    function action(action:CanvasActions) {
         if (action === 'clear') {
             piecesManager.clear();
             draw();
@@ -249,29 +229,32 @@
         }
     }
 
-    // Get rgba of pixel at coord (or set)
-    function coord(x, y, rgba, set=false) {
-        let imageData = ctx.getImageData();
+    // Get or set rgba value of pixel at given coordinates
+    function coord(x:number, y:number, rgba:Array<number>, set:boolean=false): Array<number> {
+        let imageData = $store.ctx?.getImageData(0, 0, $store.width, $store.height);
         const colorsOffset = 4; // RGBA
         const rx = x*colorsOffset;
-        const ry = y*width*colorsOffset;
+        const ry = y*$store.width*colorsOffset;
         const _rgba = [];
-        for (let i = 0; i < colorsOffset; i++) {
-            if (set) {
-                imageData.data[rx+ry+i] = rgba[i];
+        if (imageData) {
+            for (let i = 0; i < colorsOffset; i++) {
+                if (set) {
+                    imageData.data[rx+ry+i] = rgba[i];
+                }
+                _rgba.push(imageData.data[rx+ry+i]);
             }
-            _rgba.push(imageData.data[rx+ry+i]);
         }
         return _rgba;
     }
 </script>
 
 <div class="canvas-component">
-    <div bind:this={elemContaienr} class="canvas-container" >
+    <div bind:clientWidth={width} bind:clientHeight={height} bind:this={elemContaienr} class="canvas-container absolute right-0 bottom-0 left-0 -z-10" >
         <canvas
+            class="absolute hover:cursor-crosshair"
             bind:this={elemCanvas}
-            width="{width}px"
-            height="{height}px"
+            width="{$store.width}px"
+            height="{$store.height}px"
             on:mousedown={(e)=>setMouseDown(e, true)}
             on:mouseup={(e)=>setMouseDown(e, false)} 
             on:mouseleave={(e)=>setMouseDown(e, false)} 
@@ -283,22 +266,15 @@
     <ControlPanel
         on:setActiveMode={(e)=>setActiveMode(e.detail)}
         on:action={(e)=>action(e.detail)}
+        on:updatedBackgroundColor={draw}
     />
+
+    <Ruler />
+    <Ruler isHorizontal={false} />
 </div>
 
 <style>
     .canvas-container {
-        position: absolute;
         top: var(--canvas-offset);
-        right: 0;
-        bottom: 0;
-        left: 0;
-        z-index: -1;
-    }
-    canvas {
-        position: absolute;
-    }
-    canvas:hover {
-        cursor: crosshair;
     }
 </style>

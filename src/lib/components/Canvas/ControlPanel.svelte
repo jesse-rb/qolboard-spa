@@ -1,21 +1,35 @@
-<script>
-    import { getContext, createEventDispatcher } from "svelte";
+<script lang="ts">
+    import { getContext, createEventDispatcher, SvelteComponent } from "svelte";
     import Button from "../Button.svelte";
     import Modal from "../Modal.svelte";
+    import Dev from "../Dev.svelte";
+    import { CanvasModes } from "./enums/modes";
+    import { CanvasActions } from "./enums/actions";
+    import type { CanvasStore as CanvasStore } from "./types/canvas";
+    import type { Writable } from "svelte/store";
+    import { store as appStore } from '../../store';
 
-    const canvasStore = getContext('canvasStore');
+    const canvasStore:Writable<CanvasStore> = getContext('canvasStore');
     const dispatch = createEventDispatcher();
 
-    let brushSettingsModal;
+    $: if ($appStore.controlPanelHeight) {
+        document.body.style.setProperty('--control-panel-height', `${$appStore.controlPanelHeight}px`);
+    }
 
-    let resIsLocked = true;
+    let brushSettingsModal:SvelteComponent;
 
-    function dispatchSetActiveMode(mode) {
+    let resIsLocked:boolean = true;
+
+    function dispatchSetActiveMode(mode: CanvasModes) {
         dispatch('setActiveMode', mode);
     }
 
-    function dispatchAction(action) {
+    function dispatchAction(action: CanvasActions) {
         dispatch('action', action);
+    }
+
+    function dispatchUpdatedBackgroundColor() {
+        dispatch('updatedBackgroundColor');
     }
 
     function toggleResLock() {
@@ -36,23 +50,25 @@
 
 </script>
 
-<div class="control-panel">
+<div bind:clientHeight={$appStore.controlPanelHeight} class="control-panel">
     <!--modes-->
     <div class="control-group">
         <div class="control">
-            <Button icon="brush" active={$canvasStore.activeMode=='draw'} label="draw" onclick={()=>dispatchSetActiveMode('draw')} />
+            <Button icon="brush" active={$canvasStore.activeMode==CanvasModes.Draw} label="draw" onclick={()=>dispatchSetActiveMode(CanvasModes.Draw)} />
         </div>
         <div class="control">
-            <Button icon="pan_tool_alt" active={$canvasStore.activeMode=='grab'} label="grab" onclick={()=>dispatchSetActiveMode('grab')} />
+            <Button icon="pan_tool_alt" active={$canvasStore.activeMode==CanvasModes.Grab} label="grab" onclick={()=>dispatchSetActiveMode(CanvasModes.Grab)} />
         </div>
         <div class="control">
-            <Button icon="pan_tool" active={$canvasStore.activeMode=='pan'} label="pan (Hold Space)" onclick={()=>dispatchSetActiveMode('pan')} />
+            <Button icon="pan_tool" active={$canvasStore.activeMode==CanvasModes.Pan} label="pan (Hold Space)" onclick={()=>dispatchSetActiveMode(CanvasModes.Pan)} />
         </div>
         <div class="control">
-            <Button icon="delete" active={$canvasStore.activeMode=='remove'} label="remove" onclick={()=>dispatchSetActiveMode('remove')} />
+            <Button icon="delete" active={$canvasStore.activeMode==CanvasModes.Remove} label="remove" onclick={()=>dispatchSetActiveMode(CanvasModes.Remove)} />
         </div>
         <div class="control">
-            <p>(Use scroll wheel to zoom)</p>
+            <p>
+                (Use scroll wheel to zoom <em>{$canvasStore.zoom.toFixed(2)}</em>)
+            </p>
         </div>
     </div>
 
@@ -60,11 +76,16 @@
     <div class="control-group">
         <div class="control">
             <label for="">background color</label>
-            <input bind:value={$canvasStore.backgroundColor} type="color" >
+            <input bind:value={$canvasStore.backgroundColor} type="color" on:input={dispatchUpdatedBackgroundColor} >
         </div>
         <div class="control">
-            <Button icon="clear_all" label="clear all" onclick={()=>dispatchAction('clear')} />
+            <Button icon="clear_all" label="clear all" onclick={()=>dispatchAction(CanvasActions.Clear)} />
         </div>
+        <Dev>
+            <div class="control">
+                <Button icon="layers_clear" label="clear session storage" onclick={()=>window.sessionStorage.clear()} />
+            </div>
+        </Dev>
     </div>
 
     <div class="control-group">
@@ -106,6 +127,31 @@
     </div>
 </Modal>
 
-<style>
-    
+<style lang="postcss">
+    .control-panel {
+        @apply flex;
+        @apply flex-wrap;
+        @apply gap-2;
+        @apply px-4;
+    }
+    .control-group {
+        @apply flex-1;
+        @apply h-fit;
+        @apply w-fit;
+        @apply py-4;
+        @apply flex;
+        @apply flex-wrap;
+        @apply gap-2;
+    }
+    .control-group.lock {
+        @apply border-b-2;
+        @apply border-green-500;
+    }
+    .control-group>:global(.button-component) {
+        @apply m-2;
+    }
+    .control {
+        @apply flex;
+        @apply flex-col;
+    }
 </style>

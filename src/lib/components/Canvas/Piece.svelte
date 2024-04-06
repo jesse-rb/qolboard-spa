@@ -27,6 +27,10 @@
         dispatch('update', redrawPiece);
     }
 
+    function dispatchUpdateBoundingBox() {
+        dispatch('updateBoundingBox', {topMost, rightMost, bottomMost, leftMost});
+    }
+
     function setDrawSettings(reset=false) {
         ctx.lineCap = reset ? '' : 'round';
         ctx.lineJoin = reset ? '' : 'round';
@@ -40,6 +44,7 @@
         topMost = topMost < y ? topMost : y;
         bottomMost = bottomMost > y ? bottomMost : y;
 
+        dispatchUpdateBoundingBox();
     }
 
     export function serialize() {
@@ -229,6 +234,11 @@
 
 {#if selected}
     <div class="piece-settings control-panel" style="top: calc({bottomMost*$canvasStore.zoom}px + var(--canvas-offset)); left: {leftMost*$canvasStore.zoom}px;">
+        <div class="flex gap-4">
+            <span>x: {leftMost.toFixed(0)}</span>
+            <span>y: {topMost.toFixed(0)}</span>
+        </div>
+
         <div class="control-group">
             <div class="control">
                 <label for="">size</label>
