@@ -270,6 +270,7 @@
     />
 
     <Ruler />
+    <Ruler isHorizontal={false} />
 </div>
 
 <style>
