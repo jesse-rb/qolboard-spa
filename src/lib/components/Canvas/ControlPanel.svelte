@@ -133,6 +133,7 @@
         @apply flex-wrap;
         @apply gap-2;
         @apply px-4;
+        @apply z-30;
     }
     .control-group {
         @apply flex-1;

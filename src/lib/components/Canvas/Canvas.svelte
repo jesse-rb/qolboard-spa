@@ -249,6 +249,12 @@
 </script>
 
 <div class="canvas-component">
+    <ControlPanel
+        on:setActiveMode={(e)=>setActiveMode(e.detail)}
+        on:action={(e)=>action(e.detail)}
+        on:updatedBackgroundColor={draw}
+    />
+
     <div bind:clientWidth={width} bind:clientHeight={height} bind:this={elemContaienr} class="canvas-container absolute right-0 bottom-0 left-0 -z-10" >
         <canvas
             class="absolute hover:cursor-crosshair"
@@ -262,12 +268,6 @@
     </div>
 
     <PiecesManager bind:this={piecesManager} />
-
-    <ControlPanel
-        on:setActiveMode={(e)=>setActiveMode(e.detail)}
-        on:action={(e)=>action(e.detail)}
-        on:updatedBackgroundColor={draw}
-    />
 
     <Ruler />
     <Ruler isHorizontal={false} />

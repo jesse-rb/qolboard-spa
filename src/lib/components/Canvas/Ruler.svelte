@@ -1,14 +1,14 @@
 <script lang="ts">
     import { colorIsDark, range, roundToTarget } from "../../util";
-    import { getContext, onMount } from "svelte";
+    import { getContext, onMount, tick } from "svelte";
     import type { CanvasStore } from "./types/canvas.js";
     import type { Writable } from "svelte/store";
 
     export let isHorizontal = true;
 
     const canvasStore:Writable<CanvasStore> = getContext('canvasStore');
-    let stepX:number = 100;
-    let rangeX:Array<number> = [];
+    let rulerStep:number = 100;
+    let rulerRange:Array<number> = [];
 
     // RangeX zoom point variables
     let nextRangeZoomIn = $canvasStore.zoom * 1.5;
@@ -19,16 +19,14 @@
     $: zoomDelta = isHorizontal ? $canvasStore.zoomDx : $canvasStore.zoomDy;
 
     // Update our ruler to/form range when panning the canvas
-    $: if (((-1) * pan+zoomDelta+length) > (rangeX[rangeX.length-1] + stepX)) {
-        // adderPanX = (adderPanX + stepX);
-        const iEnd = rangeX.length-1;
-        const end = rangeX[iEnd];
-        rangeX = [ ...rangeX.slice(1), end + stepX ];
+    $: if (((-1) * pan+zoomDelta+length) > (rulerRange[rulerRange.length-1] + rulerStep)) {
+        const iEnd = rulerRange.length-1;
+        const end = rulerRange[iEnd];
+        rulerRange = [ ...rulerRange.slice(1), end + rulerStep ];
     }
-    $: if (((-1) * (pan+zoomDelta)) < (rangeX[0] - stepX)) {
-        // adderPanX = (adderPanX - stepX);
-        const start = rangeX[0];
-        rangeX = [ start - stepX, ...rangeX.slice(0, -1) ];
+    $: if (((-1) * (pan+zoomDelta)) < (rulerRange[0] - rulerStep)) {
+        const start = rulerRange[0];
+        rulerRange = [ start - rulerStep, ...rulerRange.slice(0, -1) ];
     }
 
     $: if ($canvasStore.zoom >= nextRangeZoomIn) {
@@ -40,7 +38,7 @@
     }
 
     onMount(() => {
-        rangeX = range(length, 0, stepX);
+        rulerRange = range(length, 0, rulerStep);
     });
 
     function zoomInRange() {
@@ -49,18 +47,17 @@
         nextRangeZoomIn = nextRangeZoomIn * 2;
 
         // Update range start/end
-        const iEnd = rangeX.length - 1;
-        const end = rangeX[iEnd]*0.5;
-        const start = rangeX[0]*0.5;
+        const iEnd = rulerRange.length - 1;
+        const end = rulerRange[iEnd]*0.5;
+        const start = rulerRange[0]*0.5;
 
-        const newStepX = stepX * 0.5;
+        const newStepX = rulerStep * 0.5;
 
         // Update stepX
-        stepX = newStepX;
+        rulerStep = newStepX;
 
         // Update range
-        rangeX = range(end, start, stepX);
-        console.log(rangeX);
+        rulerRange = range(end, start, rulerStep);
     }
 
     function zoomOutRange() {
@@ -68,55 +65,66 @@
         nextRangeZoomIn = nextRangeZoomOut;
         nextRangeZoomOut = nextRangeZoomOut * 0.5;
 
-        const newStepX = stepX * 2;
+        const newStepX = rulerStep * 2;
         
         // Update stepX
-        stepX = newStepX;
+        rulerStep = newStepX;
 
         // Update range start/end
-        const iEnd = rangeX.length - 1;
-        const end = roundToTarget(rangeX[iEnd]*2, stepX);
-        const start = roundToTarget(rangeX[0]*2, stepX);
+        const iEnd = rulerRange.length - 1;
+        const end = roundToTarget(rulerRange[iEnd]*2, rulerStep);
+        const start = roundToTarget(rulerRange[0]*2, rulerStep);
 
         // Update range
-        rangeX = range(end, start, stepX);
-        console.log(rangeX);
+        rulerRange = range(end, start, rulerStep);
     }
 
 </script>
 
 <div class="{isHorizontal ? 'x' : 'y'} ruler pointer-events-none {colorIsDark($canvasStore.backgroundColor) ? 'text-white' : 'text-black'}">
-    {#each rangeX as i}
+    {#each rulerRange as i}
         {@const pos = ( (i + pan + zoomDelta) * $canvasStore.zoom )}
-        <span class="absolute font-mono" style="{isHorizontal ? 'left' : 'top'}: {pos}px;" >{i}</span>
+        <span class="opacity-50 absolute font-mono" style="{isHorizontal ? 'left' : 'top'}: {pos}px;" >{i}</span>
+        <div class="opacity-10 grid absolute bg-gray-50 overflow-hidden pointer-events-none" style="{isHorizontal ? `left: ${pos}px` : `top: ${pos}px;`}" ></div>
     {/each}
 </div>
 
 <style>
     .ruler {
         font-size: small;
-        position: absolute;
+        position: fixed;
     }
     .x.ruler {
         left: 0;
         right: 0;
-        width: 100%;
-        height: 1em;
+        top: var(--canvas-offset);
+        bottom: 0;
         margin-top: 0.5em;
         overflow-x: clip;
     }
     .x.ruler span {
         top: 0.5em;
     }
+    .x.ruler .grid {
+        top: 0;
+        bottom: 0;
+        width: 1px;
+    }
     .y.ruler {
         top: var(--canvas-offset);
         bottom: 0;
-        width: 1em;
+        left: 0;
+        right: 0;
         margin-left: 0.5em;
         overflow-y: clip;
     }
     .y.ruler span {
         left: 0.5em;
+    }
+    .y.ruler .grid {
+        left: 0;
+        right: 0;
+        height: 1px;
     }
 </style>
 
