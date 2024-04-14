@@ -20,13 +20,10 @@
 
     // Update our ruler to/form range when panning the canvas
     $: if (((-1) * pan+zoomDelta+length) > (rulerRange[rulerRange.length-1] + rulerStep)) {
-        const iEnd = rulerRange.length-1;
-        const end = rulerRange[iEnd];
-        rulerRange = [ ...rulerRange.slice(1), end + rulerStep ];
+        panRightRange();
     }
     $: if (((-1) * (pan+zoomDelta)) < (rulerRange[0] - rulerStep)) {
-        const start = rulerRange[0];
-        rulerRange = [ start - rulerStep, ...rulerRange.slice(0, -1) ];
+        panLeftRange();
     }
 
     $: if ($canvasStore.zoom >= nextRangeZoomIn) {
@@ -37,9 +34,25 @@
         zoomOutRange();
     }
 
+    $: rulerRange = range(length, 0, rulerStep);
+
     onMount(() => {
         rulerRange = range(length, 0, rulerStep);
+        console.log(`range: ${rulerRange}`);
+        console.log(`step: ${rulerStep}`);
+        console.log(`length: ${length}`);
     });
+
+    function panLeftRange() {
+        const start = rulerRange[0];
+        rulerRange = [ start - rulerStep, ...rulerRange.slice(0, -1) ];
+    }
+
+    function panRightRange() {
+        const iEnd = rulerRange.length-1;
+        const end = rulerRange[iEnd];
+        rulerRange = [ ...rulerRange.slice(1), end + rulerStep ];
+    }
 
     function zoomInRange() {
         // Set the next range zoom stepping points

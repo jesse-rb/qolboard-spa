@@ -17,13 +17,15 @@
         padding: 10px;
         margin: 2px;
         border: none;
+        border: 1px solid var(--color-back-3);
         background-color: var(--color-back-3);
         color: var(--color-a);
-        transition-duration: 1s;
+        transition-duration: 0.2s;
         font-size: large;
         display: inline-flex;
         align-items: center;
         text-wrap: nowrap;
+        box-sizing: border-box;
     }
     .icon {
         margin-right: 5px;
