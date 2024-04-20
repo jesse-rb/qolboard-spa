@@ -2,6 +2,7 @@
     import Modal from '../components/Modal.svelte';
     import Button from '../components/Button.svelte';
     import { store } from '../store';
+    import { inject as injectVercelAnalytics } from '@vercel/analytics' // Vercel analytics
 
     let aboutModal;
 
@@ -17,6 +18,8 @@
     $: if ($store.headerHeight) {
         document.body.style.setProperty('--header-height', `${$store.headerHeight}px`);
     }
+
+    injectVercelAnalytics();
 </script>
 
 <div bind:clientHeight={$store.headerHeight} class="header-layout">
