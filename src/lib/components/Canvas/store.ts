@@ -18,6 +18,9 @@ export const store:Writable<StoreTypeDef> = writable({
     yPan: 0,
     ctx: null,
     backgroundColor: '#1A1A1A',
+    showRuler: true,
+    showGrid: true,
+    snapToGrid: false,
     pieceSettings: {
         size: 20,
         color: '#D55C1A',

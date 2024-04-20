@@ -269,6 +269,7 @@
 
     <PiecesManager bind:this={piecesManager} />
 
+    
     <Ruler />
     <Ruler isHorizontal={false} />
 </div>

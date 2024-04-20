@@ -8,6 +8,7 @@
     import type { CanvasStore as CanvasStore } from "./types/canvas";
     import type { Writable } from "svelte/store";
     import { store as appStore } from '../../store';
+    import Toggle from "../Inputs/Toggle.svelte";
 
     const canvasStore:Writable<CanvasStore> = getContext('canvasStore');
     const dispatch = createEventDispatcher();
@@ -77,6 +78,18 @@
         <div class="control">
             <label for="">background color</label>
             <input bind:value={$canvasStore.backgroundColor} type="color" on:input={dispatchUpdatedBackgroundColor} >
+        </div>
+        <div class="control">
+            <label for="">show ruler</label>
+            <Toggle bind:value={$canvasStore.showRuler} />
+        </div>
+        <div class="control">
+            <label for="">show grid</label>
+            <Toggle bind:value={$canvasStore.showGrid} />
+        </div>
+        <div class="control">
+            <label for="">snap to grid</label>
+            <Toggle bind:value={$canvasStore.snapToGrid} disabled={true} />
         </div>
         <div class="control">
             <Button icon="clear_all" label="clear all" onclick={()=>dispatchAction(CanvasActions.Clear)} />

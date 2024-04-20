@@ -16,6 +16,9 @@ export type CanvasStore = {
     yPan: number
     ctx: null|CanvasRenderingContext2D
     backgroundColor: string
+    showRuler: boolean
+    showGrid: boolean
+    snapToGrid: boolean
     pieceSettings: PieceSettings
     rulerSettings: RulerSettings
     zoom: number
