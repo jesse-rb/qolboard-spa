@@ -1,34 +1,85 @@
 <script>
     import Modal from '../components/Modal.svelte';
     import Button from '../components/Button.svelte';
-    import { store } from '../store';
-    import { inject as injectVercelAnalytics } from '@vercel/analytics' // Vercel analytics
+    import Auth from '../components/Auth/Auth.svelte';
+    import { appStore } from '../store';
+    import { isAuthenticated } from '../store';
 
     let aboutModal;
+    let registerModal;
+    let loginModal;
 
     // Load cached store
-    let cachedStore = window.localStorage.getItem('store');
-    if (cachedStore) {
-        $store = JSON.parse(cachedStore);
+    let cachedAppStore = window.sessionStorage.getItem('appStore');
+    if (cachedAppStore) {
+        $appStore = JSON.parse(cachedAppStore);
     }
     
     // Cahce store
-    $: window.localStorage.setItem('store', JSON.stringify($store));
+    $: window.sessionStorage.setItem('appStore', JSON.stringify($appStore));
 
-    $: if ($store.headerHeight) {
-        document.body.style.setProperty('--header-height', `${$store.headerHeight}px`);
+    $: if ($appStore.headerHeight) {
+        document.body.style.setProperty('--header-height', `${$appStore.headerHeight}px`);
     }
 
-    injectVercelAnalytics();
+    async function logout() {
+        const domain = import.meta.env.VITE_API_HOST;
+        const path = "user/logout";
+        const url = `${domain}/${path}`;
+
+        const response = await fetch(url, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "content-type": "application/json"
+            }
+        });
+
+        if (response.ok) {
+            $appStore.isAuthenticated = false
+        }
+    }
 </script>
 
-<div bind:clientHeight={$store.headerHeight} class="header-layout">
+<div bind:clientHeight={$appStore.headerHeight} class="header-layout">
     <div class="banner">
-        <h1>Welcome to qolboard 2.0</h1>
+        <div class="flex items-center">
+            <h1>Welcome to qolboard 2.0</h1>
 
-        <Button label="About" icon="info" onclick={()=>{
-            aboutModal.toggle();
-        }} />
+            <Button
+                label="About"
+                icon="info"
+                onclick={() => {
+                    aboutModal.toggle();
+                }}
+            />
+        </div>
+
+        <div class="flex items-center">
+            {#if !$appStore.isAuthenticated}
+                <Button
+                    label="Register"
+                    icon="person"
+                    onclick={() => {
+                        registerModal.toggle();
+                    }}
+                />
+                <Button
+                    label="Login"
+                    icon="login"
+                    onclick={() => {
+                        loginModal.toggle();
+                    }}
+                />
+            {:else}
+                <p>{$appStore.email}</p>
+                <Button
+                    label="Logout"
+                    icon="logout"
+                    onclick={logout}
+                />
+            {/if}
+        </div>
     </div>
 </div>
 
@@ -45,6 +96,16 @@
     <a href="https://github.com/jesse-rb" target="_blank" rel="noopener noreferrer">github.com/jesse-rb</a>
 </Modal>
 
+{#if !$appStore.isAuthenticated}
+    <Modal bind:this={loginModal}>
+        <Auth />
+    </Modal>
+
+    <Modal bind:this={registerModal}>
+        <Auth isRegistration />
+    </Modal>
+{/if}
+
 <style>
     .header-layout {
         display: flex;
@@ -55,7 +116,7 @@
     .banner {
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: space-between;
         flex-grow: 1;
         padding: 20px;
         flex-wrap: wrap;

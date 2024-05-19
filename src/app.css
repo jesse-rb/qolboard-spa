@@ -44,7 +44,9 @@ h1, h2, h3, p {
     @apply mb-2;
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="email"],
+input[type="password"] {
     background-color: var(--color-back-3);
     @apply rounded-md;
     @apply text-white;

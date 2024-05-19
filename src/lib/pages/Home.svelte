@@ -1,5 +1,4 @@
 <script>
-    import { store } from '../store';
     import { onMount } from 'svelte';
     import Canvas from '../components/Canvas/Canvas.svelte';
 
