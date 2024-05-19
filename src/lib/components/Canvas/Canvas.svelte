@@ -7,7 +7,7 @@
     import { CanvasModes } from "./enums/modes";
     import type { CanvasSerialized } from "./types/canvas";
     import type { CanvasActions } from "./enums/actions";
-    import { store as appStore } from "../../store";
+    import { appStore } from "../../store";
 
     let elemContaienr:HTMLDivElement;
     let elemCanvas:HTMLCanvasElement;

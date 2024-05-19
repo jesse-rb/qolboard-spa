@@ -1,6 +1,9 @@
 <script>
     import Header from './lib/layout/Header.svelte';
     import Home from './lib/pages/Home.svelte';
+    import { inject as injectVercelAnalytics } from '@vercel/analytics' // Vercel analytics
+
+    injectVercelAnalytics();
 </script>
 
 <main>

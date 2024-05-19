@@ -7,7 +7,7 @@
     import { CanvasActions } from "./enums/actions";
     import type { CanvasStore as CanvasStore } from "./types/canvas";
     import type { Writable } from "svelte/store";
-    import { store as appStore } from '../../store';
+    import { appStore } from '../../store';
     import Toggle from "../Inputs/Toggle.svelte";
 
     const canvasStore:Writable<CanvasStore> = getContext('canvasStore');
