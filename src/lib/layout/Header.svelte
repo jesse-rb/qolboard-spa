@@ -9,6 +9,8 @@
     let registerModal;
     let loginModal;
 
+    let logoutIsLoading = false;
+
     // Load cached store
     let cachedAppStore = window.sessionStorage.getItem('appStore');
     if (cachedAppStore) {
@@ -23,6 +25,8 @@
     }
 
     async function logout() {
+        logoutIsLoading = true;
+
         const domain = import.meta.env.VITE_API_HOST;
         const path = "user/logout";
         const url = `${domain}/${path}`;
@@ -38,6 +42,8 @@
         if (response.ok) {
             $appStore.isAuthenticated = false
         }
+
+        logoutIsLoading = false;
     }
 </script>
 
@@ -77,6 +83,7 @@
                     label="Logout"
                     icon="logout"
                     onclick={logout}
+                    bind:isLoading={logoutIsLoading}
                 />
             {/if}
         </div>

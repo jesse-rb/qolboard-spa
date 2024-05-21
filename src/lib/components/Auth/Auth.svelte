@@ -18,6 +18,8 @@
     let password = '';
     let passwordConfirmation = '';
 
+    let isLoading = false;
+
     function resetAuthFields() {
         email = '';
         password = '';
@@ -25,6 +27,8 @@
     }
 
     async function auth() {
+        isLoading = true;
+
         const domain = import.meta.env.VITE_API_HOST;
         const path = `auth/${isRegistration ? "register" : "login"}`;
         const url = `${domain}/${path}`;
@@ -54,6 +58,8 @@
         }
 
         resetAuthFields();
+
+        isLoading = false;
     }
 </script>
 
@@ -70,6 +76,8 @@
     <Button
         label="{isRegistration ? "Register" : "Login"}"
         onclick={auth}
+        icon="send"
+        bind:isLoading={isLoading}
     />
 </div>
 

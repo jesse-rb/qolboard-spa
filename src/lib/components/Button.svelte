@@ -2,12 +2,17 @@
     export let label = '';
     export let icon = '';
     export let onclick = () => {};
-    export let active = false;
+    export let active = false; 
+    export let isLoading = false;
     
 </script>
 
 <button class="button-component" class:active={active} on:click="{ onclick }" >
-    <span class="icon" class:icon-only={label.length<=0} class:material-icons={icon.length>0} >{icon}</span>
+    {#if isLoading}
+        <span class="material-icons icon animate-spin" class:icon-only={label.length<=0} >sync</span>
+    {:else}
+        <span class="icon" class:icon-only={label.length<=0} class:material-icons={icon.length>0} >{icon}</span>
+    {/if}
     <span class="label" >{label}</span>
 </button>
 
