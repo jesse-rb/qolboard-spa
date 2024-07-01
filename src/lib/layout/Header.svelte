@@ -3,7 +3,6 @@
     import Button from '../components/Button.svelte';
     import Auth from '../components/Auth/Auth.svelte';
     import { appStore } from '../store';
-    import { isAuthenticated } from '../store';
 
     let aboutModal;
     let registerModal;
@@ -49,8 +48,10 @@
 
 <div bind:clientHeight={$appStore.headerHeight} class="header-layout">
     <div class="banner">
-        <div class="flex items-center">
-            <h1>Welcome to qolboard 2.0</h1>
+        <div class="flex items-center gap-2">
+            <a href="/">
+                <h1>qolboard 2.0</h1>
+            </a>
 
             <Button
                 label="About"
@@ -61,7 +62,8 @@
             />
         </div>
 
-        <div class="flex items-center">
+        <div class="flex items-center gap-2">
+            <a href="/canvas/index">My Canvases</a>
             {#if !$appStore.isAuthenticated}
                 <Button
                     label="Register"

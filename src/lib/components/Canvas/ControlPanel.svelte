@@ -13,6 +13,8 @@
     const canvasStore:Writable<CanvasStore> = getContext('canvasStore');
     const dispatch = createEventDispatcher();
 
+    let saveIsLoading = false;
+
     $: if ($appStore.controlPanelHeight) {
         document.body.style.setProperty('--control-panel-height', `${$appStore.controlPanelHeight}px`);
     }
@@ -49,6 +51,30 @@
         }
     }
 
+    async function save() {
+        saveIsLoading = true;
+
+        const domain = import.meta.env.VITE_API_HOST;
+        const path = `user/canvas`;
+        const url = `${domain}/${path}`;
+
+        const body = $canvasStore
+
+        const response = await fetch(url, {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify(body),
+            headers: {
+                "content-type": "application/json"
+            }
+        });
+
+        if (response.ok) {
+            
+        }
+
+        saveIsLoading = false;
+    }
 </script>
 
 <div bind:clientHeight={$appStore.controlPanelHeight} class="control-panel">
@@ -106,6 +132,14 @@
             <Button label="tune brush" icon="tunebrush" onclick={()=>{ brushSettingsModal.toggle(); }} />
         </div>
     </div>
+
+    {#if $appStore.isAuthenticated}
+        <div class="control-group">
+            <div class="control" >
+                <Button label="save" icon="save" onclick={save} />
+            </div>
+        </div>
+    {/if}
 </div>
 
 <Modal bind:this={brushSettingsModal}>

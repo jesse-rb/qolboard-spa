@@ -5,9 +5,11 @@
     import Ruler from "./Ruler.svelte";
     import { store } from "./store";
     import { CanvasModes } from "./enums/modes";
-    import type { CanvasSerialized } from "./types/canvas";
+    import type { CanvasSerialized, CanvasStore } from "./types/canvas";
     import type { CanvasActions } from "./enums/actions";
     import { appStore } from "../../store";
+
+    export let id:number|null = null;
 
     let elemContaienr:HTMLDivElement;
     let elemCanvas:HTMLCanvasElement;
@@ -40,6 +42,10 @@
             throw new Error('2D canvas rendering context is not available');
         }
         
+        if (id !== null) {
+            $store = await getCanvas(id);
+            console.log($store);
+        }
         await restoreFromSessionStorage();
 
         // Init global event listeners for things such as keyboard shortcuts
@@ -100,6 +106,31 @@
         
         await draw();
     });
+
+    async function getCanvas(id: number):Promise<CanvasStore> {
+        // loading = true;
+
+        const domain = import.meta.env.VITE_API_HOST;
+        const path = `user/canvas/${id}`;
+        const url = `${domain}/${path}`;
+
+        const response = await fetch(url, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                "content-type": "application/json"
+            }
+        });
+
+        if (response.ok) {
+            const canvas = await response.json();
+            return canvas.CanvasData;
+        }
+
+        // loading = false;
+
+        return [];
+    }
 
     function saveToSessionStorage() {
         window.sessionStorage.setItem('canvas', JSON.stringify(serialize()));
@@ -182,8 +213,8 @@
         $store.mouseX = e.clientX - canvasOffsetLeft + scrollOffsetX;
         $store.mouseY = e.clientY - canvasOffsetTop + scrollOffsetY - canvasOffset; // subtract canvas absolute top offset
 
-        $store.mouseX = $store.mouseX/$store.zoom;
-        $store.mouseY = $store.mouseY/$store.zoom;
+        $store.mouseX = Math.round($store.mouseX/$store.zoom);
+        $store.mouseY = Math.round($store.mouseY/$store.zoom);
 
         if ($store.activeMode == CanvasModes.Draw && $store.mouseDown) {
             piecesManager.addPointToLatestPiece();
