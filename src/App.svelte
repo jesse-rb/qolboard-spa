@@ -6,8 +6,12 @@
 
     injectVercelAnalytics();
 
-    const path = window.location.pathname;
-    const parts = path.split("/");
+    // const routes = {
+    //     '/': Home,
+    //     '/canvas/index': Index,
+    //     '/canvas/index/:id': Home,
+    //     '*': Home,
+    // }
 </script>
 
 <main>
@@ -15,13 +19,7 @@
     <Header />
     
     <div id="page">
-        {#if (path === "/canvas/index")}
-            <Index />
-        {:else if path === "/canvas/:param"}
-            <Home id="5" />
-        {:else}
-            <Home />
-        {/if}
+        <Home />
     </div>
 </main>
 
