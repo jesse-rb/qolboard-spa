@@ -3,21 +3,24 @@
     import Button from '../components/Button.svelte';
     import Auth from '../components/Auth/Auth.svelte';
     import { appStore } from '../store';
+    import { inject as injectVercelAnalytics } from '@vercel/analytics' // Vercel analytics
+
+    injectVercelAnalytics();
 
     let aboutModal;
     let registerModal;
     let loginModal;
-
+    
     let logoutIsLoading = false;
 
     // Load cached store
-    let cachedAppStore = window.sessionStorage.getItem('appStore');
+    let cachedAppStore = null;//window.sessionStorage.getItem('appStore');
     if (cachedAppStore) {
         $appStore = JSON.parse(cachedAppStore);
     }
     
     // Cahce store
-    $: window.sessionStorage.setItem('appStore', JSON.stringify($appStore));
+    // $: window.sessionStorage.setItem('appStore', JSON.stringify($appStore));
 
     $: if ($appStore.headerHeight) {
         document.body.style.setProperty('--header-height', `${$appStore.headerHeight}px`);
