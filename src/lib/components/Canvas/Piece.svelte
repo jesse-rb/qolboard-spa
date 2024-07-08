@@ -6,7 +6,6 @@
     export let selected = false;
 
     const canvasStore = getContext('canvasStore');
-    const saveToSessionStorage = getContext('saveToSessionStorage');
 
     const dispatch = createEventDispatcher();
     const ctx = $canvasStore.ctx;
@@ -229,7 +228,6 @@
         dispatchUpdate(false);
         settings[setting] = value;
         dispatchUpdate(true);
-        saveToSessionStorage();
     }
 </script>
 

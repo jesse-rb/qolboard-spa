@@ -5,6 +5,7 @@
     import { appStore } from '../store';
     import { inject as injectVercelAnalytics } from '@vercel/analytics' // Vercel analytics
     import type { SvelteComponent } from 'svelte';
+    import { browser } from '$app/environment';
 
     injectVercelAnalytics();
 
@@ -15,13 +16,16 @@
     let logoutIsLoading = false;
 
     // Load cached store
-    let cachedAppStore = null;//window.sessionStorage.getItem('appStore');
+    let cachedAppStore = browser ? window.sessionStorage.getItem('appStore') : null;
+
     if (cachedAppStore) {
         $appStore = JSON.parse(cachedAppStore);
     }
     
     // Cahce store
-    // $: window.sessionStorage.setItem('appStore', JSON.stringify($appStore));
+    $: if ($appStore && browser) {
+        window.sessionStorage.setItem('appStore', JSON.stringify($appStore));
+    }
 
     $: if ($appStore.headerHeight) {
         document.body.style.setProperty('--header-height', `${$appStore.headerHeight}px`);
@@ -67,7 +71,9 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <a href="/canvas">My Canvases</a>
+            {#if $appStore.isAuthenticated}
+                <a href="/canvas">My Canvases</a>
+            {/if}
             {#if !$appStore.isAuthenticated}
                 <Button
                     label="Register"

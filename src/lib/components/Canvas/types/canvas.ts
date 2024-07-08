@@ -4,6 +4,7 @@ import type { PiecesManagerSerialized as SerializedPiecesManager } from "./piece
 import type { RulerSettings } from "./ruler";
 
 export type CanvasStore = {
+    id: number|null
     width: number
     height: number
     activeMode: CanvasModes
@@ -24,9 +25,8 @@ export type CanvasStore = {
     zoom: number
     zoomDx: number
     zoomDy: number
-};
+}
 
-export type CanvasSerialized = {
-    store: CanvasStore
+export type CanvasSerialized = Omit<CanvasStore, "ctx"> & {
     piecesManager: SerializedPiecesManager
 };

@@ -2,8 +2,6 @@
     import "$lib/app.css";
     import Header from "$lib/layout/Header.svelte";
 
-    // export const ssr = false; // Disable ssr
-
 </script>
 
 <Header />

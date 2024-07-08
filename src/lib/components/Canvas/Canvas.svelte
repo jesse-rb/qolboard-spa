@@ -14,7 +14,7 @@
     let elemContaienr:HTMLDivElement;
     let elemCanvas:HTMLCanvasElement;
     
-    let piecesManager:SvelteComponent;
+    let piecesManager:PiecesManager;
     
     let keyDown:string|null = null;
     
@@ -22,9 +22,10 @@
     
     let width:number;
     let height:number;
+
+    let saveIsLoading = false;
     
     setContext('canvasStore', store);
-    setContext('saveToSessionStorage', saveToSessionStorage);
 
     $: canvasOffset = $appStore.headerHeight + $appStore.controlPanelHeight;
 
@@ -43,10 +44,11 @@
         }
         
         if (id !== null) {
-            $store = await getCanvas(id);
-            console.log($store);
+            const s = await getCanvas(id);
+            if (s) {
+                await deserialize(s);
+            }
         }
-        await restoreFromSessionStorage();
 
         // Init global event listeners for things such as keyboard shortcuts
         window.addEventListener('keydown', (e) => {
@@ -97,7 +99,6 @@
 
             piecesManager.pan(dx, dy);
             draw();
-            saveToSessionStorage();
         });
 
         // Initial draw
@@ -107,7 +108,32 @@
         await draw();
     });
 
-    async function getCanvas(id: number):Promise<CanvasStore> {
+    async function saveCanvas() {
+        saveIsLoading = true;
+
+        const domain = import.meta.env.VITE_API_HOST;
+        const path = `user/canvas`;
+        const url = `${domain}/${path}`;
+
+        const body = serialize();
+
+        const response = await fetch(url, {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify(body),
+            headers: {
+                "content-type": "application/json"
+            }
+        });
+
+        if (response.ok) {
+            
+        }
+
+        saveIsLoading = false;
+    }
+
+    async function getCanvas(id: number):Promise<CanvasSerialized|null> {
         // loading = true;
 
         const domain = import.meta.env.VITE_API_HOST;
@@ -129,38 +155,59 @@
 
         // loading = false;
 
-        return [];
+        return null;
     }
-
-    function saveToSessionStorage() {
-        window.sessionStorage.setItem('canvas', JSON.stringify(serialize()));
-    }
-
-    async function restoreFromSessionStorage() {
-        // Restore canvas state from session storage
-        const serializedStateString = window.sessionStorage.getItem('canvas');
-        if (serializedStateString === null) {
-            console.log('Canvas does not yet have a saved state!');
-        }
-        else {
-            const state = JSON.parse(serializedStateString);
-            if (state !== null) {
-                await deserialize(state);
-            }
-        }
-    }
-
+    
     function serialize() {
         const s:CanvasSerialized = {
-            store: $store,
+            id: id,
+            activeMode: $store.activeMode,
+            backgroundColor: $store.backgroundColor,
+            height: $store.height,
+            width: $store.width,
+            mouseX: $store.mouseX,
+            mouseY: $store.mouseY,
+            mouseDown: $store.mouseDown,
+            prevMouseX: $store.prevMouseX,
+            prevMouseY: $store.prevMouseY,
+            xPan: $store.xPan,
+            yPan: $store.yPan,
+            zoom: $store.zoom,
+            zoomDx: $store.zoomDx,
+            zoomDy: $store.zoomDy,
+            rulerSettings: $store.rulerSettings,
+            showGrid: $store.showGrid,
+            showRuler: $store.showRuler,
+            snapToGrid: $store.snapToGrid,
+            pieceSettings: $store.pieceSettings,
             piecesManager: piecesManager.serialize()
         }
+        console.log(s);
         return s;
     }
 
     async function deserialize(s:CanvasSerialized) {
-        $store = s.store;
-        $store.ctx = elemCanvas.getContext('2d');
+        id = s.id;
+        $store.activeMode = s.activeMode;
+        $store.activeMode = s.activeMode,
+        $store.backgroundColor = s.backgroundColor,
+        $store.height = s.height,
+        $store.width = s.width,
+        $store.mouseX = s.mouseX,
+        $store.mouseY = s.mouseY,
+        $store.mouseDown = s.mouseDown,
+        $store.prevMouseX = s.prevMouseX,
+        $store.prevMouseY = s.prevMouseY,
+        $store.xPan = s.xPan,
+        $store.yPan = s.yPan,
+        $store.zoom = s.zoom,
+        $store.zoomDx = s.zoomDx,
+        $store.zoomDy = s.zoomDy,
+        $store.rulerSettings = s.rulerSettings,
+        $store.showGrid = s.showGrid,
+        $store.showRuler = s.showRuler,
+        $store.snapToGrid = s.snapToGrid,
+        $store.pieceSettings = s.pieceSettings,
         await piecesManager.deserialize(s.piecesManager);
     }
 
@@ -198,8 +245,6 @@
         if ($store.activeMode === CanvasModes.Grab && $store.mouseDown) {
             piecesManager.select();
         }
-
-        saveToSessionStorage();
     }
 
     function setMousePos(e:MouseEvent) {
@@ -218,13 +263,11 @@
 
         if ($store.activeMode == CanvasModes.Draw && $store.mouseDown) {
             piecesManager.addPointToLatestPiece();
-            saveToSessionStorage();
         }
 
         if ($store.activeMode == CanvasModes.Grab && $store.mouseDown) {
             if (piecesManager.getSelected()) {
                 piecesManager.move();
-                saveToSessionStorage();
             }
             else {
                 piecesManager.select();
@@ -237,13 +280,11 @@
             piecesManager.draw();
             $store.xPan += $store.mouseX - $store.prevMouseX;
             $store.yPan += $store.mouseY - $store.prevMouseY;
-            saveToSessionStorage();
         }
 
         if ($store.activeMode == CanvasModes.Remove && $store.mouseDown) {
             piecesManager.select();
             piecesManager.remove();
-            saveToSessionStorage();
         }
     }
 
@@ -256,7 +297,6 @@
         if (action === 'clear') {
             piecesManager.clear();
             draw();
-            saveToSessionStorage();
         }
     }
 
@@ -281,9 +321,11 @@
 
 <div class="canvas-component">
     <ControlPanel
+        saveIsLoading={saveIsLoading}
         on:setActiveMode={(e)=>setActiveMode(e.detail)}
         on:action={(e)=>action(e.detail)}
         on:updatedBackgroundColor={draw}
+        on:save={saveCanvas}
     />
 
     <div bind:clientWidth={width} bind:clientHeight={height} bind:this={elemContaienr} class="canvas-container absolute right-0 bottom-0 left-0 -z-10" >
@@ -295,7 +337,8 @@
             on:mousedown={(e)=>setMouseDown(e, true)}
             on:mouseup={(e)=>setMouseDown(e, false)} 
             on:mouseleave={(e)=>setMouseDown(e, false)} 
-            on:mousemove={(e)=>setMousePos(e)} />
+            on:mousemove={(e)=>setMousePos(e)}
+        />
     </div>
 
     <PiecesManager bind:this={piecesManager} />

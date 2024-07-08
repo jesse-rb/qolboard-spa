@@ -1,4 +1,4 @@
-export type RulerSettings {
+export type RulerSettings = {
     showUnits: boolean
     showLines: boolean
 }

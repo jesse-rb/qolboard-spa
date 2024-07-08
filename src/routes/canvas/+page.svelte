@@ -1,9 +1,9 @@
 <script lang="ts">
+    import type { CanvasSerialized } from "$lib/components/Canvas/types/canvas";
+
     let loading = false;
 
-    let canvases = getCanvases();
-
-    async function getCanvases():Promise<Array<object>> {
+    async function getCanvases():Promise<Array<CanvasSerialized>> {
         loading = true;
 
         const domain = import.meta.env.VITE_API_HOST;
@@ -31,13 +31,17 @@
 
 <div>
     {#await getCanvases()}
-        ...loading
-    {:then canvases} 
-        {#each canvases as canvas}
-            <div>
-                <a href="/canvas/{canvas.ID}">Canvas {canvas.ID}</a>
-            </div>
-        {/each}
+        <p>loading</p>
+    {:then canvases}
+        {#if canvases.length > 0}
+            {#each canvases as canvas}
+                <div>
+                    <a href="/canvas/{canvas.ID}">Canvas {canvas.ID}</a>
+                </div>
+            {/each}
+        {:else}
+            <p>No canvases saved yet.</p>
+        {/if}
     {/await}
 </div>
 

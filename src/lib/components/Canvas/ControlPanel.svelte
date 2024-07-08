@@ -13,7 +13,7 @@
     const canvasStore:Writable<CanvasStore> = getContext('canvasStore');
     const dispatch = createEventDispatcher();
 
-    let saveIsLoading = false;
+    export let saveIsLoading = false;
 
     $: if ($appStore.controlPanelHeight) {
         document.body.style.setProperty('--control-panel-height', `${$appStore.controlPanelHeight}px`);
@@ -35,6 +35,10 @@
         dispatch('updatedBackgroundColor');
     }
 
+    function dispatchSave() {
+        dispatch('save');
+    }
+
     function toggleResLock() {
         resIsLocked = !resIsLocked;
         updateLockedRes();
@@ -49,31 +53,6 @@
                 $canvasStore.pieceSettings.resY = $canvasStore.pieceSettings.resX;
             }
         }
-    }
-
-    async function save() {
-        saveIsLoading = true;
-
-        const domain = import.meta.env.VITE_API_HOST;
-        const path = `user/canvas`;
-        const url = `${domain}/${path}`;
-
-        const body = $canvasStore
-
-        const response = await fetch(url, {
-            method: "POST",
-            credentials: "include",
-            body: JSON.stringify(body),
-            headers: {
-                "content-type": "application/json"
-            }
-        });
-
-        if (response.ok) {
-            
-        }
-
-        saveIsLoading = false;
     }
 </script>
 
@@ -136,7 +115,7 @@
     {#if $appStore.isAuthenticated}
         <div class="control-group">
             <div class="control" >
-                <Button label="save" icon="save" onclick={save} />
+                <Button label="save" icon="save" onclick={dispatchSave} isLoading={saveIsLoading} />
             </div>
         </div>
     {/if}
