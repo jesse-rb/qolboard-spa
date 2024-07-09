@@ -147,11 +147,8 @@
         const mouseX = $canvasStore.mouseX;
         const mouseY = $canvasStore.mouseY;
 
-        const resX = settings.resX;
-        const resY = settings.resY;
-
-        let thereIsChangeOnX = mouseX >= latestPointX+resX || mouseX <= latestPointX-resX;
-        let thereIsChangeOnY = mouseY >= latestPointY+resY || mouseY <= latestPointY-resY;
+        let thereIsChangeOnX = mouseX >= latestPointX || mouseX <= latestPointX;
+        let thereIsChangeOnY = mouseY >= latestPointY || mouseY <= latestPointY;
 
         let newX = latestPointX;
         let newY = latestPointY;

@@ -5,9 +5,10 @@
     import Ruler from "./Ruler.svelte";
     import { store } from "./store";
     import { CanvasModes } from "./enums/modes";
-    import type { CanvasSerialized, CanvasStore } from "./types/canvas";
+    import type { Canvas } from "./types/canvas";
     import type { CanvasActions } from "./enums/actions";
     import { appStore } from "../../store";
+    import { pushState, replaceState } from "$app/navigation";
 
     export let id:number|null = null;
 
@@ -36,7 +37,7 @@
     onMount(async () => {
         // Init canvas context
         const _ctx = elemCanvas.getContext('2d');
-        if (_ctx) {
+        if (_ctx !== null) {
             $store.ctx = _ctx;
         }
         else {
@@ -44,9 +45,9 @@
         }
         
         if (id !== null) {
-            const s = await getCanvas(id);
-            if (s) {
-                await deserialize(s);
+            const canvas = await getCanvas(id);
+            if (canvas) {
+                await deserialize(canvas);
             }
         }
 
@@ -112,7 +113,11 @@
         saveIsLoading = true;
 
         const domain = import.meta.env.VITE_API_HOST;
-        const path = `user/canvas`;
+        let path = "user/canvas";
+        if (id !== null) {
+            path = `${path}/${id}`;
+        }
+        console.log(path);
         const url = `${domain}/${path}`;
 
         const body = serialize();
@@ -127,13 +132,17 @@
         });
 
         if (response.ok) {
-            
+            if (id === null) {
+                const body:{msg:string, canvas:Canvas} = await response.json();
+                id = body.canvas.id;
+                pushState(`/canvas/${id}`, {});
+            }
         }
 
         saveIsLoading = false;
     }
 
-    async function getCanvas(id: number):Promise<CanvasSerialized|null> {
+    async function getCanvas(id: number):Promise<Canvas|null> {
         // loading = true;
 
         const domain = import.meta.env.VITE_API_HOST;
@@ -149,8 +158,8 @@
         });
 
         if (response.ok) {
-            const canvas = await response.json();
-            return canvas.CanvasData;
+            const canvas:Canvas = await response.json();
+            return canvas;
         }
 
         // loading = false;
@@ -176,39 +185,38 @@
             zoomDx: $store.zoomDx,
             zoomDy: $store.zoomDy,
             rulerSettings: $store.rulerSettings,
-            showGrid: $store.showGrid,
-            showRuler: $store.showRuler,
             snapToGrid: $store.snapToGrid,
             pieceSettings: $store.pieceSettings,
             piecesManager: piecesManager.serialize()
         }
-        console.log(s);
+
         return s;
     }
 
-    async function deserialize(s:CanvasSerialized) {
-        id = s.id;
-        $store.activeMode = s.activeMode;
-        $store.activeMode = s.activeMode,
-        $store.backgroundColor = s.backgroundColor,
-        $store.height = s.height,
-        $store.width = s.width,
-        $store.mouseX = s.mouseX,
-        $store.mouseY = s.mouseY,
-        $store.mouseDown = s.mouseDown,
-        $store.prevMouseX = s.prevMouseX,
-        $store.prevMouseY = s.prevMouseY,
-        $store.xPan = s.xPan,
-        $store.yPan = s.yPan,
-        $store.zoom = s.zoom,
-        $store.zoomDx = s.zoomDx,
-        $store.zoomDy = s.zoomDy,
-        $store.rulerSettings = s.rulerSettings,
-        $store.showGrid = s.showGrid,
-        $store.showRuler = s.showRuler,
-        $store.snapToGrid = s.snapToGrid,
-        $store.pieceSettings = s.pieceSettings,
-        await piecesManager.deserialize(s.piecesManager);
+    async function deserialize(canvas:Canvas) {
+        id = canvas.id;
+
+        const canvasData = canvas.canvasData;
+        $store.activeMode = canvasData.activeMode;
+        $store.activeMode = canvasData.activeMode;
+        $store.backgroundColor = canvasData.backgroundColor;
+        $store.height = canvasData.height;
+        $store.width = canvasData.width;
+        $store.mouseX = canvasData.mouseX;
+        $store.mouseY = canvasData.mouseY;
+        $store.mouseDown = canvasData.mouseDown;
+        $store.prevMouseX = canvasData.prevMouseX;
+        $store.prevMouseY = canvasData.prevMouseY;
+        $store.xPan = canvasData.xPan;
+        $store.yPan = canvasData.yPan;
+        $store.zoom = canvasData.zoom;
+        $store.zoomDx = canvasData.zoomDx;
+        $store.zoomDy = canvasData.zoomDy;
+        $store.rulerSettings = canvasData.rulerSettings;
+        $store.snapToGrid = canvasData.snapToGrid;
+        $store.pieceSettings = canvasData.pieceSettings;
+
+        await piecesManager.deserialize(canvasData.piecesManager);
     }
 
     async function draw() {
@@ -237,7 +245,7 @@
     function setMouseDown(e:MouseEvent, _mouseDown:boolean) {
         e.preventDefault();
         $store.mouseDown = _mouseDown;
-
+        
         if ($store.activeMode === CanvasModes.Draw && $store.mouseDown) {
             piecesManager.addPiece();
         }

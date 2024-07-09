@@ -1,10 +1,10 @@
+import type { Model } from "$lib/types";
 import type { CanvasModes } from "../enums/modes"
 import type { PieceSettings } from "./piece";
 import type { PiecesManagerSerialized as SerializedPiecesManager } from "./piecesManager";
 import type { RulerSettings } from "./ruler";
 
 export type CanvasStore = {
-    id: number|null
     width: number
     height: number
     activeMode: CanvasModes
@@ -17,8 +17,6 @@ export type CanvasStore = {
     yPan: number
     ctx: null|CanvasRenderingContext2D
     backgroundColor: string
-    showRuler: boolean
-    showGrid: boolean
     snapToGrid: boolean
     pieceSettings: PieceSettings
     rulerSettings: RulerSettings
@@ -27,6 +25,11 @@ export type CanvasStore = {
     zoomDy: number
 }
 
-export type CanvasSerialized = Omit<CanvasStore, "ctx"> & {
+export type CanvasData = Omit<CanvasStore, "ctx"> & {
     piecesManager: SerializedPiecesManager
 };
+
+export type Canvas = Model & {
+    userEmail: string
+    canvasData: CanvasData
+}

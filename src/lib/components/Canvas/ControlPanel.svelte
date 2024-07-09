@@ -38,22 +38,6 @@
     function dispatchSave() {
         dispatch('save');
     }
-
-    function toggleResLock() {
-        resIsLocked = !resIsLocked;
-        updateLockedRes();
-    }
-
-    function updateLockedRes(setX=false) {
-        if (resIsLocked) {
-            if (setX) {
-                $canvasStore.pieceSettings.resX = $canvasStore.pieceSettings.resY;
-            }
-            else {
-                $canvasStore.pieceSettings.resY = $canvasStore.pieceSettings.resX;
-            }
-        }
-    }
 </script>
 
 <div bind:clientHeight={$appStore.controlPanelHeight} class="control-panel">
@@ -99,11 +83,6 @@
         <div class="control">
             <Button icon="clear_all" label="clear all" onclick={()=>dispatchAction(CanvasActions.Clear)} />
         </div>
-        <Dev>
-            <div class="control">
-                <Button icon="layers_clear" label="clear session storage" onclick={()=>window.sessionStorage.clear()} />
-            </div>
-        </Dev>
     </div>
 
     <div class="control-group">
@@ -135,20 +114,6 @@
                 <label for="">color</label>
                 <input bind:value={$canvasStore.pieceSettings.color} type="color" >
             </div>
-        </div>
-
-        <div class="control-group lock">
-            <div class="control">
-                <label for="">x resolution</label>
-                <input bind:value={$canvasStore.pieceSettings.resX} type="range" min="1" step="1" max="100" on:input={()=>updateLockedRes()}>
-            </div>
-
-            <div class="control">
-                <label for="">y resolution</label>
-                <input bind:value={$canvasStore.pieceSettings.resY} type="range" min="1" step="1" max="100" on:input={()=>updateLockedRes(true)}>
-            </div>
-
-            <Button icon={resIsLocked ? 'lock' : 'lock_open'} onclick={toggleResLock}/>
         </div>
     </div>
 </Modal>

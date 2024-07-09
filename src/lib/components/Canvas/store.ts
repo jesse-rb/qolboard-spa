@@ -19,14 +19,10 @@ export const store:Writable<CanvasStore> = writable({
     yPan: 0,
     ctx: null,
     backgroundColor: '#1A1A1A',
-    showRuler: true,
-    showGrid: true,
     snapToGrid: false,
     pieceSettings: {
         size: 20,
-        color: '#D55C1A',
-        resX: 1,
-        resY: 1
+        color: '#D55C1A'
     },
     rulerSettings: {
         showUnits: true,

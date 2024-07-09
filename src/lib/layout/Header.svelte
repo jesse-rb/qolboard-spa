@@ -4,7 +4,6 @@
     import Auth from '../components/Auth/Auth.svelte';
     import { appStore } from '../store';
     import { inject as injectVercelAnalytics } from '@vercel/analytics' // Vercel analytics
-    import type { SvelteComponent } from 'svelte';
     import { browser } from '$app/environment';
 
     injectVercelAnalytics();
@@ -15,21 +14,11 @@
     
     let logoutIsLoading = false;
 
-    // Load cached store
-    let cachedAppStore = browser ? window.sessionStorage.getItem('appStore') : null;
-
-    if (cachedAppStore) {
-        $appStore = JSON.parse(cachedAppStore);
-    }
-    
-    // Cahce store
-    $: if ($appStore && browser) {
-        window.sessionStorage.setItem('appStore', JSON.stringify($appStore));
-    }
-
     $: if ($appStore.headerHeight) {
         document.body.style.setProperty('--header-height', `${$appStore.headerHeight}px`);
     }
+
+    getUser();
 
     async function logout() {
         logoutIsLoading = true;
@@ -51,6 +40,23 @@
         }
 
         logoutIsLoading = false;
+    }
+
+    async function getUser() {
+        const domain = import.meta.env.VITE_API_HOST;
+        const path = "user";
+        const url = `${domain}/${path}`;
+
+        const response = await fetch(url, {
+            method: "GET",
+            credentials: "include"
+        });
+
+        if (response.ok) {
+            const responseBody = await response.json();
+            $appStore.isAuthenticated = true;
+            $appStore.email = responseBody.email;
+        }
     }
 </script>
 

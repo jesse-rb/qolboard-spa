@@ -18,8 +18,6 @@
         rightMost = rightMost > topRightBottomLeft.rightMost ? rightMost : topRightBottomLeft.rightMost;
         bottomMost = bottomMost > topRightBottomLeft.bottomMost ? bottomMost : topRightBottomLeft.bottomMost;
         leftMost = leftMost < topRightBottomLeft.leftMost ? leftMost : topRightBottomLeft.leftMost;
-        console.log(topRightBottomLeft);
-        console.log(leftMost);
     }
 
     export function serialize() {
