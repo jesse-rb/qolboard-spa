@@ -5,7 +5,7 @@
     type AuthRequestBody = {
         email:string
         password:string
-        passwordConfirmation?:string
+        password_confirmation?:string
     };
 
     type AuthResponseBody = {
@@ -39,7 +39,7 @@
         };
 
         if (isRegistration) {
-            body.passwordConfirmation = passwordConfirmation
+            body.password_confirmation = passwordConfirmation
         }
 
         const response = await fetch(url, {
