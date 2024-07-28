@@ -39,6 +39,10 @@
         const _ctx = elemCanvas.getContext('2d');
         if (_ctx !== null) {
             $store.ctx = _ctx;
+            $store.rulerSettings = {
+                showUnits: true,
+                showLines: false
+            }
         }
         else {
             throw new Error('2D canvas rendering context is not available');
@@ -172,8 +176,6 @@
             id: id,
             activeMode: $store.activeMode,
             backgroundColor: $store.backgroundColor,
-            // height: $store.height,
-            // width: $store.width,
             mouseX: $store.mouseX,
             mouseY: $store.mouseY,
             mouseDown: $store.mouseDown,
@@ -184,7 +186,6 @@
             zoom: $store.zoom,
             zoomDx: $store.zoomDx,
             zoomDy: $store.zoomDy,
-            rulerSettings: $store.rulerSettings,
             snapToGrid: $store.snapToGrid,
             pieceSettings: $store.pieceSettings,
             piecesManager: piecesManager.serialize()
@@ -200,8 +201,6 @@
         $store.activeMode = canvasData.activeMode;
         $store.activeMode = canvasData.activeMode;
         $store.backgroundColor = canvasData.backgroundColor;
-        // $store.height = canvasData.height;
-        // $store.width = canvasData.width;
         $store.mouseX = canvasData.mouseX;
         $store.mouseY = canvasData.mouseY;
         $store.mouseDown = canvasData.mouseDown;
@@ -212,7 +211,6 @@
         $store.zoom = canvasData.zoom;
         $store.zoomDx = canvasData.zoomDx;
         $store.zoomDy = canvasData.zoomDy;
-        $store.rulerSettings = canvasData.rulerSettings;
         $store.snapToGrid = canvasData.snapToGrid;
         $store.pieceSettings = canvasData.pieceSettings;
 

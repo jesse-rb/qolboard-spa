@@ -10,11 +10,17 @@
         deleteIsLoading = true;
 
         const id = canvas.id;
-        const resp = await fetch(`/canvas/${id}`, {
+
+        const domain = import.meta.env.VITE_API_HOST;
+        const path = `user/canvas`;
+        const url = `${domain}/${path}/${id}`;
+
+        const resp = await fetch(url, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json"
-            }
+            },
+            credentials: "include"
         });
         const body = await resp.json();
 
