@@ -60,6 +60,10 @@
             $appStore.isAuthenticated = true;
             $appStore.email = responseBody.email;
         }
+        else {
+            $appStore.isAuthenticated = false;
+            $appStore.email = "";
+        }
     }
 </script>
 

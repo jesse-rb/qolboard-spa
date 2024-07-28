@@ -172,8 +172,8 @@
             id: id,
             activeMode: $store.activeMode,
             backgroundColor: $store.backgroundColor,
-            height: $store.height,
-            width: $store.width,
+            // height: $store.height,
+            // width: $store.width,
             mouseX: $store.mouseX,
             mouseY: $store.mouseY,
             mouseDown: $store.mouseDown,
@@ -200,8 +200,8 @@
         $store.activeMode = canvasData.activeMode;
         $store.activeMode = canvasData.activeMode;
         $store.backgroundColor = canvasData.backgroundColor;
-        $store.height = canvasData.height;
-        $store.width = canvasData.width;
+        // $store.height = canvasData.height;
+        // $store.width = canvasData.width;
         $store.mouseX = canvasData.mouseX;
         $store.mouseY = canvasData.mouseY;
         $store.mouseDown = canvasData.mouseDown;

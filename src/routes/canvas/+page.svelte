@@ -1,6 +1,6 @@
 <script lang="ts">
-    import Canvas from "$lib/components/Canvas/Canvas.svelte";
-    import type { CanvasSerialized } from "$lib/components/Canvas/types/canvas";
+    import CanvasListing from "$lib/components/Canvas/CanvasListing.svelte";
+import type { Canvas } from "$lib/components/Canvas/types/canvas";
 
     let loading = false;
 
@@ -37,7 +37,7 @@
         {#if canvases.length > 0}
             {#each canvases as canvas}
                 <div>
-                    <a href="/canvas/{canvas.id}">Canvas {canvas.id}</a>
+                    <CanvasListing canvas={canvas} />
                 </div>
             {/each}
         {:else}

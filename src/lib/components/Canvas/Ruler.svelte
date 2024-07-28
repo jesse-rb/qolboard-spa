@@ -97,10 +97,10 @@
 <div class="{isHorizontal ? 'x' : 'y'} ruler pointer-events-none {colorIsDark($canvasStore.backgroundColor) ? 'text-white' : 'text-black'}">
     {#each rulerRange as i}
         {@const pos = ( (i + pan + zoomDelta) * $canvasStore.zoom )}
-        {#if $canvasStore.showRuler}
+        {#if $canvasStore.rulerSettings.showUnits}
             <span class="opacity-50 absolute font-mono" style="{isHorizontal ? 'left' : 'top'}: {pos}px;" >{i}</span>
         {/if}
-        {#if $canvasStore.showGrid}
+        {#if $canvasStore.rulerSettings.showLines}
             <div class="opacity-10 grid absolute bg-gray-50 overflow-hidden pointer-events-none" style="{isHorizontal ? `left: ${pos}px` : `top: ${pos}px;`}" ></div>
         {/if}
     {/each}

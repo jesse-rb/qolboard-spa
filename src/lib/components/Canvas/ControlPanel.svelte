@@ -69,12 +69,12 @@
             <input bind:value={$canvasStore.backgroundColor} type="color" on:input={dispatchUpdatedBackgroundColor} >
         </div>
         <div class="control">
-            <label for="">show ruler</label>
-            <Toggle bind:value={$canvasStore.showRuler} />
+            <label for="">show units</label>
+            <Toggle bind:value={$canvasStore.rulerSettings.showUnits} />
         </div>
         <div class="control">
             <label for="">show grid</label>
-            <Toggle bind:value={$canvasStore.showGrid} />
+            <Toggle bind:value={$canvasStore.rulerSettings.showLines} />
         </div>
         <div class="control">
             <label for="">snap to grid</label>
