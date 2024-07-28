@@ -5,7 +5,7 @@
     import Ruler from "./Ruler.svelte";
     import { store } from "./store";
     import { CanvasModes } from "./enums/modes";
-    import type { Canvas } from "./types/canvas";
+    import type { Canvas, CanvasData } from "./types/canvas";
     import type { CanvasActions } from "./enums/actions";
     import { appStore } from "../../store";
     import { pushState, replaceState } from "$app/navigation";
@@ -168,7 +168,7 @@
     }
     
     function serialize() {
-        const s:CanvasSerialized = {
+        const s:CanvasData = {
             id: id,
             activeMode: $store.activeMode,
             backgroundColor: $store.backgroundColor,

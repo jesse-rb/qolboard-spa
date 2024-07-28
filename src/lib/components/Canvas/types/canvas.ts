@@ -1,7 +1,7 @@
 import type { Model } from "$lib/types";
 import type { CanvasModes } from "../enums/modes"
 import type { PieceSettings } from "./piece";
-import type { PiecesManagerSerialized as SerializedPiecesManager } from "./piecesManager";
+import type { PiecesManagerSerialized } from "./piecesManager";
 import type { RulerSettings } from "./ruler";
 
 export type CanvasStore = {
@@ -26,7 +26,8 @@ export type CanvasStore = {
 }
 
 export type CanvasData = Omit<CanvasStore, "ctx"> & {
-    piecesManager: SerializedPiecesManager
+    id: number | null
+    piecesManager: PiecesManagerSerialized
 };
 
 export type Canvas = Model & {

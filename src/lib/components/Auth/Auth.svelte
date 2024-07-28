@@ -65,8 +65,8 @@
 
 <div>
     <div class="flex flex-col">
-        <input bind:value={email} type="email" placeholder="Email">
-        <input bind:value={password} type="password" placeholder="Password">
+        <input id="email" bind:value={email} type="email" placeholder="Email">
+        <input id="password" bind:value={password} type="password" placeholder="Password">
 
         {#if isRegistration}
             <input bind:value={passwordConfirmation} type="password" placeholder="Confirm password">

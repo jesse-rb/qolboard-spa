@@ -5,6 +5,7 @@
     import { appStore } from '../store';
     import { inject as injectVercelAnalytics } from '@vercel/analytics' // Vercel analytics
     import { browser } from '$app/environment';
+    import { onMount } from 'svelte';
 
     injectVercelAnalytics();
 
@@ -18,7 +19,9 @@
         document.body.style.setProperty('--header-height', `${$appStore.headerHeight}px`);
     }
 
-    getUser();
+    onMount(() => {
+        getUser();
+    });
 
     async function logout() {
         logoutIsLoading = true;
