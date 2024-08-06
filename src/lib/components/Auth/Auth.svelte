@@ -1,4 +1,6 @@
 <script lang="ts">
+    import type { Error } from "$lib/types";
+    import { teleport } from "$lib/util";
     import { appStore } from "../../store";
     import Button from "../Button.svelte";
 
@@ -9,7 +11,8 @@
     };
 
     type AuthResponseBody = {
-        email:string
+        email:string,
+        errors?:Array<Error>
     };
 
     export let isRegistration:boolean = false;
@@ -19,6 +22,8 @@
     let passwordConfirmation = '';
 
     let isLoading = false;
+    
+    let errors:Array<Error> = [];
 
     function resetAuthFields() {
         email = '';
@@ -51,10 +56,14 @@
             }
         });
 
+        const responseBody:AuthResponseBody = await response.json();
+
         if (response.ok) {
-            const responseBody:AuthResponseBody = await response.json();
             $appStore.isAuthenticated = true;
             $appStore.email = responseBody.email;
+        }
+        else {
+            errors = responseBody.errors ?? [];
         }
 
         resetAuthFields();
@@ -69,7 +78,7 @@
         <input id="password" bind:value={password} type="password" placeholder="Password">
 
         {#if isRegistration}
-            <input bind:value={passwordConfirmation} type="password" placeholder="Confirm password">
+            <input id="password_confirmation" bind:value={passwordConfirmation} type="password" placeholder="Confirm password">
         {/if}
     </div>
 
@@ -79,6 +88,16 @@
         icon="send"
         bind:isLoading={isLoading}
     />
+
+    {#if errors.length > 0}
+        <ul>
+            {#each errors as error}
+            <li>
+                <p use:teleport="{{id:error.field}}" class="text-red-400">{error.message}</p>
+            </li>
+            {/each}
+        </ul>
+    {/if}
 </div>
 
 <style>

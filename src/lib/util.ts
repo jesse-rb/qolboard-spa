@@ -37,3 +37,17 @@ export function colorIsDark(_c:string):boolean {
     let isLight = r > 0xFF / 2 || g > 0xFF / 2 // blue is reasonably dark, so only checking if red and green are present for lightness;
     return !isLight;
 }
+
+export function teleport(node:HTMLElement, params:{id:string}) {
+	let target = document.getElementById(params.id);
+
+    if (target) {
+        target?.insertAdjacentElement("afterend", node);
+    
+        return {
+            destroy() {
+                node.remove();
+            }
+        }
+    }
+}

@@ -4,3 +4,9 @@ export type Model = {
     updatedAt: string
     deletedAt: string|null
 }
+
+export type Error = {
+    message: string
+    field: string
+    value: any
+}
