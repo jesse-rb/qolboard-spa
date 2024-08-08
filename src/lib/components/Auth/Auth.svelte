@@ -32,6 +32,8 @@
     }
 
     async function auth() {
+        errors = [];
+
         isLoading = true;
 
         const domain = import.meta.env.VITE_API_HOST;
@@ -90,13 +92,10 @@
     />
 
     {#if errors.length > 0}
-        <ul>
-            {#each errors as error}
-            <li>
-                <p use:teleport="{{id:error.field}}" class="text-red-400">{error.message}</p>
-            </li>
-            {/each}
-        </ul>
+        {#each errors as error (error.field)}
+            <p use:teleport="{{id:error.field}}" class="text-red-400 text-sm">{error.message}</p>
+            <!-- <p class="text-red-400 text-sm">{error.message}</p> -->
+        {/each}
     {/if}
 </div>
 

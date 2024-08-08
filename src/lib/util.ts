@@ -38,16 +38,19 @@ export function colorIsDark(_c:string):boolean {
     return !isLight;
 }
 
+/**
+ * Teleport element to the element with the target id, if it exists
+ */
 export function teleport(node:HTMLElement, params:{id:string}) {
 	let target = document.getElementById(params.id);
-
-    if (target) {
+    console.log("DRINK WATER");
+    if (target ?? false) {
         target?.insertAdjacentElement("afterend", node);
-    
-        return {
-            destroy() {
-                node.remove();
-            }
+    }
+
+    return {
+        destroy() {
+            node.remove();
         }
     }
 }
