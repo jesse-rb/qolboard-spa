@@ -1,4 +1,6 @@
 <script lang="ts">
+    import type { Error } from "$lib/types";
+    import { teleport } from "$lib/util";
     import { appStore } from "../../store";
     import Button from "../Button.svelte";
 
@@ -9,7 +11,8 @@
     };
 
     type AuthResponseBody = {
-        email:string
+        email:string,
+        errors?:Array<Error>
     };
 
     export let isRegistration:boolean = false;
@@ -19,6 +22,8 @@
     let passwordConfirmation = '';
 
     let isLoading = false;
+    
+    let errors:Array<Error> = [];
 
     function resetAuthFields() {
         email = '';
@@ -27,6 +32,8 @@
     }
 
     async function auth() {
+        errors = [];
+
         isLoading = true;
 
         const domain = import.meta.env.VITE_API_HOST;
@@ -51,10 +58,14 @@
             }
         });
 
+        const responseBody:AuthResponseBody = await response.json();
+
         if (response.ok) {
-            const responseBody:AuthResponseBody = await response.json();
             $appStore.isAuthenticated = true;
             $appStore.email = responseBody.email;
+        }
+        else {
+            errors = responseBody.errors ?? [];
         }
 
         resetAuthFields();
@@ -69,7 +80,7 @@
         <input id="password" bind:value={password} type="password" placeholder="Password">
 
         {#if isRegistration}
-            <input bind:value={passwordConfirmation} type="password" placeholder="Confirm password">
+            <input id="password_confirmation" bind:value={passwordConfirmation} type="password" placeholder="Confirm password">
         {/if}
     </div>
 
@@ -79,6 +90,13 @@
         icon="send"
         bind:isLoading={isLoading}
     />
+
+    {#if errors.length > 0}
+        {#each errors as error (error.field)}
+            <p use:teleport="{{id:error.field}}" class="text-red-400 text-sm">{error.message}</p>
+            <!-- <p class="text-red-400 text-sm">{error.message}</p> -->
+        {/each}
+    {/if}
 </div>
 
 <style>

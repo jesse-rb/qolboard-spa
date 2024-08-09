@@ -71,7 +71,7 @@
     <div class="banner">
         <div class="flex items-center gap-2">
             <a href="/">
-                <h1>qolboard 2.0</h1>
+                <img class="h-8" src="/qolboard.svg" alt="A simple qolboard scribble logo">
             </a>
 
             <Button
