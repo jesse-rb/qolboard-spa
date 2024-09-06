@@ -48,7 +48,6 @@
     .inner {
         z-index: 1;
         display: inline-block;
-        width: fit-content;
         height: fit-content;
         margin-left: auto;
         margin-right: auto;

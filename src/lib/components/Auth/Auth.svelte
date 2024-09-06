@@ -75,7 +75,7 @@
 </script>
 
 <div>
-    <div class="flex flex-col">
+    <div class="flex flex-col w-[600px]">
         <input id="email" bind:value={email} type="email" placeholder="Email">
         <input id="password" bind:value={password} type="password" placeholder="Password">
 
