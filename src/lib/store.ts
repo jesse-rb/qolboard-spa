@@ -1,6 +1,7 @@
 import { writable, type Writable } from "svelte/store";
 
 export type AppStore = {
+    registeredEmail: string|null
     isAuthenticated: boolean
     email: string
     headerHeight: number
@@ -8,7 +9,8 @@ export type AppStore = {
 }
 
 export const appStore:Writable<AppStore> = writable({
-    isAuthenticated: true,
+    registeredEmail: null,
+    isAuthenticated: false,
     email: "",
     headerHeight: 0,
     controlPanelHeight: 0

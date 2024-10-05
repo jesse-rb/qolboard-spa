@@ -189,7 +189,7 @@
 
 {#if !$appStore.isAuthenticated}
     <Modal bind:this={loginModal}>
-        <Auth verified={verified} />
+        <Auth/>
     </Modal>
 
     <Modal bind:this={registerModal}>
@@ -214,9 +214,6 @@
     }
     .banner :global(.button-component) {
         margin-left: 10px;
-    }
-    h1 {
-        margin: 0;
     }
 
     @media only screen and (max-width: 800px) {

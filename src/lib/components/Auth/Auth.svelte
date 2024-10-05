@@ -4,6 +4,7 @@
     import { onMount } from "svelte";
     import { appStore } from "../../store";
     import Button from "../Button.svelte";
+    import ResendEmailVerificaitonButton from "./ResendEmailVerificaitonButton.svelte";
 
     type AuthRequestBody = {
         email:string
@@ -17,9 +18,8 @@
     };
 
     export let isRegistration:boolean = false;
-    export let verified:boolean = false;
 
-    let email = '';
+    let email = $appStore.registeredEmail ?? '';
     let password = '';
     let passwordConfirmation = '';
 
@@ -27,7 +27,7 @@
     
     let errors:Array<Error> = [];
 
-    let ok = false;
+    let ok = isRegistration && $appStore.registeredEmail != null;
 
     function resetAuthFields() {
         email = '';
@@ -68,7 +68,7 @@
         if (response.ok) {
             ok = true;
             if (isRegistration) {
-                
+                $appStore.registeredEmail = email;
             }
             else {
                 $appStore.isAuthenticated = true;
@@ -83,37 +83,52 @@
 
         isLoading = false;
     }
+
+    function backToRegistration() {
+        $appStore.registeredEmail = null;
+        ok = false;
+    }
 </script>
 
 <div>
-    <div class="flex flex-col">
-        {#if verified}
-            <p>Thank you for verifying your email, you can now log in</p>
-        {/if}
-        <input id="email" bind:value={email} type="email" placeholder="Email">
-        <input id="password" bind:value={password} type="password" placeholder="Password">
-
-        {#if isRegistration}
-            <input id="password_confirmation" bind:value={passwordConfirmation} type="password" placeholder="Confirm password">
-        {/if}
-    </div>
-
-    <Button
-        label="{isRegistration ? "Register" : "Login"}"
-        onclick={auth}
-        icon="send"
-        bind:isLoading={isLoading}
-        disabled={isLoading}
-    />
-
     {#if ok}
-        <p>Thank you</p>
-    {/if}
+        {#if isRegistration}
+            <h2>Thank you for registering</h2>
+            <p>We have sent an email to <em>{email}</em> with instructions to verify your email address.</p>
+            <Button
+                label="Back to registration"
+                icon="undo"
+                onclick={backToRegistration}
+            />
+            <ResendEmailVerificaitonButton
+                email={email}
+            />
+        {:else}
+            <p>Nice, ready to go!</p>
+        {/if}
+    {:else}
+        <div class="flex flex-col">
+            <input id="email" bind:value={email} type="email" placeholder="Email">
+            <input id="password" bind:value={password} type="password" placeholder="Password">
 
-    {#if errors.length > 0}
-        {#each errors as error (error.field)}
-            <p use:teleport="{{id:error.field}}" class="text-red-400 text-sm">{error.message}</p>
-        {/each}
+            {#if isRegistration}
+                <input id="password_confirmation" bind:value={passwordConfirmation} type="password" placeholder="Confirm password">
+            {/if}
+        </div>
+
+        <Button
+            label="{isRegistration ? "Register" : "Login"}"
+            onclick={auth}
+            icon="send"
+            bind:isLoading={isLoading}
+            disabled={isLoading}
+        />
+
+        {#if errors.length > 0}
+            {#each errors as error (error.field)}
+                <p use:teleport="{{id:error.field}}" class="text-red-400 text-sm">{error.message}</p>
+            {/each}
+        {/if}
     {/if}
 </div>
 
