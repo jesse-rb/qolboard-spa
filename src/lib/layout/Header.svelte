@@ -4,7 +4,6 @@
     import Auth from '../components/Auth/Auth.svelte';
     import { appStore } from '../store';
     import { inject as injectVercelAnalytics } from '@vercel/analytics' // Vercel analytics
-    import { browser } from '$app/environment';
     import { onMount } from 'svelte';
 
     injectVercelAnalytics();
@@ -14,13 +13,44 @@
     let loginModal:Modal;
     
     let logoutIsLoading = false;
+    let verified = false;
 
     $: if ($appStore.headerHeight) {
         document.body.style.setProperty('--header-height', `${$appStore.headerHeight}px`);
     }
 
-    onMount(() => {
-        getUser();
+    onMount(async () => {
+        const urlHashesStr = window.location.hash.substring(1);
+        const urlHashes = urlHashesStr.split("&");
+
+        const emailVerifiedReturnState:{
+            type?:string
+            access_token?:string
+            expires_in?:string
+        } = {};
+        for (const hash of urlHashes) {
+            const [k, v] = hash.split("=");
+            if (k === "type") {
+                emailVerifiedReturnState.type = v;
+            }
+            if (k === "access_token") {
+                emailVerifiedReturnState.access_token = v;
+            }
+            if (k === "expires_in") {
+                emailVerifiedReturnState.expires_in = v;
+            }
+        }
+        if (emailVerifiedReturnState.type === "signup") {
+            // window.location.search = "";
+            const token = emailVerifiedReturnState.access_token ?? "";
+            const expiresIn = emailVerifiedReturnState.expires_in ?? "0";
+
+            setToken(token, parseInt(expiresIn));
+        }
+        else {
+            getUser();
+        }
+
     });
 
     async function logout() {
@@ -43,6 +73,35 @@
         }
 
         logoutIsLoading = false;
+    }
+
+    async function setToken(token:string, expires_in:number) {
+        // User has returned from verifying their email, login via JWT token
+        const domain = import.meta.env.VITE_API_HOST;
+        const path = "auth/set_token";
+        const url = `${domain}/${path}`;
+        const body = {
+            token: token,
+            expires_in: expires_in
+        }
+
+        const response = await fetch(url, {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify(body),
+            headers: {
+                "content-type": "application/json"
+            }
+        })
+        if (response.ok) {
+            const responseBody = await response.json();
+            $appStore.isAuthenticated = true;
+            $appStore.email = responseBody.email;
+        }
+        else {
+            $appStore.isAuthenticated = false;
+            $appStore.email = "";
+        }
     }
 
     async function getUser() {
@@ -130,7 +189,7 @@
 
 {#if !$appStore.isAuthenticated}
     <Modal bind:this={loginModal}>
-        <Auth />
+        <Auth verified={verified} />
     </Modal>
 
     <Modal bind:this={registerModal}>

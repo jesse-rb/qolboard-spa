@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { Error } from "$lib/types";
     import { teleport } from "$lib/util";
+    import { onMount } from "svelte";
     import { appStore } from "../../store";
     import Button from "../Button.svelte";
 
@@ -16,6 +17,7 @@
     };
 
     export let isRegistration:boolean = false;
+    export let verified:boolean = false;
 
     let email = '';
     let password = '';
@@ -25,6 +27,8 @@
     
     let errors:Array<Error> = [];
 
+    let ok = false;
+
     function resetAuthFields() {
         email = '';
         password = '';
@@ -32,6 +36,7 @@
     }
 
     async function auth() {
+        ok = false;
         errors = [];
 
         isLoading = true;
@@ -61,8 +66,14 @@
         const responseBody:AuthResponseBody = await response.json();
 
         if (response.ok) {
-            $appStore.isAuthenticated = true;
-            $appStore.email = responseBody.email;
+            ok = true;
+            if (isRegistration) {
+                
+            }
+            else {
+                $appStore.isAuthenticated = true;
+                $appStore.email = responseBody.email;
+            }
         }
         else {
             errors = responseBody.errors ?? [];
@@ -76,6 +87,9 @@
 
 <div>
     <div class="flex flex-col">
+        {#if verified}
+            <p>Thank you for verifying your email, you can now log in</p>
+        {/if}
         <input id="email" bind:value={email} type="email" placeholder="Email">
         <input id="password" bind:value={password} type="password" placeholder="Password">
 
@@ -89,12 +103,16 @@
         onclick={auth}
         icon="send"
         bind:isLoading={isLoading}
+        disabled={isLoading}
     />
+
+    {#if ok}
+        <p>Thank you</p>
+    {/if}
 
     {#if errors.length > 0}
         {#each errors as error (error.field)}
             <p use:teleport="{{id:error.field}}" class="text-red-400 text-sm">{error.message}</p>
-            <!-- <p class="text-red-400 text-sm">{error.message}</p> -->
         {/each}
     {/if}
 </div>

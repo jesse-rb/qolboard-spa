@@ -4,10 +4,11 @@
     export let onclick = () => {};
     export let active = false; 
     export let isLoading = false;
+    export let disabled = false;
     
 </script>
 
-<button class="button-component" class:active={active} on:click="{ onclick }" >
+<button class="button-component" class:active={active} on:click="{ onclick }" disabled={disabled} >
     {#if isLoading}
         <span class="material-icons icon animate-spin" class:icon-only={label.length<=0} >sync</span>
     {:else}

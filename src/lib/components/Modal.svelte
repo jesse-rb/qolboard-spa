@@ -5,6 +5,7 @@
     let open = false;
 
     export const toggle = () => {open = !open};
+    export const show = () => {open = true};
     export const close = () => {open = false};
 </script>
 
