@@ -68,7 +68,7 @@
         if (response.ok) {
             ok = true;
             if (isRegistration) {
-                $appStore.registeredEmail = email;
+                $appStore.registeredEmail = responseBody.email;
             }
             else {
                 $appStore.isAuthenticated = true;
@@ -94,7 +94,7 @@
     {#if ok}
         {#if isRegistration}
             <h2>Thank you for registering</h2>
-            <p>We have sent an email to <em>{email}</em> with instructions to verify your email address.</p>
+            <p>We have sent an email to <em>{$appStore.registeredEmail}</em> with instructions to verify your email address.</p>
             <Button
                 label="Back to registration"
                 icon="undo"
