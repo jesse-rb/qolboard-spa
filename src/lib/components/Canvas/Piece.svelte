@@ -223,7 +223,7 @@
 
     function updateSettings(setting, value) {
         dispatchUpdate(false);
-        settings[setting] = value;
+        settings[setting] = parseInt(value);
         dispatchUpdate(true);
     }
 </script>
