@@ -1,10 +1,16 @@
 <script lang="ts">
+    import { createEventDispatcher } from "svelte";
     import Button from "../Button.svelte";
     import type { Canvas } from "./types/canvas";
 
     export let canvas:Canvas
 
+    const dispatch = createEventDispatcher();
     let deleteIsLoading = false;
+
+    function dispatchDeleted() {
+        dispatch("delete");
+    }
 
     async function deleteCanvas() {
         deleteIsLoading = true;
@@ -22,9 +28,11 @@
             },
             credentials: "include"
         });
-        const body = await resp.json();
+        const json = await resp.json();
 
         deleteIsLoading = false;
+
+        dispatchDeleted();
     }
 </script>
 

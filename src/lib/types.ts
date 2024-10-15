@@ -10,3 +10,13 @@ export type Error = {
     field: string
     value: any
 }
+
+export type ShowResponse<T> = {
+    data: T
+    errors: Array<Error>
+}
+
+export type IndexResponse<T> = {
+    data: Array<T>
+    errors: Array<Error>
+}

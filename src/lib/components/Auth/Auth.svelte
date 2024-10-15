@@ -14,6 +14,7 @@
 
     type AuthResponseBody = {
         email:string,
+        code:string,
         errors?:Array<Error>
     };
 
@@ -22,6 +23,7 @@
     let email = $appStore.registeredEmail ?? '';
     let password = '';
     let passwordConfirmation = '';
+    let suggestLogin = false;
 
     let isLoading = false;
     
@@ -76,6 +78,9 @@
             }
         }
         else {
+            if (responseBody.code == 'user_already_exists') {
+                suggestLogin = true;
+            }
             errors = responseBody.errors ?? [];
         }
 
@@ -87,6 +92,11 @@
     function backToRegistration() {
         $appStore.registeredEmail = null;
         ok = false;
+    }
+
+    function goToLogin() {
+        isRegistration = false;
+        errors = [];
     }
 </script>
 
@@ -103,8 +113,6 @@
             <ResendEmailVerificaitonButton
                 email={email}
             />
-        {:else}
-            <p>Nice, ready to go!</p>
         {/if}
     {:else}
         <div class="flex flex-col">
@@ -128,6 +136,14 @@
             {#each errors as error (error.field)}
                 <p use:teleport="{{id:error.field}}" class="text-red-400 text-sm">{error.message}</p>
             {/each}
+        {/if}
+
+        {#if isRegistration && suggestLogin}
+            <p>It looks like your email is already registered with us, please login instead</p>
+            <Button
+                label={"Login instead"}
+                onclick={goToLogin}
+            />
         {/if}
     {/if}
 </div>

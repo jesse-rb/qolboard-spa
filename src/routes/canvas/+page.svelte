@@ -1,11 +1,16 @@
 <script lang="ts">
     import CanvasListing from "$lib/components/Canvas/CanvasListing.svelte";
-import type { Canvas } from "$lib/components/Canvas/types/canvas";
+    import type { Canvas } from "$lib/components/Canvas/types/canvas";
+    import type { IndexResponse } from "$lib/types";
+    import { onMount } from "svelte";
 
     let loading = false;
+    let canvases:Array<Canvas> = [];
 
     async function getCanvases():Promise<Array<Canvas>> {
         loading = true;
+
+        let data:Array<Canvas> = [];
 
         const domain = import.meta.env.VITE_API_HOST;
         const path = `user/canvas`;
@@ -20,30 +25,31 @@ import type { Canvas } from "$lib/components/Canvas/types/canvas";
         });
 
         if (response.ok) {
-            const canvases = await response.json();
-            return canvases;
+            const json:IndexResponse<Canvas> = await response.json();
+            data = json.data;
         }
 
         loading = false;
-
-        return [];
+        return data;
     }
+
+    onMount(async () => {
+        canvases = await getCanvases();
+    });
 </script>
 
 <div>
-    {#await getCanvases()}
+    {#if loading}
         <p>loading</p>
-    {:then canvases}
-        {#if canvases.length > 0}
-            {#each canvases as canvas}
-                <div>
-                    <CanvasListing canvas={canvas} />
-                </div>
-            {/each}
-        {:else}
-            <p>No canvases saved yet.</p>
-        {/if}
-    {/await}
+    {:else if canvases.length > 0}
+        {#each canvases as canvas, i}
+            <div>
+                <CanvasListing canvas={canvas} on:delete={() => canvases = [...canvases.slice(0, i), ...canvases.slice(i+1)]} />
+            </div>
+        {/each}
+    {:else}
+        <p>No canvases saved yet.</p>
+    {/if}
 </div>
 
 <style>
