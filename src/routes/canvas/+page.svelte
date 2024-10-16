@@ -38,11 +38,11 @@
     });
 </script>
 
-<div>
+<div class="flex gap-6 p-12">
     {#if loading}
         <p>loading</p>
     {:else if canvases.length > 0}
-        {#each canvases as canvas, i}
+        {#each canvases as canvas, i (canvas.id)}
             <div>
                 <CanvasListing canvas={canvas} on:delete={() => canvases = [...canvases.slice(0, i), ...canvases.slice(i+1)]} />
             </div>
@@ -50,6 +50,10 @@
     {:else}
         <p>No canvases saved yet.</p>
     {/if}
+
+    <a href="/" class="w-[90px] self-stretch bg-back_4 flex justify-center items-center no-underline text-white rounded-md">
+        <span class="material-icons">add</span>
+    </a>
 </div>
 
 <style>

@@ -1,9 +1,10 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
     import Button from "../Button.svelte";
-    import type { Canvas } from "./types/canvas";
+    import Canvas from "./Canvas.svelte";
+    import type {Canvas as TypeCanvas} from "../Canvas/types/canvas"
 
-    export let canvas:Canvas
+    export let canvas:TypeCanvas
 
     const dispatch = createEventDispatcher();
     let deleteIsLoading = false;
@@ -36,4 +37,15 @@
     }
 </script>
 
-<a href="/canvas/{canvas.id}">Canvas {canvas.id}</a> <Button icon="delete" onclick={deleteCanvas} isLoading={deleteIsLoading}/>
+<div class="flex flex-col gap-2 bg-back_2 p-4 rounded-md">
+    <a class="no-underline" href="/canvas/{canvas.id}">
+        <Canvas id={canvas.id} preview />
+    </a>
+    <div class="flex gap-2 justify-between items-end">
+        <div>
+            <p class="text-xs">({canvas.id})</p>
+            <p class="font-bold">{canvas.canvasData.name ?? "Give this canvas a name"}</p>
+        </div>
+        <Button icon="clear" onclick={deleteCanvas} isLoading={deleteIsLoading}/>
+    </div>
+</div>

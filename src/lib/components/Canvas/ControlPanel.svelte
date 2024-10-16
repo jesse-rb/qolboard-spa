@@ -2,7 +2,6 @@
     import { getContext, createEventDispatcher, SvelteComponent } from "svelte";
     import Button from "../Button.svelte";
     import Modal from "../Modal.svelte";
-    import Dev from "../Dev.svelte";
     import { CanvasModes } from "./enums/modes";
     import { CanvasActions } from "./enums/actions";
     import type { CanvasStore as CanvasStore } from "./types/canvas";
@@ -20,8 +19,6 @@
     }
 
     let brushSettingsModal:SvelteComponent;
-
-    let resIsLocked:boolean = true;
 
     function dispatchSetActiveMode(mode: CanvasModes) {
         dispatch('setActiveMode', mode);
@@ -94,6 +91,10 @@
     {#if $appStore.isAuthenticated}
         <div class="control-group">
             <div class="control" >
+                <input
+                    type="text"
+                    bind:value={$canvasStore.name}
+                >
                 <Button label="save" icon="save" onclick={dispatchSave} isLoading={saveIsLoading} />
             </div>
         </div>

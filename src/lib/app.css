@@ -53,6 +53,9 @@ input[type="password"] {
     @apply m-1;
     @apply p-2;
 }
+input:disabled {
+    @apply text-gray-400
+}
 
 a {
     color: var(--color-fore-2);
