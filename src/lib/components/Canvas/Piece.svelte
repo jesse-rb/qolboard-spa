@@ -22,8 +22,6 @@
     let topMost;
     let bottomMost;
 
-    $: console.log(settings);
-
     function dispatchUpdate(redrawPiece) {
         dispatch('update', redrawPiece);
     }

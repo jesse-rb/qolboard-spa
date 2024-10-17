@@ -35,12 +35,25 @@
     }
 
     $: if (length) {
-        rulerRange = range(length, 0, rulerStep);
+        // Update range start/end        
+        const end = roundToTarget((-1) * pan+zoomDelta+length, rulerStep);
+        const start = roundToTarget((-1) * (pan+zoomDelta), rulerStep);
+
+        // Update range
+        rulerRange = range(end, start, rulerStep);
+        // rulerRange = range(length, 0, rulerStep);
     }
 
 
     onMount(() => {
-        rulerRange = range(length, 0, rulerStep);
+        // Update range start/end        
+        const end = roundToTarget((-1) * pan+zoomDelta+length, rulerStep);
+        const start = roundToTarget((-1) * (pan+zoomDelta), rulerStep);
+
+        // Update range
+        rulerRange = range(end, start, rulerStep);
+        // rulerRange = range(length, 0, rulerStep);
+        console.log(rulerRange);
     });
 
     function panLeftRange() {
@@ -59,18 +72,22 @@
         nextRangeZoomOut = nextRangeZoomIn;
         nextRangeZoomIn = nextRangeZoomIn * 2;
 
+        const offset = (rulerRange.length/2/2)*rulerStep;
+        console.log(offset);
+
         const newStepX = rulerStep * 0.5;
         
         // Update stepX
         rulerStep = newStepX;
         
-        // Update range start/end
-        const iEnd = rulerRange.length - 1;
-        const end = rulerRange[iEnd]*0.5;
-        const start = rulerRange[0]*0.5;
+        // Update range start/end        
+        const end = roundToTarget((-1) * pan+zoomDelta+length, rulerStep);
+        const start = roundToTarget((-1) * (pan+zoomDelta), rulerStep);
 
         // Update range
         rulerRange = range(end, start, rulerStep);
+
+        console.log(rulerRange);
     }
 
     function zoomOutRange() {
@@ -84,12 +101,13 @@
         rulerStep = newStepX;
 
         // Update range start/end
-        const iEnd = rulerRange.length - 1;
-        const end = roundToTarget(rulerRange[iEnd]*2, rulerStep);
-        const start = roundToTarget(rulerRange[0]*2, rulerStep);
+        const end = roundToTarget((-1) * pan+zoomDelta+length, rulerStep) + roundToTarget(rulerStep*rulerRange.length*0.25, rulerStep);
+        const start = roundToTarget((-1) * (pan+zoomDelta), rulerStep) - roundToTarget(rulerStep*rulerRange.length*0.25, rulerStep);
 
         // Update range
         rulerRange = range(end, start, rulerStep);
+
+        console.log(rulerRange);
     }
 
 </script>
