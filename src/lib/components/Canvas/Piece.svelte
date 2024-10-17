@@ -1,6 +1,5 @@
 <script>
     import { createEventDispatcher, getContext } from "svelte";
-    import { roundToTarget } from "../../util";
 
     export let settings = {};
     export let selected = false;
@@ -22,6 +21,8 @@
     let rightMost;
     let topMost;
     let bottomMost;
+
+    $: console.log(settings);
 
     function dispatchUpdate(redrawPiece) {
         dispatch('update', redrawPiece);
@@ -223,7 +224,7 @@
 
     function updateSettings(setting, value) {
         dispatchUpdate(false);
-        settings[setting] = parseInt(value);
+        settings[setting] = value;
         dispatchUpdate(true);
     }
 </script>
@@ -238,14 +239,14 @@
         <div class="control-group">
             <div class="control">
                 <label for="">size</label>
-                <input value={settings.size} type="range" min="1" step="1" max="100" on:input={(e) => updateSettings('size', e.target.value)} >
+                <input value={settings.size} type="range" min="1" step="1" max="100" on:input={(e) => updateSettings('size', parseInt(e.target.value))} >
             </div>
         </div>
 
         <div class="control-group">
             <div class="control">
                 <label for="">color</label>
-                <input value={settings.color} type="color" on:input={(e) => updateSettings('color', e.target.value)} >
+                <input value={settings.color} type="color" on:input={(e) => {console.log(e.target.value); updateSettings('color', e.target.value)}} >
             </div>
         </div>
     </div>

@@ -137,7 +137,6 @@
         // Initial draw
         await tick();
         if (preview) {
-            // $store.ctx.scale(0.1, 0.1);
             $store.zoom *= 0.1;
         }
         $store.ctx.scale($store.zoom, $store.zoom);
