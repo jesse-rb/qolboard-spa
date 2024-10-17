@@ -38,7 +38,7 @@
     });
 </script>
 
-<div class="flex gap-6 p-12">
+<div class="flex flex-wrap gap-6 p-12">
     {#if loading}
         <p>loading</p>
     {:else if canvases.length > 0}
