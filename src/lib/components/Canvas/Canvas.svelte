@@ -58,7 +58,8 @@
     });
     setContext('canvasStore', store);
 
-    $: canvasOffset = $appStore.headerHeight + $appStore.controlPanelHeight;
+    $: canvasOffsetTop = $appStore.headerHeight;
+    $: canvasOffsetLeft = $appStore.controlPanelWidth;
 
     $: if (width && height) {
         updateCanvasSize(width, height);
@@ -289,15 +290,15 @@
     }
 
     function setMousePos(e:MouseEvent) {
-        const canvasOffsetLeft = elemCanvas.offsetLeft;
-        const canvasOffsetTop = elemCanvas.offsetTop;
+        const _canvasOffsetLeft = elemCanvas.offsetLeft;
+        const _canvasOffsetTop = elemCanvas.offsetTop;
         const scrollOffsetX = document.documentElement.scrollLeft;
         const scrollOffsetY = document.documentElement.scrollTop;
         $store.prevMouseX = $store.mouseX;
         $store.prevMouseY = $store.mouseY;
 
-        $store.mouseX = e.clientX - canvasOffsetLeft + scrollOffsetX;
-        $store.mouseY = e.clientY - canvasOffsetTop + scrollOffsetY - canvasOffset; // subtract canvas absolute top offset
+        $store.mouseX = e.clientX - _canvasOffsetLeft + scrollOffsetX;
+        $store.mouseY = e.clientY - _canvasOffsetTop + scrollOffsetY - canvasOffsetTop; // subtract canvas absolute top offset
 
         $store.mouseX = Math.round($store.mouseX/$store.zoom);
         $store.mouseY = Math.round($store.mouseY/$store.zoom);
@@ -404,6 +405,7 @@
 
 <style>
     .canvas-container {
-        top: var(--canvas-offset);
+        top: var(--canvas-offset-top);
+        right: var(--canvas-offset-right);
     }
 </style>

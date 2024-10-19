@@ -8,7 +8,7 @@
     
 </script>
 
-<button class="button-component" class:active={active} on:click="{ onclick }" disabled={disabled} >
+<button class="button-component" class:icon-only={label.length<=0} class:active={active} on:click="{ onclick }" disabled={disabled} >
     {#if isLoading}
         <span class="material-icons icon animate-spin" class:icon-only={label.length<=0} >sync</span>
     {:else}
@@ -21,7 +21,6 @@
     .button-component {
         border-radius: 5px;
         padding: 10px;
-        margin: 2px;
         border: none;
         border: 1px solid var(--color-back-3);
         background-color: var(--color-back-3);
@@ -33,6 +32,10 @@
         text-wrap: nowrap;
         box-sizing: border-box;
     }
+    .button-component.icon-only {
+        width: fit-content;
+    }
+
     .icon {
         margin-right: 5px;
     }

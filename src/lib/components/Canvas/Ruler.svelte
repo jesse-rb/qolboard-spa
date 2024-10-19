@@ -130,9 +130,9 @@
         position: fixed;
     }
     .x.ruler {
+        right: var(--canvas-offset-right);
+        top: var(--canvas-offset-top);
         left: 0;
-        right: 0;
-        top: var(--canvas-offset);
         bottom: 0;
         margin-top: 0.5em;
         overflow-x: clip;
@@ -146,10 +146,10 @@
         width: 1px;
     }
     .y.ruler {
-        top: var(--canvas-offset);
-        bottom: 0;
+        top: var(--canvas-offset-top);
         left: 0;
-        right: 0;
+        bottom: 0;
+        right: var(--canvas-offset-right);
         margin-left: 0.5em;
         overflow-y: clip;
     }

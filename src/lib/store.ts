@@ -5,7 +5,7 @@ export type AppStore = {
     isAuthenticated: boolean
     email: string
     headerHeight: number
-    controlPanelHeight: number
+    controlPanelWidth: number
 }
 
 export const appStore:Writable<AppStore> = writable({
@@ -13,5 +13,5 @@ export const appStore:Writable<AppStore> = writable({
     isAuthenticated: true,
     email: "",
     headerHeight: 0,
-    controlPanelHeight: 0
+    controlPanelWidth: 0
 });
