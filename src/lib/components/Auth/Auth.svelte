@@ -5,6 +5,7 @@
     import { appStore } from "../../store";
     import Button from "../Button.svelte";
     import ResendEmailVerificaitonButton from "./ResendEmailVerificaitonButton.svelte";
+    import Errors from "../Form/Errors.svelte";
 
     type AuthRequestBody = {
         email:string
@@ -110,9 +111,7 @@
                 icon="undo"
                 onclick={backToRegistration}
             />
-            <ResendEmailVerificaitonButton
-                email={email}
-            />
+            <ResendEmailVerificaitonButton />
         {/if}
     {:else}
         <div class="flex flex-col">
@@ -132,11 +131,7 @@
             disabled={isLoading}
         />
 
-        {#if errors.length > 0}
-            {#each errors as error (error.field)}
-                <p use:teleport="{{id:error.field}}" class="text-red-400 text-sm">{error.message}</p>
-            {/each}
-        {/if}
+        <Errors errors={errors} />
 
         {#if isRegistration && suggestLogin}
             <p>It looks like your email is already registered with us, please login instead</p>
