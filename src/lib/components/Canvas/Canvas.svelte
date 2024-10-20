@@ -366,7 +366,6 @@
         <canvas
             class="rounded-md"
             bind:this={elemCanvas}
-            width="210px"
             height="90px"
         />
     </div>

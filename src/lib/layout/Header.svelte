@@ -13,7 +13,6 @@
     let loginModal:Modal;
     
     let logoutIsLoading = false;
-    let verified = false;
 
     $: if ($appStore.headerHeight) {
         document.body.style.setProperty('--header-height', `${$appStore.headerHeight}px`);
@@ -176,14 +175,29 @@
 
 <Modal bind:this={aboutModal}>
     <h2>About</h2>
-    <h3>Privacy note</h3>
-    <p>Please note that qolboard uses:</p>
+    <!--Open beta-->
+    <h3 class="flex items-center gap-2">
+        <span class="material-icons text-fore2">science</span>
+        <span>Open Beta</span>
+    </h3>
+    <p>Please note that qolboard 2.0 is in a <em>beta</em> stage of early development. Therefore please bear with us while it is possible for breaking changes to occur occasionally that could affect existing canvases.</p>
+    
+    <!--Attributions-->
+    <h3 class="flex items-center gap-2">
+        <span class="material-icons text-fore2">attribution</span>
+        <span>Attributions</span>
+    </h3>
     <ul>
-        <li>session storage to carry your drawings over between page refreshes</li>
-        <li>server memory to sync your drawing with anyone who joins the 'room' which you are currently in.</li>
+        <li><a target="_blank" rel="noopener noreferrer" href="https://svelte.dev/">Svelte</a></li>
+        <li><a target="_blank" rel="noopener noreferrer" href="https://go.dev/">Golang</a></li>
+        <li><a target="_blank" rel="noopener noreferrer" href="https://fonts.google.com/icons">Google material design icons</a></li>
     </ul>
-    <p>Therefore <em>please do not use qolboard for any personal or private details</em>.</p>
-    <h3>Github</h3>
+
+    <!--Github-->
+    <h3 class="flex items-center gap-2">
+        <span class="material-icons text-fore2">code</span>
+        <span>Github</span>
+    </h3>
     <a href="https://github.com/jesse-rb" target="_blank" rel="noopener noreferrer">github.com/jesse-rb</a>
 </Modal>
 
