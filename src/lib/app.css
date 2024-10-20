@@ -6,14 +6,15 @@ body {
     --color-back: #222222;
     --color-back-2: #2e2e2e;
     --color-back-3: #383838;
-    --color-back-4: #4c4660;
+    --color-back-4: #454055;
     --color-back-autofill: #e9f0fd;
     --color-fore: #4fbb7c;
     --color-fore-2: #71bb4f;
 
     --header-height: 100px;
-    --control-panel-height: 200px;
-    --canvas-offset: calc( var(--header-height) + var(--control-panel-height) );
+    --control-panel-width: 0px;
+    --canvas-offset-top: calc( var(--header-height) );
+    --canvas-offset-right: calc( var(--control-panel-width) );
 
     margin: 0;
     background-color: var(--color-back);
@@ -44,12 +45,17 @@ h1, h2, h3, p {
     @apply mb-2;
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="email"],
+input[type="password"] {
     background-color: var(--color-back-3);
     @apply rounded-md;
     @apply text-white;
     @apply m-1;
     @apply p-2;
+}
+input:disabled {
+    @apply text-gray-400
 }
 
 a {
@@ -64,4 +70,30 @@ a {
 em {
     font-weight: 700;
     font-style: normal;
+}
+
+
+/*
+    Style our scroll bar (thank you w3schools)
+/*
+
+/* width */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: var(--color-back-2);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    @apply rounded-lg;
+    background: var(--color-back-4);
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-back-4);
 }

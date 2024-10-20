@@ -5,6 +5,7 @@
     let open = false;
 
     export const toggle = () => {open = !open};
+    export const show = () => {open = true};
     export const close = () => {open = false};
 </script>
 
@@ -48,7 +49,6 @@
     .inner {
         z-index: 1;
         display: inline-block;
-        width: fit-content;
         height: fit-content;
         margin-left: auto;
         margin-right: auto;

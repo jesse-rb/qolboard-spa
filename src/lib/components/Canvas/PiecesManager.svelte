@@ -14,11 +14,10 @@
     let bottomMost;
 
     function updateBoundingBox(topRightBottomLeft) {
-        const {top, right, bottom, left} = topRightBottomLeft;
-        topMost = topMost < top ? topMost : top;
-        rightMost = rightMost > right ? rightMost : right;
-        bottomMost = bottomMost > bottom ? bottomMost : bottom;
-        leftMost = leftMost < left ? leftMost : left;
+        topMost = topMost < topRightBottomLeft.topMost ? topMost : topRightBottomLeft.topMost;
+        rightMost = rightMost > topRightBottomLeft.rightMost ? rightMost : topRightBottomLeft.rightMost;
+        bottomMost = bottomMost > topRightBottomLeft.bottomMost ? bottomMost : topRightBottomLeft.bottomMost;
+        leftMost = leftMost < topRightBottomLeft.leftMost ? leftMost : topRightBottomLeft.leftMost;
     }
 
     export function serialize() {

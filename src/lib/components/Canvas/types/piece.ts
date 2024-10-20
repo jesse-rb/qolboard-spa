@@ -1,8 +1,6 @@
 export type PieceSettings = {
     size: number
     color: string
-    resX: number
-    resY: number
 };
 
 export type PieceSerialized = {

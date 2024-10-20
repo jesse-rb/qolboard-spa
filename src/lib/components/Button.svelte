@@ -2,12 +2,18 @@
     export let label = '';
     export let icon = '';
     export let onclick = () => {};
-    export let active = false;
+    export let active = false; 
+    export let isLoading = false;
+    export let disabled = false;
     
 </script>
 
-<button class="button-component" class:active={active} on:click="{ onclick }" >
-    <span class="icon" class:icon-only={label.length<=0} class:material-icons={icon.length>0} >{icon}</span>
+<button class="button-component" class:icon-only={label.length<=0} class:active={active} on:click="{ onclick }" disabled={disabled} >
+    {#if isLoading}
+        <span class="material-icons icon animate-spin" class:icon-only={label.length<=0} >sync</span>
+    {:else}
+        <span class="icon" class:icon-only={label.length<=0} class:material-icons={icon.length>0} >{icon}</span>
+    {/if}
     <span class="label" >{label}</span>
 </button>
 
@@ -15,16 +21,21 @@
     .button-component {
         border-radius: 5px;
         padding: 10px;
-        margin: 2px;
         border: none;
+        border: 1px solid var(--color-back-3);
         background-color: var(--color-back-3);
         color: var(--color-a);
-        transition-duration: 1s;
+        transition-duration: 0.2s;
         font-size: large;
         display: inline-flex;
         align-items: center;
         text-wrap: nowrap;
+        box-sizing: border-box;
     }
+    .button-component.icon-only {
+        width: fit-content;
+    }
+
     .icon {
         margin-right: 5px;
     }

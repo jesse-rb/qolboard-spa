@@ -3,16 +3,20 @@
     import PiecesManager from "./PiecesManager.svelte";
     import ControlPanel from "./ControlPanel.svelte";
     import Ruler from "./Ruler.svelte";
-    import { store } from "./store";
     import { CanvasModes } from "./enums/modes";
-    import type { CanvasSerialized } from "./types/canvas";
+    import type { Canvas, CanvasData, CanvasStore } from "./types/canvas";
     import type { CanvasActions } from "./enums/actions";
-    import { store as appStore } from "../../store";
+    import { appStore } from "../../store";
+    import { pushState } from "$app/navigation";
+    import { writable, type Writable } from "svelte/store";
+
+    export let id:number|null = null;
+    export let preview:boolean = false;
 
     let elemContaienr:HTMLDivElement;
     let elemCanvas:HTMLCanvasElement;
     
-    let piecesManager:SvelteComponent;
+    let piecesManager:PiecesManager;
     
     let keyDown:string|null = null;
     
@@ -20,11 +24,42 @@
     
     let width:number;
     let height:number;
-    
-    setContext('canvasStore', store);
-    setContext('saveToSessionStorage', saveToSessionStorage);
 
-    $: canvasOffset = $appStore.headerHeight + $appStore.controlPanelHeight;
+    let saveIsLoading = false;
+    
+    // Allow each canvas instance to have it's own separate store instance (not a shared store)
+    const store:Writable<CanvasStore> = writable({
+        ctx: null,
+        id: null,
+        name: "A blank canvas",
+        width: 0,
+        height: 0,
+        activeMode:CanvasModes.Draw,
+        mouseDown:false,
+        mouseX:0,
+        mouseY:0,
+        prevMouseX:0,
+        prevMouseY:0,
+        xPan: 0,
+        yPan: 0,
+        backgroundColor: '#1A1A1A',
+        snapToGrid: false,
+        pieceSettings: {
+            size: 20,
+            color: '#D55C1A'
+        },
+        rulerSettings: {
+            showUnits: true,
+            showLines: false,
+        },
+        zoom: 1,
+        zoomDx: 0,
+        zoomDy: 0
+    });
+    setContext('canvasStore', store);
+
+    $: canvasOffsetTop = $appStore.headerHeight;
+    $: canvasOffsetLeft = $appStore.controlPanelWidth;
 
     $: if (width && height) {
         updateCanvasSize(width, height);
@@ -33,104 +68,189 @@
     onMount(async () => {
         // Init canvas context
         const _ctx = elemCanvas.getContext('2d');
-        if (_ctx) {
+        if (_ctx !== null) {
             $store.ctx = _ctx;
         }
         else {
             throw new Error('2D canvas rendering context is not available');
         }
         
-        await restoreFromSessionStorage();
+        if (id !== null) {
+            const canvas = await getCanvas(id);
+            if (canvas) {
+                await deserialize(canvas);
+            }
+        }
 
-        // Init global event listeners for things such as keyboard shortcuts
-        window.addEventListener('keydown', (e) => {
-            const key = e.key;
+        if (!preview) {
+            // Init global event listeners for things such as keyboard shortcuts
+            window.addEventListener('keydown', (e) => {
+                const key = e.key;
 
-            // Register keydown keyboard shortcuts
-            if (keyDown === null) {
-                keyDown = key;
-                console.log(`keypress: ${key}`);
+                // Register keydown keyboard shortcuts
+                if (keyDown === null) {
+                    keyDown = key;
+                    console.log(`keypress: ${key}`);
+                    if (key === ' ') {
+                        overiddenActiveMode = $store.activeMode;
+                        setActiveMode(CanvasModes.Pan);
+                    }
+                }
+            });
+            window.addEventListener('keyup', (e) => {
+                const key = e.key;
+
+                // Register keyup keyboard shortcuts
+                console.log(`keyup: ${key}`);
                 if (key === ' ') {
-                    overiddenActiveMode = $store.activeMode;
-                    setActiveMode(CanvasModes.Pan);
+                    if (overiddenActiveMode) {
+                        setActiveMode(overiddenActiveMode);
+                    }
+                    overiddenActiveMode = null;
+                    $store.mouseDown = false;
                 }
-            }
-        });
-        window.addEventListener('keyup', (e) => {
-            const key = e.key;
 
-            // Register keyup keyboard shortcuts
-            console.log(`keyup: ${key}`);
-            if (key === ' ') {
-                if (overiddenActiveMode) {
-                    setActiveMode(overiddenActiveMode);
-                }
-                overiddenActiveMode = null;
-                $store.mouseDown = false;
-            }
+                keyDown = null;
+            });
+            elemCanvas.addEventListener("wheel", (e) => {
+                const wheelDeltaY = e.deltaY;
+                const zoom = wheelDeltaY < 0 ? 100/99 : 99/100; // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
+                $store.ctx?.scale(zoom, zoom);
 
-            keyDown = null;
-        });
-        window.addEventListener("wheel", (e) => {
-            const wheelDeltaY = e.deltaY;
-            const zoom = wheelDeltaY < 0 ? 100/99 : 99/100; // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
-            $store.ctx?.scale(zoom, zoom);
+                const oldZoom = $store.zoom;
+                $store.zoom = $store.zoom * zoom;
 
-            const oldZoom = $store.zoom;
-            $store.zoom = $store.zoom * zoom;
+                // Pan according to zoom, to center canvas after zoom
+                let dx = Math.abs($store.width/$store.zoom-$store.width/oldZoom)/2;
+                let dy = Math.abs($store.height/$store.zoom-$store.height/oldZoom)/2;
 
-            // Pan according to zoom, to center canvas after zoom
-            let dx = Math.abs($store.width/$store.zoom-$store.width/oldZoom)/2;
-            let dy = Math.abs($store.height/$store.zoom-$store.height/oldZoom)/2;
+                dx = dx * (wheelDeltaY > 0 ? 1 : -1);
+                dy = dy * (wheelDeltaY > 0 ? 1 : -1);
 
-            dx = dx * (wheelDeltaY > 0 ? 1 : -1);
-            dy = dy * (wheelDeltaY > 0 ? 1 : -1);
+                $store.zoomDx += dx;
+                $store.zoomDy += dy;
 
-            $store.zoomDx += dx;
-            $store.zoomDy += dy;
-
-            piecesManager.pan(dx, dy);
-            draw();
-            saveToSessionStorage();
-        });
+                piecesManager.pan(dx, dy);
+                draw();
+            });
+        }
 
         // Initial draw
         await tick();
+        if (preview) {
+            $store.zoom *= 0.1;
+        }
         $store.ctx.scale($store.zoom, $store.zoom);
         
         await draw();
     });
 
-    function saveToSessionStorage() {
-        window.sessionStorage.setItem('canvas', JSON.stringify(serialize()));
-    }
+    async function saveCanvas() {
+        saveIsLoading = true;
 
-    async function restoreFromSessionStorage() {
-        // Restore canvas state from session storage
-        const serializedStateString = window.sessionStorage.getItem('canvas');
-        if (serializedStateString === null) {
-            console.log('Canvas does not yet have a saved state!');
+        const domain = import.meta.env.VITE_API_HOST;
+        let path = "user/canvas";
+        if (id !== null) {
+            path = `${path}/${id}`;
         }
-        else {
-            const state = JSON.parse(serializedStateString);
-            if (state !== null) {
-                await deserialize(state);
+        console.log(path);
+        const url = `${domain}/${path}`;
+
+        const body = serialize();
+
+        const response = await fetch(url, {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify(body),
+            headers: {
+                "content-type": "application/json"
+            }
+        });
+
+        if (response.ok) {
+            if (id === null) {
+                const body:{msg:string, canvas:Canvas} = await response.json();
+                id = body.canvas.id;
+                pushState(`/canvas/${id}`, {});
             }
         }
+
+        saveIsLoading = false;
     }
 
+    async function getCanvas(id: number):Promise<Canvas|null> {
+        // loading = true;
+
+        const domain = import.meta.env.VITE_API_HOST;
+        const path = `user/canvas/${id}`;
+        const url = `${domain}/${path}`;
+
+        const response = await fetch(url, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                "content-type": "application/json"
+            }
+        });
+
+        if (response.ok) {
+            const canvas:Canvas = await response.json();
+            return canvas;
+        }
+
+        // loading = false;
+
+        return null;
+    }
+    
     function serialize() {
-        const s:CanvasSerialized = {
-            store: $store,
+        const s:CanvasData = {
+            id: $store.id,
+            name: $store.name,
+            activeMode: $store.activeMode,
+            backgroundColor: $store.backgroundColor,
+            mouseX: $store.mouseX,
+            mouseY: $store.mouseY,
+            mouseDown: $store.mouseDown,
+            prevMouseX: $store.prevMouseX,
+            prevMouseY: $store.prevMouseY,
+            xPan: $store.xPan,
+            yPan: $store.yPan,
+            zoom: $store.zoom,
+            zoomDx: $store.zoomDx,
+            zoomDy: $store.zoomDy,
+            snapToGrid: $store.snapToGrid,
+            rulerSettings: $store.rulerSettings,
+            pieceSettings: $store.pieceSettings,
             piecesManager: piecesManager.serialize()
         }
+
         return s;
     }
 
-    async function deserialize(s:CanvasSerialized) {
-        $store = s.store;
-        $store.ctx = elemCanvas.getContext('2d');
-        await piecesManager.deserialize(s.piecesManager);
+    async function deserialize(canvas:Canvas) {
+        id = canvas.id;
+
+        const canvasData = canvas.canvasData;
+        $store.id = id;
+        $store.name = canvasData.name;
+        $store.activeMode = canvasData.activeMode;
+        $store.activeMode = canvasData.activeMode;
+        $store.backgroundColor = canvasData.backgroundColor;
+        $store.mouseX = canvasData.mouseX;
+        $store.mouseY = canvasData.mouseY;
+        $store.mouseDown = canvasData.mouseDown;
+        $store.prevMouseX = canvasData.prevMouseX;
+        $store.prevMouseY = canvasData.prevMouseY;
+        $store.xPan = canvasData.xPan;
+        $store.yPan = canvasData.yPan;
+        $store.zoom = canvasData.zoom;
+        $store.zoomDx = canvasData.zoomDx;
+        $store.zoomDy = canvasData.zoomDy;
+        $store.snapToGrid = canvasData.snapToGrid;
+        $store.pieceSettings = canvasData.pieceSettings;
+
+        await piecesManager.deserialize(canvasData.piecesManager);
     }
 
     async function draw() {
@@ -159,7 +279,7 @@
     function setMouseDown(e:MouseEvent, _mouseDown:boolean) {
         e.preventDefault();
         $store.mouseDown = _mouseDown;
-
+        
         if ($store.activeMode === CanvasModes.Draw && $store.mouseDown) {
             piecesManager.addPiece();
         }
@@ -167,33 +287,29 @@
         if ($store.activeMode === CanvasModes.Grab && $store.mouseDown) {
             piecesManager.select();
         }
-
-        saveToSessionStorage();
     }
 
     function setMousePos(e:MouseEvent) {
-        const canvasOffsetLeft = elemCanvas.offsetLeft;
-        const canvasOffsetTop = elemCanvas.offsetTop;
+        const _canvasOffsetLeft = elemCanvas.offsetLeft;
+        const _canvasOffsetTop = elemCanvas.offsetTop;
         const scrollOffsetX = document.documentElement.scrollLeft;
         const scrollOffsetY = document.documentElement.scrollTop;
         $store.prevMouseX = $store.mouseX;
         $store.prevMouseY = $store.mouseY;
 
-        $store.mouseX = e.clientX - canvasOffsetLeft + scrollOffsetX;
-        $store.mouseY = e.clientY - canvasOffsetTop + scrollOffsetY - canvasOffset; // subtract canvas absolute top offset
+        $store.mouseX = e.clientX - _canvasOffsetLeft + scrollOffsetX;
+        $store.mouseY = e.clientY - _canvasOffsetTop + scrollOffsetY - canvasOffsetTop; // subtract canvas absolute top offset
 
-        $store.mouseX = $store.mouseX/$store.zoom;
-        $store.mouseY = $store.mouseY/$store.zoom;
+        $store.mouseX = Math.round($store.mouseX/$store.zoom);
+        $store.mouseY = Math.round($store.mouseY/$store.zoom);
 
         if ($store.activeMode == CanvasModes.Draw && $store.mouseDown) {
             piecesManager.addPointToLatestPiece();
-            saveToSessionStorage();
         }
 
         if ($store.activeMode == CanvasModes.Grab && $store.mouseDown) {
             if (piecesManager.getSelected()) {
                 piecesManager.move();
-                saveToSessionStorage();
             }
             else {
                 piecesManager.select();
@@ -206,13 +322,11 @@
             piecesManager.draw();
             $store.xPan += $store.mouseX - $store.prevMouseX;
             $store.yPan += $store.mouseY - $store.prevMouseY;
-            saveToSessionStorage();
         }
 
         if ($store.activeMode == CanvasModes.Remove && $store.mouseDown) {
             piecesManager.select();
             piecesManager.remove();
-            saveToSessionStorage();
         }
     }
 
@@ -225,7 +339,6 @@
         if (action === 'clear') {
             piecesManager.clear();
             draw();
-            saveToSessionStorage();
         }
     }
 
@@ -248,33 +361,50 @@
     }
 </script>
 
-<div class="canvas-component">
-    <div bind:clientWidth={width} bind:clientHeight={height} bind:this={elemContaienr} class="canvas-container absolute right-0 bottom-0 left-0 -z-10" >
+{#if preview}
+    <div bind:clientWidth={width} bind:clientHeight={height}>
         <canvas
-            class="absolute hover:cursor-crosshair"
+            class="rounded-md"
             bind:this={elemCanvas}
-            width="{$store.width}px"
-            height="{$store.height}px"
-            on:mousedown={(e)=>setMouseDown(e, true)}
-            on:mouseup={(e)=>setMouseDown(e, false)} 
-            on:mouseleave={(e)=>setMouseDown(e, false)} 
-            on:mousemove={(e)=>setMousePos(e)} />
+            height="90px"
+        />
     </div>
 
     <PiecesManager bind:this={piecesManager} />
+{:else}
+    <div class="canvas-component">
 
-    <ControlPanel
-        on:setActiveMode={(e)=>setActiveMode(e.detail)}
-        on:action={(e)=>action(e.detail)}
-        on:updatedBackgroundColor={draw}
-    />
+        <ControlPanel
+            saveIsLoading={saveIsLoading}
+            on:setActiveMode={(e)=>setActiveMode(e.detail)}
+            on:action={(e)=>action(e.detail)}
+            on:updatedBackgroundColor={draw}
+            on:save={saveCanvas}
+        />
 
-    <Ruler />
-    <Ruler isHorizontal={false} />
-</div>
+        <div bind:clientWidth={width} bind:clientHeight={height} bind:this={elemContaienr} class="canvas-container absolute right-0 bottom-0 left-0 -z-10" >
+            <canvas
+                class="absolute hover:cursor-crosshair"
+                bind:this={elemCanvas}
+                width="{$store.width}px"
+                height="{$store.height}px"
+                on:mousedown={(e)=>setMouseDown(e, true)}
+                on:mouseup={(e)=>setMouseDown(e, false)} 
+                on:mouseleave={(e)=>setMouseDown(e, false)} 
+                on:mousemove={(e)=>setMousePos(e)}
+            />
+        </div>
+
+        <PiecesManager bind:this={piecesManager} />
+
+        <Ruler />
+        <Ruler isHorizontal={false} />
+    </div>
+{/if}
 
 <style>
     .canvas-container {
-        top: var(--canvas-offset);
+        top: var(--canvas-offset-top);
+        right: var(--canvas-offset-right);
     }
 </style>

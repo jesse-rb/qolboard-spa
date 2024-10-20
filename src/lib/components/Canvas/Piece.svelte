@@ -1,12 +1,10 @@
 <script>
     import { createEventDispatcher, getContext } from "svelte";
-    import { roundToTarget } from "../../util";
 
     export let settings = {};
     export let selected = false;
 
     const canvasStore = getContext('canvasStore');
-    const saveToSessionStorage = getContext('saveToSessionStorage');
 
     const dispatch = createEventDispatcher();
     const ctx = $canvasStore.ctx;
@@ -148,11 +146,8 @@
         const mouseX = $canvasStore.mouseX;
         const mouseY = $canvasStore.mouseY;
 
-        const resX = settings.resX;
-        const resY = settings.resY;
-
-        let thereIsChangeOnX = mouseX >= latestPointX+resX || mouseX <= latestPointX-resX;
-        let thereIsChangeOnY = mouseY >= latestPointY+resY || mouseY <= latestPointY-resY;
+        let thereIsChangeOnX = mouseX >= latestPointX || mouseX <= latestPointX;
+        let thereIsChangeOnY = mouseY >= latestPointY || mouseY <= latestPointY;
 
         let newX = latestPointX;
         let newY = latestPointY;
@@ -229,7 +224,6 @@
         dispatchUpdate(false);
         settings[setting] = value;
         dispatchUpdate(true);
-        saveToSessionStorage();
     }
 </script>
 
@@ -243,14 +237,14 @@
         <div class="control-group">
             <div class="control">
                 <label for="">size</label>
-                <input value={settings.size} type="range" min="1" step="1" max="100" on:input={(e) => updateSettings('size', e.target.value)} >
+                <input value={settings.size} type="range" min="1" step="1" max="100" on:input={(e) => updateSettings('size', parseInt(e.target.value))} >
             </div>
         </div>
 
         <div class="control-group">
             <div class="control">
                 <label for="">color</label>
-                <input value={settings.color} type="color" on:input={(e) => updateSettings('color', e.target.value)} >
+                <input value={settings.color} type="color" on:input={(e) => {console.log(e.target.value); updateSettings('color', e.target.value)}} >
             </div>
         </div>
     </div>
