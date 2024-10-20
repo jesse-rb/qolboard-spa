@@ -33,6 +33,7 @@
         background-color: var(--color-back-3);
         -webkit-transition: .4s;
         transition: .4s;
+        z-index: -1;
     }
 
     .slider:before {

@@ -129,6 +129,8 @@
         @apply right-0;
         @apply overflow-y-auto;
         @apply overflow-x-hidden;
+        @apply bg-back;
+        @apply z-30;
     }
     .control-group {
         @apply w-full;

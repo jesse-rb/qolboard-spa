@@ -127,9 +127,9 @@
 </script>
 
 <div bind:clientHeight={$appStore.headerHeight} class="header-layout">
-    <div class="banner">
-        <div class="flex items-center gap-2">
-            <a href="/">
+    <div class="banner gap-2">
+        <div class="flex items-center gap-2 w-full sm:w-fit">
+            <a class="shrink-0" href="/">
                 <img class="h-8" src="/qolboard.svg" alt="A simple qolboard scribble logo">
             </a>
 
@@ -142,7 +142,7 @@
             />
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2 w-full sm:w-fit">
             {#if $appStore.isAuthenticated}
                 <a href="/canvas">My Canvases</a>
             {/if}
@@ -211,9 +211,6 @@
         flex-grow: 1;
         padding: 20px;
         flex-wrap: wrap;
-    }
-    .banner :global(.button-component) {
-        margin-left: 10px;
     }
 
     @media only screen and (max-width: 800px) {
