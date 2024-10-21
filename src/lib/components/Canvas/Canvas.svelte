@@ -362,7 +362,7 @@
 </script>
 
 {#if preview}
-    <div bind:clientWidth={width} bind:clientHeight={height}>
+    <div bind:clientWidth={width} bind:clientHeight={height} class="overflow-hidden">
         <canvas
             class="rounded-md"
             bind:this={elemCanvas}
