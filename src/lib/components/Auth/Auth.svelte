@@ -101,7 +101,7 @@
     }
 </script>
 
-<div>
+<div class="flex flex-col gap-2">
     {#if ok}
         {#if isRegistration}
             <h2>Thank you for registering</h2>
