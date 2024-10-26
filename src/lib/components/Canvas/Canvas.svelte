@@ -9,6 +9,7 @@
     import { appStore } from "../../store";
     import { pushState } from "$app/navigation";
     import { writable, type Writable } from "svelte/store";
+    import Cursors from "./Cursors.svelte";
 
     export let id:number|null = null;
     export let preview:boolean = false;
@@ -65,6 +66,16 @@
         updateCanvasSize(width, height);
     }
 
+    // Connect to socket
+    let ws:WebSocket|null = null;
+
+    type websocktMessage = {
+        event:string
+        email:string
+        data:any
+    };
+    let cursors:Record<string,{x:number, y:number}> = {};
+
     onMount(async () => {
         // Init canvas context
         const _ctx = elemCanvas.getContext('2d');
@@ -83,6 +94,8 @@
         }
 
         if (!preview) {
+            initWebSocket();
+
             // Init global event listeners for things such as keyboard shortcuts
             window.addEventListener('keydown', (e) => {
                 const key = e.key;
@@ -90,7 +103,6 @@
                 // Register keydown keyboard shortcuts
                 if (keyDown === null) {
                     keyDown = key;
-                    console.log(`keypress: ${key}`);
                     if (key === ' ') {
                         overiddenActiveMode = $store.activeMode;
                         setActiveMode(CanvasModes.Pan);
@@ -101,7 +113,6 @@
                 const key = e.key;
 
                 // Register keyup keyboard shortcuts
-                console.log(`keyup: ${key}`);
                 if (key === ' ') {
                     if (overiddenActiveMode) {
                         setActiveMode(overiddenActiveMode);
@@ -144,6 +155,44 @@
         
         await draw();
     });
+
+    function initWebSocket() {
+        if (id) {
+            const domain = import.meta.env.VITE_API_DOMAIN
+            const port = import.meta.env.VITE_API_PORT
+            ws = new WebSocket(`ws://${domain}:${port}/user/ws/canvas/${id}`);
+            console.log('Attempting to connect to websocket');
+        
+            // Listen for socket open
+            ws.onopen = () => {
+                console.log('Successfully connected to socket')
+            }
+        
+            // Listen for socket close
+            ws.onclose = (e) => {
+                console.log('Socket closed connection: ', e);
+            }
+        
+            // Listen for socket errors
+            ws.onerror = (e) => {
+                console.log('Socket error: ', e)
+            }
+        
+            ws.onmessage = (e) => {
+                let message:websocktMessage = JSON.parse(e.data);
+                // Process message from socket
+                switch(message.event) {
+                    case 'mouse-move': {
+                        cursors[message.email] = message.data;
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
     async function saveCanvas() {
         saveIsLoading = true;
@@ -328,6 +377,8 @@
             piecesManager.select();
             piecesManager.remove();
         }
+
+        websocketMouseMove();
     }
 
     function setActiveMode(mode:CanvasModes) {
@@ -340,6 +391,19 @@
             piecesManager.clear();
             draw();
         }
+    }
+
+    function websocketMouseMove() {
+        const d = {
+            event: "mouse-move",
+            email: $appStore.email,
+            data: {
+                x: $store.mouseX,
+                y: $store.mouseY
+            }
+        };
+        
+        ws?.send(JSON.stringify(d));
     }
 
     // Get or set rgba value of pixel at given coordinates
@@ -372,6 +436,8 @@
 
     <PiecesManager bind:this={piecesManager} />
 {:else}
+    <Cursors cursors={cursors} />
+
     <div class="canvas-component">
 
         <ControlPanel
