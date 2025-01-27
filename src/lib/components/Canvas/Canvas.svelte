@@ -11,43 +11,43 @@
     import { writable, type Writable } from "svelte/store";
     import Cursors from "./Cursors.svelte";
 
-    export let id:number|null = null;
-    export let preview:boolean = false;
+    export let id: number | null = null;
+    export let preview: boolean = false;
 
-    let elemContaienr:HTMLDivElement;
-    let elemCanvas:HTMLCanvasElement;
-    
-    let piecesManager:PiecesManager;
-    
-    let keyDown:string|null = null;
-    
-    let overiddenActiveMode:CanvasModes|null;
-    
-    let width:number;
-    let height:number;
+    let elemContaienr: HTMLDivElement;
+    let elemCanvas: HTMLCanvasElement;
+
+    let piecesManager: PiecesManager;
+
+    let keyDown: string | null = null;
+
+    let overiddenActiveMode: CanvasModes | null;
+
+    let width: number;
+    let height: number;
 
     let saveIsLoading = false;
-    
+
     // Allow each canvas instance to have it's own separate store instance (not a shared store)
-    const store:Writable<CanvasStore> = writable({
+    const store: Writable<CanvasStore> = writable({
         ctx: null,
         id: null,
         name: "A blank canvas",
         width: 0,
         height: 0,
-        activeMode:CanvasModes.Draw,
-        mouseDown:false,
-        mouseX:0,
-        mouseY:0,
-        prevMouseX:0,
-        prevMouseY:0,
+        activeMode: CanvasModes.Draw,
+        mouseDown: false,
+        mouseX: 0,
+        mouseY: 0,
+        prevMouseX: 0,
+        prevMouseY: 0,
         xPan: 0,
         yPan: 0,
-        backgroundColor: '#1A1A1A',
+        backgroundColor: "#1A1A1A",
         snapToGrid: false,
         pieceSettings: {
             size: 20,
-            color: '#D55C1A'
+            color: "#D55C1A",
         },
         rulerSettings: {
             showUnits: true,
@@ -55,9 +55,9 @@
         },
         zoom: 1,
         zoomDx: 0,
-        zoomDy: 0
+        zoomDy: 0,
     });
-    setContext('canvasStore', store);
+    setContext("canvasStore", store);
 
     $: canvasOffsetTop = $appStore.headerHeight;
     $: canvasOffsetLeft = $appStore.controlPanelWidth;
@@ -67,25 +67,24 @@
     }
 
     // Connect to socket
-    let ws:WebSocket|null = null;
+    let ws: WebSocket | null = null;
 
     type websocktMessage = {
-        event:string
-        email:string
-        data:any
+        event: string;
+        email: string;
+        data: any;
     };
-    let cursors:Record<string,{x:number, y:number}> = {};
+    let cursors: Record<string, { x: number; y: number }> = {};
 
     onMount(async () => {
         // Init canvas context
-        const _ctx = elemCanvas.getContext('2d');
+        const _ctx = elemCanvas.getContext("2d");
         if (_ctx !== null) {
             $store.ctx = _ctx;
+        } else {
+            throw new Error("2D canvas rendering context is not available");
         }
-        else {
-            throw new Error('2D canvas rendering context is not available');
-        }
-        
+
         if (id !== null) {
             const canvas = await getCanvas(id);
             if (canvas) {
@@ -97,23 +96,23 @@
             initWebSocket();
 
             // Init global event listeners for things such as keyboard shortcuts
-            window.addEventListener('keydown', (e) => {
+            window.addEventListener("keydown", (e) => {
                 const key = e.key;
 
                 // Register keydown keyboard shortcuts
                 if (keyDown === null) {
                     keyDown = key;
-                    if (key === ' ') {
+                    if (key === " ") {
                         overiddenActiveMode = $store.activeMode;
                         setActiveMode(CanvasModes.Pan);
                     }
                 }
             });
-            window.addEventListener('keyup', (e) => {
+            window.addEventListener("keyup", (e) => {
                 const key = e.key;
 
                 // Register keyup keyboard shortcuts
-                if (key === ' ') {
+                if (key === " ") {
                     if (overiddenActiveMode) {
                         setActiveMode(overiddenActiveMode);
                     }
@@ -125,15 +124,21 @@
             });
             elemCanvas.addEventListener("wheel", (e) => {
                 const wheelDeltaY = e.deltaY;
-                const zoom = wheelDeltaY < 0 ? 100/99 : 99/100; // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
+                const zoom = wheelDeltaY < 0 ? 100 / 99 : 99 / 100; // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
                 $store.ctx?.scale(zoom, zoom);
 
                 const oldZoom = $store.zoom;
                 $store.zoom = $store.zoom * zoom;
 
                 // Pan according to zoom, to center canvas after zoom
-                let dx = Math.abs($store.width/$store.zoom-$store.width/oldZoom)/2;
-                let dy = Math.abs($store.height/$store.zoom-$store.height/oldZoom)/2;
+                let dx =
+                    Math.abs(
+                        $store.width / $store.zoom - $store.width / oldZoom,
+                    ) / 2;
+                let dy =
+                    Math.abs(
+                        $store.height / $store.zoom - $store.height / oldZoom,
+                    ) / 2;
 
                 dx = dx * (wheelDeltaY > 0 ? 1 : -1);
                 dy = dy * (wheelDeltaY > 0 ? 1 : -1);
@@ -152,37 +157,37 @@
             $store.zoom *= 0.1;
         }
         $store.ctx.scale($store.zoom, $store.zoom);
-        
+
         await draw();
     });
 
     function initWebSocket() {
         if (id) {
-            const domain = import.meta.env.VITE_API_DOMAIN
-            const port = import.meta.env.VITE_API_PORT
+            const domain = import.meta.env.VITE_API_DOMAIN;
+            const port = import.meta.env.VITE_API_PORT;
             ws = new WebSocket(`ws://${domain}:${port}/user/ws/canvas/${id}`);
-            console.log('Attempting to connect to websocket');
-        
+            console.log("Attempting to connect to websocket");
+
             // Listen for socket open
             ws.onopen = () => {
-                console.log('Successfully connected to socket')
-            }
-        
+                console.log("Successfully connected to socket");
+            };
+
             // Listen for socket close
             ws.onclose = (e) => {
-                console.log('Socket closed connection: ', e);
-            }
-        
+                console.log("Socket closed connection: ", e);
+            };
+
             // Listen for socket errors
             ws.onerror = (e) => {
-                console.log('Socket error: ', e)
-            }
-        
+                console.log("Socket error: ", e);
+            };
+
             ws.onmessage = (e) => {
-                let message:websocktMessage = JSON.parse(e.data);
+                let message: websocktMessage = JSON.parse(e.data);
                 // Process message from socket
-                switch(message.event) {
-                    case 'mouse-move': {
+                switch (message.event) {
+                    case "mouse-move": {
                         cursors[message.email] = message.data;
                         break;
                     }
@@ -190,7 +195,7 @@
                         break;
                     }
                 }
-            }
+            };
         }
     }
 
@@ -202,7 +207,6 @@
         if (id !== null) {
             path = `${path}/${id}`;
         }
-        console.log(path);
         const url = `${domain}/${path}`;
 
         const body = serialize();
@@ -212,13 +216,14 @@
             credentials: "include",
             body: JSON.stringify(body),
             headers: {
-                "content-type": "application/json"
-            }
+                "content-type": "application/json",
+            },
         });
 
         if (response.ok) {
             if (id === null) {
-                const body:{msg:string, canvas:Canvas} = await response.json();
+                const body: { msg: string; canvas: Canvas } =
+                    await response.json();
                 id = body.canvas.id;
                 pushState(`/canvas/${id}`, {});
             }
@@ -227,7 +232,7 @@
         saveIsLoading = false;
     }
 
-    async function getCanvas(id: number):Promise<Canvas|null> {
+    async function getCanvas(id: number): Promise<Canvas | null> {
         // loading = true;
 
         const domain = import.meta.env.VITE_API_HOST;
@@ -238,12 +243,12 @@
             method: "GET",
             credentials: "include",
             headers: {
-                "content-type": "application/json"
-            }
+                "content-type": "application/json",
+            },
         });
 
         if (response.ok) {
-            const canvas:Canvas = await response.json();
+            const canvas: Canvas = await response.json();
             return canvas;
         }
 
@@ -251,9 +256,9 @@
 
         return null;
     }
-    
+
     function serialize() {
-        const s:CanvasData = {
+        const s: CanvasData = {
             id: $store.id,
             name: $store.name,
             activeMode: $store.activeMode,
@@ -271,13 +276,13 @@
             snapToGrid: $store.snapToGrid,
             rulerSettings: $store.rulerSettings,
             pieceSettings: $store.pieceSettings,
-            piecesManager: piecesManager.serialize()
-        }
+            piecesManager: piecesManager.serialize(),
+        };
 
         return s;
     }
 
-    async function deserialize(canvas:Canvas) {
+    async function deserialize(canvas: Canvas) {
         id = canvas.id;
 
         const canvasData = canvas.canvasData;
@@ -313,11 +318,16 @@
     function updateBackgroundColor() {
         if ($store.ctx !== null) {
             $store.ctx.fillStyle = $store.backgroundColor;
-            $store.ctx.fillRect(0, 0, $store.width/$store.zoom, $store.height/$store.zoom);
+            $store.ctx.fillRect(
+                0,
+                0,
+                $store.width / $store.zoom,
+                $store.height / $store.zoom,
+            );
         }
     }
 
-    async function updateCanvasSize(width:number, height:number) {
+    async function updateCanvasSize(width: number, height: number) {
         $store.width = width;
         $store.height = height;
         await tick();
@@ -325,10 +335,10 @@
         draw();
     }
 
-    function setMouseDown(e:MouseEvent, _mouseDown:boolean) {
+    function setMouseDown(e: MouseEvent, _mouseDown: boolean) {
         e.preventDefault();
         $store.mouseDown = _mouseDown;
-        
+
         if ($store.activeMode === CanvasModes.Draw && $store.mouseDown) {
             piecesManager.addPiece();
         }
@@ -338,7 +348,7 @@
         }
     }
 
-    function setMousePos(e:MouseEvent) {
+    function setMousePos(e: MouseEvent) {
         const _canvasOffsetLeft = elemCanvas.offsetLeft;
         const _canvasOffsetTop = elemCanvas.offsetTop;
         const scrollOffsetX = document.documentElement.scrollLeft;
@@ -347,10 +357,11 @@
         $store.prevMouseY = $store.mouseY;
 
         $store.mouseX = e.clientX - _canvasOffsetLeft + scrollOffsetX;
-        $store.mouseY = e.clientY - _canvasOffsetTop + scrollOffsetY - canvasOffsetTop; // subtract canvas absolute top offset
+        $store.mouseY =
+            e.clientY - _canvasOffsetTop + scrollOffsetY - canvasOffsetTop; // subtract canvas absolute top offset
 
-        $store.mouseX = Math.round($store.mouseX/$store.zoom);
-        $store.mouseY = Math.round($store.mouseY/$store.zoom);
+        $store.mouseX = Math.round($store.mouseX / $store.zoom);
+        $store.mouseY = Math.round($store.mouseY / $store.zoom);
 
         if ($store.activeMode == CanvasModes.Draw && $store.mouseDown) {
             piecesManager.addPointToLatestPiece();
@@ -359,8 +370,7 @@
         if ($store.activeMode == CanvasModes.Grab && $store.mouseDown) {
             if (piecesManager.getSelected()) {
                 piecesManager.move();
-            }
-            else {
+            } else {
                 piecesManager.select();
             }
         }
@@ -381,13 +391,13 @@
         websocketMouseMove();
     }
 
-    function setActiveMode(mode:CanvasModes) {
+    function setActiveMode(mode: CanvasModes) {
         $store.activeMode = mode;
         piecesManager && piecesManager.deselect();
     }
 
-    function action(action:CanvasActions) {
-        if (action === 'clear') {
+    function action(action: CanvasActions) {
+        if (action === "clear") {
             piecesManager.clear();
             draw();
         }
@@ -399,26 +409,36 @@
             email: $appStore.email,
             data: {
                 x: $store.mouseX,
-                y: $store.mouseY
-            }
+                y: $store.mouseY,
+            },
         };
-        
+
         ws?.send(JSON.stringify(d));
     }
 
     // Get or set rgba value of pixel at given coordinates
-    function coord(x:number, y:number, rgba:Array<number>, set:boolean=false): Array<number> {
-        let imageData = $store.ctx?.getImageData(0, 0, $store.width, $store.height);
+    function coord(
+        x: number,
+        y: number,
+        rgba: Array<number>,
+        set: boolean = false,
+    ): Array<number> {
+        let imageData = $store.ctx?.getImageData(
+            0,
+            0,
+            $store.width,
+            $store.height,
+        );
         const colorsOffset = 4; // RGBA
-        const rx = x*colorsOffset;
-        const ry = y*$store.width*colorsOffset;
+        const rx = x * colorsOffset;
+        const ry = y * $store.width * colorsOffset;
         const _rgba = [];
         if (imageData) {
             for (let i = 0; i < colorsOffset; i++) {
                 if (set) {
-                    imageData.data[rx+ry+i] = rgba[i];
+                    imageData.data[rx + ry + i] = rgba[i];
                 }
-                _rgba.push(imageData.data[rx+ry+i]);
+                _rgba.push(imageData.data[rx + ry + i]);
             }
         }
         return _rgba;
@@ -426,38 +446,42 @@
 </script>
 
 {#if preview}
-    <div bind:clientWidth={width} bind:clientHeight={height} class="overflow-hidden">
-        <canvas
-            class="rounded-md"
-            bind:this={elemCanvas}
-            height="90px"
-        />
+    <div
+        bind:clientWidth={width}
+        bind:clientHeight={height}
+        class="overflow-hidden"
+    >
+        <canvas class="rounded-md" bind:this={elemCanvas} height="90px" />
     </div>
 
     <PiecesManager bind:this={piecesManager} />
 {:else}
-    <Cursors cursors={cursors} />
+    <Cursors {cursors} />
 
     <div class="canvas-component">
-
         <ControlPanel
-            saveIsLoading={saveIsLoading}
-            on:setActiveMode={(e)=>setActiveMode(e.detail)}
-            on:action={(e)=>action(e.detail)}
+            {saveIsLoading}
+            on:setActiveMode={(e) => setActiveMode(e.detail)}
+            on:action={(e) => action(e.detail)}
             on:updatedBackgroundColor={draw}
             on:save={saveCanvas}
         />
 
-        <div bind:clientWidth={width} bind:clientHeight={height} bind:this={elemContaienr} class="canvas-container absolute right-0 bottom-0 left-0 -z-10" >
+        <div
+            bind:clientWidth={width}
+            bind:clientHeight={height}
+            bind:this={elemContaienr}
+            class="canvas-container absolute right-0 bottom-0 left-0 -z-10"
+        >
             <canvas
                 class="absolute hover:cursor-crosshair"
                 bind:this={elemCanvas}
                 width="{$store.width}px"
                 height="{$store.height}px"
-                on:mousedown={(e)=>setMouseDown(e, true)}
-                on:mouseup={(e)=>setMouseDown(e, false)} 
-                on:mouseleave={(e)=>setMouseDown(e, false)} 
-                on:mousemove={(e)=>setMousePos(e)}
+                on:mousedown={(e) => setMouseDown(e, true)}
+                on:mouseup={(e) => setMouseDown(e, false)}
+                on:mouseleave={(e) => setMouseDown(e, false)}
+                on:mousemove={(e) => setMousePos(e)}
             />
         </div>
 
