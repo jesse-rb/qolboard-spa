@@ -9,6 +9,7 @@
     import { appStore } from "../../store";
     import Toggle from "../Inputs/Toggle.svelte";
     import InviteLinks from "./ControlPanel/InviteLinks/InviteLinks.svelte";
+    import Members from "./ControlPanel/Members/Members.svelte";
 
     const canvasStore: Writable<CanvasStore> = getContext("canvasStore");
     const dispatch = createEventDispatcher();
@@ -170,9 +171,13 @@
             <input bind:value={$canvasStore.pieceSettings.color} type="color" />
         </div>
     </div>
+    <!--Members-->
+    {#if isExpanded && $appStore.isAuthenticated && $canvasStore.id}
+        <Members isExpanded />
+    {/if}
     <!--Invite links-->
     {#if isExpanded && $appStore.isAuthenticated && $canvasStore.id}
-        <InviteLinks bind:isExpanded />
+        <InviteLinks isExpanded />
     {/if}
 </div>
 

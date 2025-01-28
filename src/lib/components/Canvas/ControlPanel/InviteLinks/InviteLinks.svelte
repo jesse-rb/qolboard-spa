@@ -4,7 +4,7 @@
     import type { Writable } from "svelte/store";
     import type { CanvasStore } from "../../types/canvas";
     import InviteLink from "./InviteLink.svelte";
-    import type { IndexResponse, ShowResponse } from "$lib/types";
+    import type { IndexResponse, ShowResponse } from "$lib/types/types";
     import type { TypeInviteLink } from "../../types/inviteLink";
     import { removeFromArrayByIndex } from "$lib/util";
 
