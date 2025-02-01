@@ -290,10 +290,9 @@
     }
 
     async function deserialize(canvas: Canvas) {
-        //id = canvas.id;
+        $store.id = canvas.id;
 
         const canvasData = canvas.canvasData;
-        //$store.id = id;
         $store.canvasData.name = canvasData.name;
         $store.canvasData.activeMode = canvasData.activeMode;
         $store.canvasData.activeMode = canvasData.activeMode;

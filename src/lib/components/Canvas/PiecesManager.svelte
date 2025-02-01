@@ -3,7 +3,7 @@
     import { getContext, tick } from "svelte";
     import Piece from "./Piece.svelte";
     import type { PiecesManagerSerialized } from "./types/piecesManager";
-    import Canvas from "./Canvas.svelte";
+    import type { Canvas } from "./types/canvas";
 
     type TypeBoundingBox = {
         topMost: number;
@@ -12,10 +12,14 @@
         leftMost: number;
     };
 
+    type TypeBindPiece = {
+        component?: Piece;
+    };
+
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
-    let selectedPiece: Piece | undefined = undefined;
+    let selectedPiece: TypeBindPiece | undefined = undefined;
     let selectedPieceIndex: number | undefined = undefined;
-    let pieces: Array<Piece | undefined> = [];
+    let pieces: Array<TypeBindPiece> = [];
 
     let leftMost: number;
     let rightMost: number;
@@ -39,8 +43,8 @@
         };
 
         for (const p of pieces) {
-            if (p) {
-                const serializedPiece = p.serialize();
+            if (p.component) {
+                const serializedPiece = p.component.serialize();
                 s.pieces.push(serializedPiece);
             }
         }
@@ -54,10 +58,12 @@
         bottomMost = s.bottomMost;
 
         for (const serializedPiece of s.pieces) {
-            const p = new Piece({ target: document.createElement("div") });
+            let p: TypeBindPiece = {
+                component: undefined,
+            };
             pieces = [...pieces, p];
             await tick();
-            p.component.deserialize(serializedPiece);
+            p.component?.deserialize(serializedPiece);
         }
     }
 
@@ -68,7 +74,9 @@
 
     export function addPiece() {
         deselect();
-        const newPiece = undefined;
+        const newPiece: TypeBindPiece = {
+            component: undefined,
+        };
         pieces = [...pieces, newPiece];
 
         selectedPiece = newPiece;
@@ -77,13 +85,13 @@
 
     export function addPointToLatestPiece() {
         if (pieces.length && pieces[pieces.length - 1]) {
-            pieces[pieces.length - 1]?.addPoint();
+            pieces[pieces.length - 1].component?.addPoint();
         }
     }
 
     export function draw() {
         for (let i = 0; i < pieces.length; i++) {
-            pieces[i] && pieces[i]?.draw();
+            pieces[i] && pieces[i].component?.draw();
         }
     }
 
@@ -91,12 +99,14 @@
         piece?.clearBoundingBox();
         // Only redraw pieces that are inbound of section
         for (const p of pieces) {
-            if (p) {
+            if (p.component) {
                 if (!redrawPiece && p === piece) {
                     continue;
                 }
-                if (piece?.doesBoundingBoxOverlap(p)) {
-                    p?.draw();
+                if (
+                    piece?.doesBoundingBoxOverlap(p.component.getBoundingBox())
+                ) {
+                    p.component?.draw();
                 }
             }
         }
@@ -105,13 +115,13 @@
     export function reDrawSelectedChunk() {
         // Draw only section background
         if (selectedPiece) {
-            redrawPieceChunk(selectedPiece);
+            redrawPieceChunk(selectedPiece.component);
         }
     }
 
     export function deselect() {
         // Deselect old selected piece
-        if (selectedPiece) {
+        if (selectedPiece?.component) {
             selectedPiece.component.deselect();
             reDrawSelectedChunk();
         }
@@ -125,15 +135,17 @@
         for (let i = pieces.length - 1; i >= 0; i--) {
             const piece = pieces[i];
             if (
-                piece?.isPointInStroke(
-                    $canvasStore.mouseX * $canvasStore.zoom,
-                    $canvasStore.mouseY * $canvasStore.zoom,
+                piece.component?.isPointInStroke(
+                    $canvasStore.canvasData.mouseX *
+                        $canvasStore.canvasData.zoom,
+                    $canvasStore.canvasData.mouseY *
+                        $canvasStore.canvasData.zoom,
                 )
             ) {
                 console.log("SELECTED");
                 selectedPiece = piece;
                 selectedPieceIndex = i;
-                selectedPiece.component.select();
+                selectedPiece.component?.select();
 
                 reDrawSelectedChunk();
                 return;
@@ -143,12 +155,12 @@
 
     export function pan(dx?: number, dy?: number) {
         for (const p of pieces) {
-            p?.move(true, dx, dy);
+            p.component?.move(true, dx, dy);
         }
     }
 
     export function move() {
-        if (selectedPiece) {
+        if (selectedPiece?.component) {
             selectedPiece.component.clearBoundingBox();
             selectedPiece.component.move();
             reDrawSelectedChunk();
@@ -178,21 +190,21 @@
         }
 
         const latestPiece = pieces[pieces.length - 1];
-        console.log(latestPiece?.getPoints());
+        console.log(latestPiece.component?.getPoints());
     }
 
     function initialPieceSettings() {
         const canvasStoreCurrent = get(canvasStore);
-        return canvasStoreCurrent.pieceSettings;
+        return canvasStoreCurrent.canvasData.pieceSettings;
     }
 </script>
 
 <div id="pieces">
     {#each pieces as p (p)}
         <Piece
-            bind:this={p}
+            bind:this={p.component}
             settings={{ ...initialPieceSettings() }}
-            on:update={(e) => redrawPieceChunk(p, e.detail)}
+            on:update={(e) => redrawPieceChunk(p.component, e.detail)}
             on:updateBoundingBox={(e) => updateBoundingBox(e.detail)}
         />
     {/each}
