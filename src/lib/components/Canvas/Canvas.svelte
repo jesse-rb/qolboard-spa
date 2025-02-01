@@ -76,8 +76,6 @@
     };
     let cursors: Record<string, { x: number; y: number }> = {};
 
-    console.log(id);
-
     onMount(async () => {
         // Init canvas context
         const _ctx = elemCanvas.getContext("2d");
@@ -433,7 +431,7 @@
     function websocketMouseMove() {
         const d = {
             event: "mouse-move",
-            email: $appStore.email,
+            email: $appStore.user.email,
             data: {
                 x: $store.canvasData.mouseX,
                 y: $store.canvasData.mouseY,

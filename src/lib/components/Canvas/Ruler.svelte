@@ -61,8 +61,6 @@
 
         // Update range
         rulerRange = range(end, start, rulerStep);
-        // rulerRange = range(length, 0, rulerStep);
-        console.log(rulerRange);
     });
 
     function panLeftRange() {
@@ -82,7 +80,6 @@
         nextRangeZoomIn = nextRangeZoomIn * 2;
 
         const offset = (rulerRange.length / 2 / 2) * rulerStep;
-        console.log(offset);
 
         const newStepX = rulerStep * 0.5;
 
@@ -95,8 +92,6 @@
 
         // Update range
         rulerRange = range(end, start, rulerStep);
-
-        console.log(rulerRange);
     }
 
     function zoomOutRange() {
@@ -119,8 +114,6 @@
 
         // Update range
         rulerRange = range(end, start, rulerStep);
-
-        console.log(rulerRange);
     }
 </script>
 

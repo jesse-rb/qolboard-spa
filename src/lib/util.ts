@@ -43,7 +43,6 @@ export function colorIsDark(_c: string): boolean {
  */
 export function teleport(node: HTMLElement, params: { id: string }) {
     let target = document.getElementById(params.id);
-    console.log("DRINK WATER");
     if (target ?? false) {
         target?.insertAdjacentElement("afterend", node);
     }

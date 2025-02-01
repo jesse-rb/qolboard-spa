@@ -7,7 +7,6 @@
     export let isExpanded;
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
-    console.log($canvasStore);
 
     onMount(() => {});
 </script>

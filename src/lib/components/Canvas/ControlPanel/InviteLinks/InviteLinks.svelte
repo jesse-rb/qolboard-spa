@@ -2,27 +2,20 @@
     import Button from "$lib/components/Button.svelte";
     import { getContext, onMount } from "svelte";
     import type { Writable } from "svelte/store";
-    import type { CanvasDataCleint } from "../../types/canvas";
     import InviteLink from "./InviteLink.svelte";
-    import type { IndexResponse, ShowResponse } from "$lib/types/types";
+    import type { ShowResponse } from "$lib/types/types";
     import type { TypeInviteLink } from "../../types/inviteLink";
     import { removeFromArrayByIndex } from "$lib/util";
+    import type { Canvas } from "../../types/canvas";
 
     export let isExpanded;
     let createIsLoading = false;
-    let indexIsLoading = false;
-    let indexPage = 0;
-    let indexLimit = 5;
 
-    let inviteLinks: Array<TypeInviteLink> = [];
-
-    const canvasStore: Writable<CanvasDataCleint> = getContext("canvasStore");
+    const canvasStore: Writable<Canvas> = getContext("canvasStore");
     const domain = import.meta.env.VITE_API_HOST;
     const canvasId = $canvasStore.id;
 
-    onMount(() => {
-        index();
-    });
+    onMount(() => {});
 
     async function create() {
         createIsLoading = true;
@@ -40,34 +33,13 @@
         const body: ShowResponse<TypeInviteLink> = await response.json();
 
         if (response.ok) {
-            inviteLinks = [...inviteLinks, body.data];
+            $canvasStore.canvas_shared_invitations = [
+                ...($canvasStore.canvas_shared_invitations ?? []),
+                body.data,
+            ];
         }
 
         createIsLoading = false;
-    }
-
-    async function index() {
-        indexIsLoading = true;
-
-        const path = `user/canvas/shared_invitation?canvas_id=${canvasId}&page=${indexPage}&limit=${indexLimit}`;
-        const url = `${domain}/${path}`;
-
-        const response = await fetch(url, {
-            method: "GET",
-            credentials: "include",
-            headers: {
-                "content-type": "application/json",
-            },
-        });
-        const body: IndexResponse<TypeInviteLink> = await response.json();
-
-        if (response.ok) {
-            inviteLinks = [...inviteLinks, ...body.data];
-        }
-
-        indexPage += 1;
-
-        indexIsLoading = false;
     }
 </script>
 
@@ -81,12 +53,16 @@
         isLoading={createIsLoading}
     />
 
-    {#if inviteLinks.length > 0}
-        {#each inviteLinks as d, i}
+    {#if ($canvasStore.canvas_shared_invitations ?? []).length > 0}
+        {#each $canvasStore.canvas_shared_invitations ?? [] as d, i}
             <InviteLink
                 data={d}
                 on:deleted={() =>
-                    (inviteLinks = removeFromArrayByIndex(inviteLinks, i))}
+                    ($canvasStore.canvas_shared_invitations =
+                        removeFromArrayByIndex(
+                            $canvasStore.canvas_shared_invitations ?? [],
+                            i,
+                        ))}
             />
         {/each}
     {:else}

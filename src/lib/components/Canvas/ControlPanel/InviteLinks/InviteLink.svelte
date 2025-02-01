@@ -1,16 +1,16 @@
 <script lang="ts">
     import { createEventDispatcher, getContext } from "svelte";
     import Button from "$lib/components/Button.svelte";
-    import type { Writable } from "svelte/store";
-    import type { CanvasDataCleint } from "../../types/canvas";
     import type { TypeInviteLink } from "../../types/inviteLink";
     import { request } from "$lib/http";
-    import type { IndexResponse } from "$lib/types";
+    import type { Writable } from "svelte/store";
+    import type { Canvas } from "../../types/canvas";
 
     export let data: TypeInviteLink;
     let deleteIsLoading = false;
 
     const dispatch = createEventDispatcher();
+    const canvasStore: Writable<Canvas> = getContext("canvasStore");
 
     function dispatchDeleted() {
         dispatch("deleted");
