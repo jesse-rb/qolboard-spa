@@ -1,16 +1,17 @@
 <script lang="ts">
     import { getContext, onMount } from "svelte";
     import type { Writable } from "svelte/store";
-    import type { CanvasStore } from "../../types/canvas";
+    import type { CanvasDataCleint } from "../../types/canvas";
     import { request } from "$lib/http";
     import type { TypeSharedAccess } from "../../types/sharedAccess.ts";
     import type { IndexResponse } from "$lib/types/types";
+    import Member from "./Member.svelte";
 
     export let isExpanded;
 
     let indexIsLoading = false;
     let members: Array<TypeSharedAccess> = [];
-
+    CanvasDataCleint;
     const canvasStore: Writable<CanvasStore> = getContext("canvasStore");
     const canvasId = $canvasStore.id;
 
@@ -34,5 +35,9 @@
 </script>
 
 <div class="control-group">
-    <h1 class:hidden={isExpanded}>Members</h1>
+    <h1 class:hidden={!isExpanded}>Members</h1>
+
+    {#each members as d}
+        <Member data={d} />
+    {/each}
 </div>

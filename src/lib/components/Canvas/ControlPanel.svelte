@@ -4,18 +4,17 @@
     import Modal from "../Modal.svelte";
     import { CanvasModes } from "./enums/modes";
     import { CanvasActions } from "./enums/actions";
-    import type { CanvasStore as CanvasStore } from "./types/canvas";
     import type { Writable } from "svelte/store";
     import { appStore } from "../../store";
     import Toggle from "../Inputs/Toggle.svelte";
     import InviteLinks from "./ControlPanel/InviteLinks/InviteLinks.svelte";
     import Members from "./ControlPanel/Members/Members.svelte";
+    import type { Canvas } from "./types/canvas";
 
-    const canvasStore: Writable<CanvasStore> = getContext("canvasStore");
+    const canvasStore: Writable<Canvas> = getContext("canvasStore");
     const dispatch = createEventDispatcher();
 
     export let saveIsLoading = false;
-    let createInviteLinkIsLoading = false;
     let isExpanded = false;
 
     $: if ($appStore.controlPanelWidth) {
@@ -42,8 +41,6 @@
     function dispatchSave() {
         dispatch("save");
     }
-
-    function crateInviteLink() {}
 </script>
 
 <div
@@ -83,7 +80,7 @@
                         <input
                             class="w-full"
                             type="text"
-                            bind:value={$canvasStore.name}
+                            bind:value={$canvasStore.canvasData.name}
                         />
                     </h1>
                 {/if}
@@ -95,25 +92,25 @@
         <h1 class:hidden={!isExpanded}>Tools</h1>
         <Button
             icon="brush"
-            active={$canvasStore.activeMode == CanvasModes.Draw}
+            active={$canvasStore.canvasData.activeMode == CanvasModes.Draw}
             label={isExpanded ? "draw" : ""}
             onclick={() => dispatchSetActiveMode(CanvasModes.Draw)}
         />
         <Button
             icon="pan_tool_alt"
-            active={$canvasStore.activeMode == CanvasModes.Grab}
+            active={$canvasStore.canvasData.activeMode == CanvasModes.Grab}
             label={isExpanded ? "grab" : ""}
             onclick={() => dispatchSetActiveMode(CanvasModes.Grab)}
         />
         <Button
             icon="pan_tool"
-            active={$canvasStore.activeMode == CanvasModes.Pan}
+            active={$canvasStore.canvasData.activeMode == CanvasModes.Pan}
             label={isExpanded ? "pan (Hold Space)" : ""}
             onclick={() => dispatchSetActiveMode(CanvasModes.Pan)}
         />
         <Button
             icon="delete"
-            active={$canvasStore.activeMode == CanvasModes.Remove}
+            active={$canvasStore.canvasData.activeMode == CanvasModes.Remove}
             label={isExpanded ? "remove" : ""}
             onclick={() => dispatchSetActiveMode(CanvasModes.Remove)}
         />
@@ -122,26 +119,33 @@
     <!--global actions-->
     <div class="control-group">
         <h1 class:hidden={!isExpanded}>Canvas Settings</h1>
-        <span>zoom: <em>{$canvasStore.zoom.toFixed(2)}</em></span>
+        <span>zoom: <em>{$canvasStore.canvasData.zoom.toFixed(2)}</em></span>
         <div class="control">
             <label class:hidden={!isExpanded} for="">background color</label>
             <input
-                bind:value={$canvasStore.backgroundColor}
+                bind:value={$canvasStore.canvasData.backgroundColor}
                 type="color"
                 on:input={dispatchUpdatedBackgroundColor}
             />
         </div>
         <div class="control">
             <label class:hidden={!isExpanded} for="">show units</label>
-            <Toggle bind:value={$canvasStore.rulerSettings.showUnits} />
+            <Toggle
+                bind:value={$canvasStore.canvasData.rulerSettings.showUnits}
+            />
         </div>
         <div class="control">
             <label class:hidden={!isExpanded} for="">show grid</label>
-            <Toggle bind:value={$canvasStore.rulerSettings.showLines} />
+            <Toggle
+                bind:value={$canvasStore.canvasData.rulerSettings.showLines}
+            />
         </div>
         <div class="control">
             <label class:hidden={!isExpanded} for="">snap to grid</label>
-            <Toggle bind:value={$canvasStore.snapToGrid} disabled={true} />
+            <Toggle
+                bind:value={$canvasStore.canvasData.snapToGrid}
+                disabled={true}
+            />
         </div>
         <div class="control">
             <Button
@@ -159,7 +163,7 @@
             <label class:hidden={!isExpanded} for="">size</label>
             <input
                 class:w-12={!isExpanded}
-                bind:value={$canvasStore.pieceSettings.size}
+                bind:value={$canvasStore.canvasData.pieceSettings.size}
                 type="range"
                 min="1"
                 step="1"
@@ -168,7 +172,10 @@
         </div>
         <div class="control">
             <label class:hidden={!isExpanded} for="">color</label>
-            <input bind:value={$canvasStore.pieceSettings.color} type="color" />
+            <input
+                bind:value={$canvasStore.canvasData.pieceSettings.color}
+                type="color"
+            />
         </div>
     </div>
     <!--Members-->

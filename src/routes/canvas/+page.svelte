@@ -1,7 +1,7 @@
 <script lang="ts">
     import CanvasListing from "$lib/components/Canvas/CanvasListing.svelte";
     import type { Canvas } from "$lib/components/Canvas/types/canvas";
-    import type { IndexResponse } from "$lib/types";
+    import type { IndexResponse } from "$lib/types/types";
     import { removeFromArrayByIndex } from "$lib/util";
     import { onMount } from "svelte";
 
@@ -66,4 +66,3 @@
 
 <style>
 </style>
-

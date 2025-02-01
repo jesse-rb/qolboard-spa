@@ -1,43 +1,60 @@
-<script>
+<script lang="ts">
     import { createEventDispatcher, getContext } from "svelte";
+    import type { PieceSerialized, PieceSettings } from "./types/piece";
+    import type { Writable } from "svelte/store";
+    import type Piece from "./Piece.svelte";
+    import type { Canvas } from "./types/canvas";
 
-    export let settings = {};
+    export let settings: PieceSettings = {
+        color: "#FFFFFF",
+        size: 0,
+    };
     export let selected = false;
 
-    const canvasStore = getContext('canvasStore');
+    const canvasStore: Writable<Canvas> = getContext("canvasStore");
 
     const dispatch = createEventDispatcher();
-    const ctx = $canvasStore.ctx;
-    
+    const ctx = $canvasStore.canvasData.ctx;
+
     let pathSVG = "";
     let moveMatrix = new DOMMatrix();
     let panMatrix = new DOMMatrix();
     let path = new Path2D();
 
-    let latestPointX = $canvasStore.mouseX;
-    let latestPointY = $canvasStore.mouseY;
+    let latestPointX = $canvasStore.canvasData.mouseX;
+    let latestPointY = $canvasStore.canvasData.mouseY;
 
-    let leftMost;
-    let rightMost;
-    let topMost;
-    let bottomMost;
+    let leftMost: number;
+    let rightMost: number;
+    let topMost: number;
+    let bottomMost: number;
 
-    function dispatchUpdate(redrawPiece) {
-        dispatch('update', redrawPiece);
+    function dispatchUpdate(redrawPiece: boolean) {
+        dispatch("update", redrawPiece);
     }
 
     function dispatchUpdateBoundingBox() {
-        dispatch('updateBoundingBox', {topMost, rightMost, bottomMost, leftMost});
+        const box = {
+            topMost,
+            rightMost,
+            bottomMost,
+            leftMost,
+        };
+        dispatch("updateBoundingBox", box);
     }
 
-    function setDrawSettings(reset=false) {
-        ctx.lineCap = reset ? '' : 'round';
-        ctx.lineJoin = reset ? '' : 'round';
-        ctx.strokeStyle = reset ? $canvasStore.backgroundColor : settings.color;
-        ctx.lineWidth = reset ? 1 : settings.size;
+    function setDrawSettings(reset = false) {
+        if (ctx) {
+            ctx.lineCap = reset ? "butt" : "round";
+            ctx.lineJoin = reset ? "miter" : "round";
+            ctx.strokeStyle = reset
+                ? $canvasStore.canvasData.backgroundColor
+                : settings.color;
+            ctx.lineWidth = reset ? 1 : settings.size;
+        }
     }
 
-    function updateBoundingBox(x, y) {
+    function updateBoundingBox(x: number, y: number) {
         leftMost = leftMost < x ? leftMost : x;
         rightMost = rightMost > x ? rightMost : x;
         topMost = topMost < y ? topMost : y;
@@ -46,8 +63,8 @@
         dispatchUpdateBoundingBox();
     }
 
-    export function serialize() {
-        const s = {
+    export function serialize(): PieceSerialized {
+        const s: PieceSerialized = {
             settings: settings,
             path: pathSVG,
             move: moveMatrix.toJSON(),
@@ -55,26 +72,26 @@
             leftMost: leftMost,
             rightMost: rightMost,
             topMost: topMost,
-            bottomMost: bottomMost
+            bottomMost: bottomMost,
         };
 
         return s;
     }
 
-    export function deserialize(s) {
+    export function deserialize(s: PieceSerialized) {
         settings = s.settings;
 
         pathSVG = s.path;
-        path = new Path2D(s.path+"C");
+        path = new Path2D(s.path + "C");
 
-        moveMatrix = DOMMatrix.fromMatrix(s.move);
-        panMatrix = DOMMatrix.fromMatrix(s.pan);
+        moveMatrix = DOMMatrix.fromMatrix(new DOMMatrix(s.move));
+        panMatrix = DOMMatrix.fromMatrix(new DOMMatrix(s.pan));
 
         let updatedPath = new Path2D();
         updatedPath.addPath(path, moveMatrix);
         path = updatedPath;
 
-        updatedPath = new Path2D()
+        updatedPath = new Path2D();
         updatedPath.addPath(path, panMatrix);
         path = updatedPath;
 
@@ -84,67 +101,81 @@
         bottomMost = s.bottomMost;
     }
 
-    export function isPointInStroke(x, y) {
+    export function isPointInStroke(x: number, y: number) {
         setDrawSettings();
-        return ctx.isPointInStroke(path, x, y);
+        return ctx?.isPointInStroke(path, x, y);
     }
 
-    export function doesBoundingBoxOverlap(p) {
+    export function doesBoundingBoxOverlap(p: Piece) {
         const [x, y, width, height] = getBoundingBox();
         const [_x, _y, _width, _height] = p.getBoundingBox();
 
-        const xOverlap = (x < _x+_width) && (x+width > _x);
-        const yOverlap = (y < _y+_height) && (y+height > _y);
+        const xOverlap = x < _x + _width && x + width > _x;
+        const yOverlap = y < _y + _height && y + height > _y;
 
         return xOverlap && yOverlap;
     }
 
-    export function draw(p=null) {
+    export function draw(p?: Path2D) {
         if (!p) {
             p = path;
         }
         setDrawSettings();
-        ctx.stroke(p);
+        ctx?.stroke(p);
         if (selected) {
             drawBoundingBoxBorder();
         }
     }
 
     export function getBoundingBox() {
-        const clearMargin = (settings.size);
+        const clearMargin = settings.size;
 
-        const x = leftMost-clearMargin;
-        const y = topMost-clearMargin;
+        const x = leftMost - clearMargin;
+        const y = topMost - clearMargin;
 
-        const width = (rightMost-leftMost)+clearMargin*2;
-        const height = (bottomMost-topMost)+clearMargin*2;
+        const width = rightMost - leftMost + clearMargin * 2;
+        const height = bottomMost - topMost + clearMargin * 2;
 
         return [x, y, width, height];
     }
 
     export function clearBoundingBox() {
-        const clearMargin = 1/$canvasStore.zoom;
-        const [x, y, width, height] = getBoundingBox();
+        if (ctx) {
+            const clearMargin = 1 / $canvasStore.canvasData.zoom;
+            const [x, y, width, height] = getBoundingBox();
 
-        setDrawSettings(true);
-        ctx.fillRect(x-clearMargin, y-clearMargin, width+(clearMargin*2), height+(clearMargin*2));
+            setDrawSettings(true);
+            ctx.fillRect(
+                x - clearMargin,
+                y - clearMargin,
+                width + clearMargin * 2,
+                height + clearMargin * 2,
+            );
+        }
     }
 
     export function drawBoundingBoxBorder() {
-        const clearMargin = 1/$canvasStore.zoom;
-        const [x, y, width, height] = getBoundingBox();
-        ctx.beginPath();
-        setDrawSettings(true);
-        ctx.lineWidth = 1/$canvasStore.zoom;
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.rect(x+clearMargin, y+clearMargin, width-(clearMargin*2), height-(clearMargin*2));
-        ctx.closePath();
-        ctx.stroke();
+        if (ctx) {
+            const clearMargin = 1 / $canvasStore.canvasData.zoom;
+            const [x, y, width, height] = getBoundingBox();
+            ctx.beginPath();
+            setDrawSettings(true);
+            ctx.lineWidth = 1 / $canvasStore.canvasData.zoom;
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.rect(
+                x + clearMargin,
+                y + clearMargin,
+                width - clearMargin * 2,
+                height - clearMargin * 2,
+            );
+            ctx.closePath();
+            ctx.stroke();
+        }
     }
 
     export function addPoint() {
-        const mouseX = $canvasStore.mouseX;
-        const mouseY = $canvasStore.mouseY;
+        const mouseX = $canvasStore.canvasData.mouseX;
+        const mouseY = $canvasStore.canvasData.mouseY;
 
         let thereIsChangeOnX = mouseX >= latestPointX || mouseX <= latestPointX;
         let thereIsChangeOnY = mouseY >= latestPointY || mouseY <= latestPointY;
@@ -160,7 +191,6 @@
         }
 
         if (thereIsChangeOnX || thereIsChangeOnY) {
-
             path.lineTo(newX, newY);
             updateBoundingBox(newX, newY);
 
@@ -172,7 +202,7 @@
             pathSVG += `M${latestPointX} ${latestPointY} L${newX} ${newY}`;
 
             draw(addedPath);
-            
+
             latestPointX = newX;
             latestPointY = newY;
         }
@@ -188,63 +218,105 @@
         selected = false;
     }
 
-    export function move(isPan = false, dx = null, dy = null) {
-        if (dx === null && dy === null) {
-            let mouseX = $canvasStore.mouseX;
-            let mouseY = $canvasStore.mouseY;
+    export function move(isPan = false, dx?: number, dy?: number) {
+        if (dx === undefined && dy === undefined) {
+            let mouseX = $canvasStore.canvasData.mouseX;
+            let mouseY = $canvasStore.canvasData.mouseY;
 
-            let prevMouseX = $canvasStore.prevMouseX;
-            let prevMouseY = $canvasStore.prevMouseY;
-            
-            dx = mouseX-prevMouseX;
-            dy = mouseY-prevMouseY;
+            let prevMouseX = $canvasStore.canvasData.prevMouseX;
+            let prevMouseY = $canvasStore.canvasData.prevMouseY;
+
+            dx = mouseX - prevMouseX;
+            dy = mouseY - prevMouseY;
         }
 
         let m = new DOMMatrix();
         m.translateSelf(dx, dy);
-        
+
         if (isPan) {
             panMatrix.translateSelf(dx, dy);
-        }
-        else {
+        } else {
             moveMatrix.translateSelf(dx, dy);
         }
 
-        leftMost += dx;
-        rightMost += dx;
-        topMost += dy;
-        bottomMost += dy;
+        if (dx !== undefined && dy !== undefined) {
+            leftMost += dx;
+            rightMost += dx;
+            topMost += dy;
+            bottomMost += dy;
+        }
 
         let updatedPath = new Path2D();
         updatedPath.addPath(path, m);
         path = updatedPath;
     }
 
-    function updateSettings(setting, value) {
+    function updateSettings<K extends keyof PieceSettings>(
+        setting: K,
+        value: PieceSettings[K],
+    ) {
         dispatchUpdate(false);
         settings[setting] = value;
         dispatchUpdate(true);
     }
+
+    function handleUpdateSettings(e: Event, setting: keyof PieceSettings) {
+        const target = e.target as HTMLInputElement;
+        updateSettings(setting, target.value);
+    }
 </script>
 
 {#if selected}
-    <div class="piece-settings control-panel z-10" style="bottom: min({$canvasStore.height - topMost*$canvasStore.zoom}px, {$canvasStore.height}px); left: {Math.max(leftMost*$canvasStore.zoom, 0)}px;">
+    <div
+        class="piece-settings control-panel z-10"
+        style="bottom: min({($canvasStore.canvasData.height ?? 0) -
+            topMost * $canvasStore.canvasData.zoom}px, {$canvasStore.canvasData
+            .height ?? 0}px); left: {Math.max(
+            leftMost * $canvasStore.canvasData.zoom,
+            0,
+        )}px;"
+    >
         <div class="flex gap-4">
-            <span>x: {Math.round((leftMost - $canvasStore.xPan - $canvasStore.zoomDx)*$canvasStore.zoom)}</span>
-            <span>y: {Math.round((topMost - $canvasStore.yPan - $canvasStore.zoomDy)*$canvasStore.zoom)}</span>
+            <span
+                >x: {Math.round(
+                    (leftMost -
+                        $canvasStore.canvasData.xPan -
+                        $canvasStore.canvasData.zoomDx) *
+                        $canvasStore.canvasData.zoom,
+                )}</span
+            >
+            <span
+                >y: {Math.round(
+                    (topMost -
+                        $canvasStore.canvasData.yPan -
+                        $canvasStore.canvasData.zoomDy) *
+                        $canvasStore.canvasData.zoom,
+                )}</span
+            >
         </div>
 
         <div class="control-group">
             <div class="control">
                 <label for="">size</label>
-                <input value={settings.size} type="range" min="1" step="1" max="100" on:input={(e) => updateSettings('size', parseInt(e.target.value))} >
+                <input
+                    value={settings.size}
+                    type="range"
+                    min="1"
+                    step="1"
+                    max="100"
+                    on:input={(e) => handleUpdateSettings(e, "size")}
+                />
             </div>
         </div>
 
         <div class="control-group">
             <div class="control">
                 <label for="">color</label>
-                <input value={settings.color} type="color" on:input={(e) => {console.log(e.target.value); updateSettings('color', e.target.value)}} >
+                <input
+                    value={settings.color}
+                    type="color"
+                    on:input={(e) => handleUpdateSettings(e, "color")}
+                />
             </div>
         </div>
     </div>

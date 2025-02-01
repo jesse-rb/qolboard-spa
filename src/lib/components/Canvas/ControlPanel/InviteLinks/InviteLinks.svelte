@@ -2,7 +2,7 @@
     import Button from "$lib/components/Button.svelte";
     import { getContext, onMount } from "svelte";
     import type { Writable } from "svelte/store";
-    import type { CanvasStore } from "../../types/canvas";
+    import type { CanvasDataCleint } from "../../types/canvas";
     import InviteLink from "./InviteLink.svelte";
     import type { IndexResponse, ShowResponse } from "$lib/types/types";
     import type { TypeInviteLink } from "../../types/inviteLink";
@@ -16,7 +16,7 @@
 
     let inviteLinks: Array<TypeInviteLink> = [];
 
-    const canvasStore: Writable<CanvasStore> = getContext("canvasStore");
+    const canvasStore: Writable<CanvasDataCleint> = getContext("canvasStore");
     const domain = import.meta.env.VITE_API_HOST;
     const canvasId = $canvasStore.id;
 

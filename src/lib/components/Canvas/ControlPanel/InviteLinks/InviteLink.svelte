@@ -2,7 +2,7 @@
     import { createEventDispatcher, getContext } from "svelte";
     import Button from "$lib/components/Button.svelte";
     import type { Writable } from "svelte/store";
-    import type { CanvasStore } from "../../types/canvas";
+    import type { CanvasDataCleint } from "../../types/canvas";
     import type { TypeInviteLink } from "../../types/inviteLink";
     import { request } from "$lib/http";
     import type { IndexResponse } from "$lib/types";
