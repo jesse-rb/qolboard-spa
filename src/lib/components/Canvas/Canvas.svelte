@@ -76,6 +76,8 @@
     };
     let cursors: Record<string, { x: number; y: number }> = {};
 
+    console.log(id);
+
     onMount(async () => {
         // Init canvas context
         const _ctx = elemCanvas.getContext("2d");
@@ -232,7 +234,8 @@
                 const body: { msg: string; canvas: Canvas } =
                     await response.json();
                 if (body.canvas.id) {
-                    pushState(`/canvas/${id}`, body.canvas.id);
+                    id = body.canvas.id;
+                    pushState(`/canvas/${id}`, id);
                 }
             }
         }
@@ -290,28 +293,16 @@
     }
 
     async function deserialize(canvas: Canvas) {
-        $store.id = canvas.id;
+        const ctx = $store.canvasData.ctx; // Preserve ctx (TODO: move canvas ctx initialization to this point)
+        const width = $store.canvasData.width; // Preserve canvas width and height
+        const height = $store.canvasData.height;
+        $store = canvas;
+        $store.canvasData.ctx = ctx;
+        $store.canvasData.width = width;
+        $store.canvasData.height = height;
 
-        const canvasData = canvas.canvasData;
-        $store.canvasData.name = canvasData.name;
-        $store.canvasData.activeMode = canvasData.activeMode;
-        $store.canvasData.activeMode = canvasData.activeMode;
-        $store.canvasData.backgroundColor = canvasData.backgroundColor;
-        $store.canvasData.mouseX = canvasData.mouseX;
-        $store.canvasData.mouseY = canvasData.mouseY;
-        $store.canvasData.mouseDown = canvasData.mouseDown;
-        $store.canvasData.prevMouseX = canvasData.prevMouseX;
-        $store.canvasData.prevMouseY = canvasData.prevMouseY;
-        $store.canvasData.xPan = canvasData.xPan;
-        $store.canvasData.yPan = canvasData.yPan;
-        $store.canvasData.zoom = canvasData.zoom;
-        $store.canvasData.zoomDx = canvasData.zoomDx;
-        $store.canvasData.zoomDy = canvasData.zoomDy;
-        $store.canvasData.snapToGrid = canvasData.snapToGrid;
-        $store.canvasData.pieceSettings = canvasData.pieceSettings;
-
-        if (canvasData.piecesManager) {
-            await piecesManager.deserialize(canvasData.piecesManager);
+        if ($store.canvasData.piecesManager) {
+            await piecesManager.deserialize($store.canvasData.piecesManager);
         }
     }
 
