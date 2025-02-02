@@ -1,3 +1,5 @@
+import type Piece from "../Piece.svelte";
+
 export type PieceSettings = {
     size: number
     color: string
@@ -12,4 +14,9 @@ export type PieceSerialized = {
     rightMost: number
     topMost: number
     bottomMost: number
+    index: number
+};
+
+export type TypeBindPiece = {
+    component?: Piece;
 };

@@ -9,6 +9,7 @@
         size: 0,
     };
     export let selected = false;
+    export let index: number;
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
 
@@ -72,6 +73,7 @@
             rightMost: rightMost,
             topMost: topMost,
             bottomMost: bottomMost,
+            index: index,
         };
 
         return s;
@@ -98,6 +100,8 @@
         rightMost = s.rightMost;
         topMost = s.topMost;
         bottomMost = s.bottomMost;
+
+        index = s.index;
     }
 
     export function isPointInStroke(x: number, y: number) {

@@ -4,16 +4,13 @@
     import Piece from "./Piece.svelte";
     import type { PiecesManagerSerialized } from "./types/piecesManager";
     import type { Canvas } from "./types/canvas";
+    import type { PieceSerialized, TypeBindPiece } from "./types/piece";
 
     type TypeBoundingBox = {
         topMost: number;
         bottomMost: number;
         rightMost: number;
         leftMost: number;
-    };
-
-    type TypeBindPiece = {
-        component?: Piece;
     };
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
@@ -51,20 +48,24 @@
         return s;
     }
 
-    export async function deserialize(s: PiecesManagerSerialized) {
+    export function deserialize(s: PiecesManagerSerialized) {
         leftMost = s.leftMost;
         rightMost = s.rightMost;
         topMost = s.topMost;
         bottomMost = s.bottomMost;
 
         for (const serializedPiece of s.pieces) {
-            let p: TypeBindPiece = {
-                component: undefined,
-            };
-            pieces = [...pieces, p];
-            await tick();
-            p.component?.deserialize(serializedPiece);
+            addSerializedPiece(serializedPiece);
         }
+    }
+
+    export async function addSerializedPiece(s: PieceSerialized) {
+        let p: TypeBindPiece = {
+            component: undefined,
+        };
+        pieces = [...pieces, p];
+        await tick();
+        p.component?.deserialize(s);
     }
 
     export function clear() {
@@ -72,7 +73,7 @@
         pieces = [];
     }
 
-    export function addPiece() {
+    export function addPiece(): TypeBindPiece {
         deselect();
         const newPiece: TypeBindPiece = {
             component: undefined,
@@ -81,12 +82,26 @@
 
         selectedPiece = newPiece;
         selectedPieceIndex = pieces.length - 1;
+
+        return newPiece;
     }
 
-    export function addPointToLatestPiece() {
-        if (pieces.length && pieces[pieces.length - 1]) {
-            pieces[pieces.length - 1].component?.addPoint();
+    export function updatePiece(s: PieceSerialized) {
+        const p = pieces[s.index]?.component;
+
+        if (p) {
+            p.deserialize(s);
+            p.draw();
         }
+    }
+
+    export function addPointToLatestPiece(): TypeBindPiece {
+        const p = pieces[pieces.length - 1];
+        if (p.component) {
+            p.component.addPoint();
+        }
+
+        return p;
     }
 
     export function draw() {
@@ -159,12 +174,14 @@
         }
     }
 
-    export function move() {
+    export function move(): Piece | undefined {
         if (selectedPiece?.component) {
             selectedPiece.component.clearBoundingBox();
             selectedPiece.component.move();
             reDrawSelectedChunk();
         }
+
+        return selectedPiece?.component ?? undefined;
     }
 
     export function remove() {
@@ -200,10 +217,11 @@
 </script>
 
 <div id="pieces">
-    {#each pieces as p (p)}
+    {#each pieces as p, i (p)}
         <Piece
             bind:this={p.component}
             settings={{ ...initialPieceSettings() }}
+            index={i}
             on:update={(e) => redrawPieceChunk(p.component, e.detail)}
             on:updateBoundingBox={(e) => updateBoundingBox(e.detail)}
         />

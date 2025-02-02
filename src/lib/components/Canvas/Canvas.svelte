@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { SvelteComponent, onMount, setContext, tick } from "svelte";
+    import { onMount, setContext, tick } from "svelte";
     import PiecesManager from "./PiecesManager.svelte";
     import ControlPanel from "./ControlPanel.svelte";
     import Ruler from "./Ruler.svelte";
@@ -10,6 +10,8 @@
     import { pushState } from "$app/navigation";
     import { writable, type Writable } from "svelte/store";
     import Cursors from "./Cursors.svelte";
+    import Piece from "./Piece.svelte";
+    import type { TypeBindPiece } from "./types/piece";
 
     export let id: number | null = null;
     export let preview: boolean = false;
@@ -198,6 +200,13 @@
                         cursors[message.email] = message.data;
                         break;
                     }
+                    case "add-piece": {
+                        piecesManager.addSerializedPiece(message.data);
+                        break;
+                    }
+                    case "update-piece": {
+                        piecesManager.updatePiece(message.data);
+                    }
                     default: {
                         break;
                     }
@@ -303,7 +312,7 @@
         $store.canvasData.height = height;
 
         if ($store.canvasData.piecesManager) {
-            await piecesManager.deserialize($store.canvasData.piecesManager);
+            piecesManager.deserialize($store.canvasData.piecesManager);
         }
     }
 
@@ -346,7 +355,8 @@
             $store.canvasData.activeMode === CanvasModes.Draw &&
             $store.canvasData.mouseDown
         ) {
-            piecesManager.addPiece();
+            let piece = piecesManager.addPiece();
+            websocketAddPiece(piece);
         }
 
         if (
@@ -381,7 +391,8 @@
             $store.canvasData.activeMode == CanvasModes.Draw &&
             $store.canvasData.mouseDown
         ) {
-            piecesManager.addPointToLatestPiece();
+            const piece = piecesManager.addPointToLatestPiece();
+            websocketUpdatePiece(piece);
         }
 
         if (
@@ -389,7 +400,8 @@
             $store.canvasData.mouseDown
         ) {
             if (piecesManager.getSelected()) {
-                piecesManager.move();
+                const piece = piecesManager.move();
+                websocketUpdatePiece(piece);
             } else {
                 piecesManager.select();
             }
@@ -439,6 +451,30 @@
                 x: $store.canvasData.mouseX,
                 y: $store.canvasData.mouseY,
             },
+        };
+
+        ws?.send(JSON.stringify(d));
+    }
+
+    async function websocketAddPiece(p: TypeBindPiece) {
+        await tick(); // Wait for this piece svelte component to be initialized
+
+        const d = {
+            event: "add-piece",
+            email: $appStore.user.email,
+            data: p?.component?.serialize(),
+        };
+
+        ws?.send(JSON.stringify(d));
+    }
+
+    async function websocketUpdatePiece(p: TypeBindPiece) {
+        await tick();
+
+        const d = {
+            event: "update-piece",
+            email: $appStore.user.email,
+            data: p.component?.serialize(),
         };
 
         ws?.send(JSON.stringify(d));
