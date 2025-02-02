@@ -241,11 +241,11 @@
         saveIsLoading = false;
     }
 
-    async function getCanvas(id: number): Promise<Canvas | null> {
+    async function getCanvas(_id: number): Promise<Canvas | null> {
         // loading = true;
 
         const domain = import.meta.env.VITE_API_HOST;
-        const path = `user/canvas/${id}`;
+        const path = `user/canvas/${_id}`;
         const url = `${domain}/${path}`;
 
         const response = await fetch(url, {
@@ -259,6 +259,9 @@
         if (response.ok) {
             const canvas: Canvas = await response.json();
             return canvas;
+        } else {
+            id = null;
+            pushState("/", 0);
         }
 
         // loading = false;

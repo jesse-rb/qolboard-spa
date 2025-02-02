@@ -117,7 +117,7 @@
         if (response.ok) {
             const responseBody = await response.json();
             $appStore.isAuthenticated = true;
-            $appStore.user.email = responseBody.user;
+            $appStore.user = responseBody.data;
         } else {
             $appStore.isAuthenticated = false;
             $appStore.user.email = "";
@@ -264,4 +264,3 @@
         }
     }
 </style>
-

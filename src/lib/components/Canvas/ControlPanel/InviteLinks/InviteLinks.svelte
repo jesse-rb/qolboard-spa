@@ -7,6 +7,7 @@
     import type { TypeInviteLink } from "../../types/inviteLink";
     import { removeFromArrayByIndex } from "$lib/util";
     import type { Canvas } from "../../types/canvas";
+    import IfCanvasOwner from "../../IfCanvasOwner.svelte";
 
     export let isExpanded;
     let createIsLoading = false;
@@ -45,13 +46,14 @@
 
 <div class="control-group">
     <h1 class:hidden={!isExpanded}>Invites</h1>
-
-    <Button
-        icon="share"
-        label={isExpanded ? "Create invite link" : ""}
-        onclick={create}
-        isLoading={createIsLoading}
-    />
+    <IfCanvasOwner>
+        <Button
+            icon="share"
+            label={isExpanded ? "Create invite link" : ""}
+            onclick={create}
+            isLoading={createIsLoading}
+        />
+    </IfCanvasOwner>
 
     {#if ($canvasStore.canvas_shared_invitations ?? []).length > 0}
         {#each $canvasStore.canvas_shared_invitations ?? [] as d, i}
