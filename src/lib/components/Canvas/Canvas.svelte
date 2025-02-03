@@ -201,6 +201,49 @@
         }
     }
 
+    function websocketMouseMove() {
+        const d = {
+            event: "mouse-move",
+            email: $appStore.user.email,
+            data: {
+                x:
+                    $store.canvasData.mouseX -
+                    $store.canvasData.xPan -
+                    $store.canvasData.zoomDx,
+                y:
+                    $store.canvasData.mouseY -
+                    $store.canvasData.yPan -
+                    $store.canvasData.zoomDy,
+            },
+        };
+
+        ws?.send(JSON.stringify(d));
+    }
+
+    async function websocketAddPiece(p: TypeBindPiece) {
+        await tick(); // Wait for this piece svelte component to be initialized
+
+        const d = {
+            event: "add-piece",
+            email: $appStore.user.email,
+            data: p?.component?.serialize(),
+        };
+
+        ws?.send(JSON.stringify(d));
+    }
+
+    async function websocketUpdatePiece(p: TypeBindPiece) {
+        await tick();
+
+        const d = {
+            event: "update-piece",
+            email: $appStore.user.email,
+            data: p.component?.serialize(),
+        };
+
+        ws?.send(JSON.stringify(d));
+    }
+
     function getDefaultClientCanvasData(): ClientCanvasData {
         return {
             width: 0,
@@ -477,43 +520,6 @@
             piecesManager.clear();
             draw();
         }
-    }
-
-    function websocketMouseMove() {
-        const d = {
-            event: "mouse-move",
-            email: $appStore.user.email,
-            data: {
-                x: $store.canvasData.mouseX,
-                y: $store.canvasData.mouseY,
-            },
-        };
-
-        ws?.send(JSON.stringify(d));
-    }
-
-    async function websocketAddPiece(p: TypeBindPiece) {
-        await tick(); // Wait for this piece svelte component to be initialized
-
-        const d = {
-            event: "add-piece",
-            email: $appStore.user.email,
-            data: p?.component?.serialize(),
-        };
-
-        ws?.send(JSON.stringify(d));
-    }
-
-    async function websocketUpdatePiece(p: TypeBindPiece) {
-        await tick();
-
-        const d = {
-            event: "update-piece",
-            email: $appStore.user.email,
-            data: p.component?.serialize(),
-        };
-
-        ws?.send(JSON.stringify(d));
     }
 
     // Get or set rgba value of pixel at given coordinates

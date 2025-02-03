@@ -90,8 +90,10 @@
         const p = pieces[s.index]?.component;
 
         if (p) {
+            p.clearBoundingBox();
             p.deserialize(s);
-            p.draw();
+            p.move();
+            redrawPieceChunk(p);
         }
     }
 
@@ -115,7 +117,7 @@
         // Only redraw pieces that are inbound of section
         for (const p of pieces) {
             if (p.component) {
-                if (!redrawPiece && p === piece) {
+                if (!redrawPiece && p.component === piece) {
                     continue;
                 }
                 if (

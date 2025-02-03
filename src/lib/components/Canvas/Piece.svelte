@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { createEventDispatcher, getContext } from "svelte";
+    import { createEventDispatcher, getContext, tick } from "svelte";
     import type { PieceSerialized, PieceSettings } from "./types/piece";
     import type { Writable } from "svelte/store";
     import type { Canvas } from "./types/canvas";
@@ -101,7 +101,9 @@
         topMost = s.topMost;
         bottomMost = s.bottomMost;
 
-        index = s.index;
+        if (s.index !== undefined) {
+            index = s.index;
+        }
     }
 
     export function isPointInStroke(x: number, y: number) {
@@ -159,7 +161,7 @@
     }
 
     export function getBoundingBox() {
-        const clearMargin = settings.size;
+        const clearMargin = settings.size / 2;
 
         const x = calcLeftMost() - clearMargin;
         const y = calcTopMost() - clearMargin;
@@ -307,6 +309,7 @@
         )}px;"
     >
         <div class="flex gap-4">
+            <span>i: {index}</span>
             <span>x: {Math.round(leftMost)}</span>
             <span>y: {Math.round(topMost)}</span>
         </div>
