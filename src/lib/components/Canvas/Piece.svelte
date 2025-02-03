@@ -130,14 +130,42 @@
         }
     }
 
+    export function calcXMost(x: number): number {
+        return (
+            x + $canvasStore.canvasData.xPan + $canvasStore.canvasData.zoomDx
+        );
+    }
+
+    export function calcYMost(y: number): number {
+        return (
+            y + $canvasStore.canvasData.yPan + $canvasStore.canvasData.zoomDy
+        );
+    }
+
+    export function calcLeftMost() {
+        return calcXMost(leftMost);
+    }
+
+    export function calcRightMost() {
+        return calcXMost(rightMost);
+    }
+
+    export function calcTopMost() {
+        return calcYMost(topMost);
+    }
+
+    export function calcBottomMost() {
+        return calcYMost(bottomMost);
+    }
+
     export function getBoundingBox() {
         const clearMargin = settings.size;
 
-        const x = leftMost - clearMargin;
-        const y = topMost - clearMargin;
+        const x = calcLeftMost() - clearMargin;
+        const y = calcTopMost() - clearMargin;
 
-        const width = rightMost - leftMost + clearMargin * 2;
-        const height = bottomMost - topMost + clearMargin * 2;
+        const width = calcRightMost() - calcLeftMost() + clearMargin * 2;
+        const height = calcBottomMost() - calcTopMost() + clearMargin * 2;
 
         return [x, y, width, height];
     }
@@ -240,13 +268,12 @@
             panMatrix.translateSelf(dx, dy);
         } else {
             moveMatrix.translateSelf(dx, dy);
-        }
-
-        if (dx !== undefined && dy !== undefined) {
-            leftMost += dx;
-            rightMost += dx;
-            topMost += dy;
-            bottomMost += dy;
+            if (dx !== undefined && dy !== undefined) {
+                leftMost += dx;
+                rightMost += dx;
+                topMost += dy;
+                bottomMost += dy;
+            }
         }
 
         let updatedPath = new Path2D();
@@ -273,29 +300,15 @@
     <div
         class="piece-settings control-panel z-10"
         style="bottom: min({($canvasStore.canvasData.height ?? 0) -
-            topMost * $canvasStore.canvasData.zoom}px, {$canvasStore.canvasData
-            .height ?? 0}px); left: {Math.max(
-            leftMost * $canvasStore.canvasData.zoom,
+            calcTopMost() * $canvasStore.canvasData.zoom}px, {$canvasStore
+            .canvasData.height ?? 0}px); left: {Math.max(
+            calcLeftMost() * $canvasStore.canvasData.zoom,
             0,
         )}px;"
     >
         <div class="flex gap-4">
-            <span
-                >x: {Math.round(
-                    (leftMost -
-                        $canvasStore.canvasData.xPan -
-                        $canvasStore.canvasData.zoomDx) *
-                        $canvasStore.canvasData.zoom,
-                )}</span
-            >
-            <span
-                >y: {Math.round(
-                    (topMost -
-                        $canvasStore.canvasData.yPan -
-                        $canvasStore.canvasData.zoomDy) *
-                        $canvasStore.canvasData.zoom,
-                )}</span
-            >
+            <span>x: {Math.round(leftMost)}</span>
+            <span>y: {Math.round(topMost)}</span>
         </div>
 
         <div class="control-group">

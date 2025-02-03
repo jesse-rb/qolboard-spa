@@ -7,11 +7,21 @@ import type { PiecesManagerSerialized } from "./piecesManager";
 import type { RulerSettings } from "./ruler";
 import type { TypeSharedAccess } from "./sharedAccess";
 
+// These canvas data properties do get saved
 export type CanvasData = {
+    name: string
+    backgroundColor: string
+    snapToGrid: boolean
+    pieceSettings: PieceSettings
+    rulerSettings: RulerSettings
+    piecesManager?: PiecesManagerSerialized
+};
+
+// These canvas data properties are related to a client and do not get saved
+export type ClientCanvasData = {
     ctx?: CanvasRenderingContext2D
     width?: number
     height?: number
-    name: string
     activeMode: CanvasModes
     mouseDown: boolean
     mouseX: number
@@ -20,19 +30,16 @@ export type CanvasData = {
     prevMouseY: number
     xPan: number
     yPan: number
-    backgroundColor: string
-    snapToGrid: boolean
-    pieceSettings: PieceSettings
-    rulerSettings: RulerSettings
     zoom: number
     zoomDx: number
     zoomDy: number
-    piecesManager?: PiecesManagerSerialized
-};
+}
 
 export type Canvas = Model & {
-    canvasData: CanvasData
+    canvasData: CanvasData & ClientCanvasData
     user?: TypeUser
     canvas_shared_accesses?: Array<TypeSharedAccess>
     canvas_shared_invitations?: Array<TypeInviteLink>
 }
+
+export type CanvasWithoutClientCanvasData = Omit<Canvas, "canvasData"> & { canvasData: CanvasData };

@@ -174,14 +174,14 @@
         }
     }
 
-    export function move(): Piece | undefined {
+    export function move(): TypeBindPiece | undefined {
         if (selectedPiece?.component) {
             selectedPiece.component.clearBoundingBox();
             selectedPiece.component.move();
             reDrawSelectedChunk();
         }
 
-        return selectedPiece?.component ?? undefined;
+        return selectedPiece;
     }
 
     export function remove() {

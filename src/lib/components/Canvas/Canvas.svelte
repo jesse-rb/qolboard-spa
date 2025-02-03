@@ -4,13 +4,17 @@
     import ControlPanel from "./ControlPanel.svelte";
     import Ruler from "./Ruler.svelte";
     import { CanvasModes } from "./enums/modes";
-    import type { Canvas, CanvasData } from "./types/canvas";
+    import type {
+        Canvas,
+        CanvasData,
+        CanvasWithoutClientCanvasData,
+        ClientCanvasData,
+    } from "./types/canvas";
     import type { CanvasActions } from "./enums/actions";
     import { appStore } from "../../store";
     import { pushState } from "$app/navigation";
     import { writable, type Writable } from "svelte/store";
     import Cursors from "./Cursors.svelte";
-    import Piece from "./Piece.svelte";
     import type { TypeBindPiece } from "./types/piece";
 
     export let id: number | null = null;
@@ -33,30 +37,8 @@
     // Allow each canvas instance to have it's own separate store instance (not a shared store)
     const store: Writable<Canvas> = writable({
         canvasData: {
-            name: "A blank canvas",
-            width: 0,
-            height: 0,
-            activeMode: CanvasModes.Draw,
-            mouseDown: false,
-            mouseX: 0,
-            mouseY: 0,
-            prevMouseX: 0,
-            prevMouseY: 0,
-            xPan: 0,
-            yPan: 0,
-            backgroundColor: "#1A1A1A",
-            snapToGrid: false,
-            pieceSettings: {
-                size: 20,
-                color: "#D55C1A",
-            },
-            rulerSettings: {
-                showUnits: true,
-                showLines: false,
-            },
-            zoom: 1,
-            zoomDx: 0,
-            zoomDy: 0,
+            ...getDefaultClientCanvasData(),
+            ...getDefaultCanvasData(),
         },
     });
     setContext("canvasStore", store);
@@ -90,6 +72,10 @@
         if (id !== null) {
             const canvas = await getCanvas(id);
             if (canvas) {
+                canvas.canvasData = {
+                    ...getDefaultClientCanvasData(),
+                    ...canvas.canvasData,
+                };
                 await deserialize(canvas);
             }
         }
@@ -215,6 +201,40 @@
         }
     }
 
+    function getDefaultClientCanvasData(): ClientCanvasData {
+        return {
+            width: 0,
+            height: 0,
+            activeMode: CanvasModes.Draw,
+            mouseDown: false,
+            mouseX: 0,
+            mouseY: 0,
+            prevMouseX: 0,
+            prevMouseY: 0,
+            xPan: 0,
+            yPan: 0,
+            zoom: 1,
+            zoomDx: 0,
+            zoomDy: 0,
+        };
+    }
+
+    function getDefaultCanvasData(): CanvasData {
+        return {
+            name: "My new canvas",
+            backgroundColor: "#1A1A1A",
+            snapToGrid: false,
+            pieceSettings: {
+                size: 20,
+                color: "#D55C1A",
+            },
+            rulerSettings: {
+                showUnits: true,
+                showLines: false,
+            },
+        };
+    }
+
     async function saveCanvas() {
         saveIsLoading = true;
 
@@ -238,10 +258,22 @@
 
         if (response.ok) {
             if (id === null) {
-                const body: { msg: string; canvas: Canvas } =
-                    await response.json();
+                const body: {
+                    msg: string;
+                    canvas: CanvasWithoutClientCanvasData;
+                } = await response.json();
                 if (body.canvas.id) {
                     id = body.canvas.id;
+
+                    const cd: CanvasData & ClientCanvasData = {
+                        ...getDefaultClientCanvasData(),
+                        ...body.canvas.canvasData,
+                    };
+                    const c: Canvas = {
+                        ...body.canvas,
+                        ...{ canvasData: cd },
+                    };
+                    deserialize(c);
                     pushState(`/canvas/${id}`, id);
                 }
             }
@@ -250,7 +282,9 @@
         saveIsLoading = false;
     }
 
-    async function getCanvas(_id: number): Promise<Canvas | null> {
+    async function getCanvas(
+        _id: number,
+    ): Promise<CanvasWithoutClientCanvasData | null> {
         // loading = true;
 
         const domain = import.meta.env.VITE_API_HOST;
@@ -279,7 +313,7 @@
     }
 
     function serialize() {
-        const s: CanvasData = {
+        const s: CanvasData & ClientCanvasData = {
             name: $store.canvasData.name,
             activeMode: $store.canvasData.activeMode,
             backgroundColor: $store.canvasData.backgroundColor,
@@ -303,7 +337,7 @@
     }
 
     async function deserialize(canvas: Canvas) {
-        const ctx = $store.canvasData.ctx; // Preserve ctx (TODO: move canvas ctx initialization to this point)
+        const ctx = $store.canvasData.ctx; // Preserve ctx
         const width = $store.canvasData.width; // Preserve canvas width and height
         const height = $store.canvasData.height;
         $store = canvas;
@@ -401,7 +435,9 @@
         ) {
             if (piecesManager.getSelected()) {
                 const piece = piecesManager.move();
-                websocketUpdatePiece(piece);
+                if (piece) {
+                    websocketUpdatePiece(piece);
+                }
             } else {
                 piecesManager.select();
             }
