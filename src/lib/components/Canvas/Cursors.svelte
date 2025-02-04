@@ -9,10 +9,12 @@
 </script>
 
 {#each Object.entries(cursors) as [email, pos]}
+    {@const x =
+        pos.x / $canvasStore.canvasData.zoom + $canvasStore.canvasData.xPan}
+    {@const y = pos.y + $canvasStore.canvasData.yPan}
     <div
         class="pointer-events-none fixed"
-        style="left: {pos.x - 8}px; top: calc({pos.y -
-            8}px + var(--header-height));"
+        style="left: {x}px; top: calc({y}px + var(--header-height));"
     >
         <span class="material-icons">mouse</span>
         <span class="text-xs">{email}</span>

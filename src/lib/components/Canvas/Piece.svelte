@@ -90,6 +90,19 @@
         updatedPath.addPath(path, moveMatrix);
         path = updatedPath;
 
+        updatedPath = new Path2D();
+        let clientOffsetMatrix = new DOMMatrix()
+            .translate(
+                $canvasStore.canvasData.zoomDx,
+                $canvasStore.canvasData.zoomDy,
+            )
+            .translate(
+                $canvasStore.canvasData.xPan,
+                $canvasStore.canvasData.yPan,
+            );
+        updatedPath.addPath(path, clientOffsetMatrix);
+        path = updatedPath;
+
         leftMost = s.leftMost;
         rightMost = s.rightMost;
         topMost = s.topMost;
@@ -126,32 +139,44 @@
         }
     }
 
-    export function calcXMost(x: number): number {
+    export function addClientOffsetX(x: number): number {
         return (
             x + $canvasStore.canvasData.xPan + $canvasStore.canvasData.zoomDx
         );
     }
 
-    export function calcYMost(y: number): number {
+    export function addClientOffsetY(y: number): number {
         return (
             y + $canvasStore.canvasData.yPan + $canvasStore.canvasData.zoomDy
         );
     }
 
+    export function subClientOffsetX(x: number): number {
+        return (
+            x - $canvasStore.canvasData.xPan - $canvasStore.canvasData.zoomDx
+        );
+    }
+
+    export function subClientOffsetY(y: number): number {
+        return (
+            y - $canvasStore.canvasData.yPan - $canvasStore.canvasData.zoomDy
+        );
+    }
+
     export function calcLeftMost() {
-        return calcXMost(leftMost);
+        return addClientOffsetX(leftMost);
     }
 
     export function calcRightMost() {
-        return calcXMost(rightMost);
+        return addClientOffsetX(rightMost);
     }
 
     export function calcTopMost() {
-        return calcYMost(topMost);
+        return addClientOffsetY(topMost);
     }
 
     export function calcBottomMost() {
-        return calcYMost(bottomMost);
+        return addClientOffsetY(bottomMost);
     }
 
     export function getBoundingBox() {
@@ -203,7 +228,6 @@
     export function addPoint() {
         const mouseX = $canvasStore.canvasData.mouseX;
         const mouseY = $canvasStore.canvasData.mouseY;
-
         let thereIsChangeOnX = mouseX >= latestPointX || mouseX <= latestPointX;
         let thereIsChangeOnY = mouseY >= latestPointY || mouseY <= latestPointY;
 
@@ -219,14 +243,14 @@
 
         if (thereIsChangeOnX || thereIsChangeOnY) {
             path.lineTo(newX, newY);
-            updateBoundingBox(newX, newY);
+            updateBoundingBox(subClientOffsetX(newX), subClientOffsetY(newY));
 
             const addedPath = new Path2D();
             addedPath.moveTo(latestPointX, latestPointY);
             addedPath.lineTo(newX, newY);
 
             // Serialize path
-            pathSVG += `M${latestPointX} ${latestPointY} L${newX} ${newY}`;
+            pathSVG += `M${subClientOffsetX(latestPointX)} ${subClientOffsetY(latestPointY)} L${subClientOffsetX(newX)} ${subClientOffsetY(newY)}`;
 
             draw(addedPath);
 

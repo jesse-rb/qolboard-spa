@@ -18,10 +18,10 @@
     let selectedPieceIndex: number | undefined = undefined;
     let pieces: Array<TypeBindPiece> = [];
 
-    let leftMost: number;
-    let rightMost: number;
-    let topMost: number;
-    let bottomMost: number;
+    let leftMost: number = 0;
+    let rightMost: number = 0;
+    let topMost: number = 0;
+    let bottomMost: number = 0;
 
     function updateBoundingBox(box: TypeBoundingBox) {
         topMost = topMost < box.topMost ? topMost : box.topMost;

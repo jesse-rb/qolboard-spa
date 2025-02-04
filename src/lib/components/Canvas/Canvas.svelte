@@ -112,7 +112,7 @@
             });
             elemCanvas.addEventListener("wheel", (e) => {
                 const wheelDeltaY = e.deltaY;
-                const zoom = wheelDeltaY < 0 ? 100 / 99 : 99 / 100; // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
+                const zoom = wheelDeltaY < 0 ? 100 / 90 : 90 / 100; // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
                 $store.canvasData.ctx?.scale(zoom, zoom);
 
                 const oldZoom = $store.canvasData.zoom;
