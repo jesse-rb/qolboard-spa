@@ -68,7 +68,6 @@
             settings: settings,
             path: pathSVG,
             move: moveMatrix.toJSON(),
-            pan: panMatrix.toJSON(),
             leftMost: leftMost,
             rightMost: rightMost,
             topMost: topMost,
@@ -86,14 +85,9 @@
         path = new Path2D(s.path + "C");
 
         moveMatrix = DOMMatrix.fromMatrix(s.move);
-        panMatrix = DOMMatrix.fromMatrix(s.pan);
 
         let updatedPath = new Path2D();
         updatedPath.addPath(path, moveMatrix);
-        path = updatedPath;
-
-        updatedPath = new Path2D();
-        updatedPath.addPath(path, panMatrix);
         path = updatedPath;
 
         leftMost = s.leftMost;

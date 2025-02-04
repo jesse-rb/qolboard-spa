@@ -92,7 +92,6 @@
         if (p) {
             p.clearBoundingBox();
             p.deserialize(s);
-            p.move();
             redrawPieceChunk(p);
         }
     }
