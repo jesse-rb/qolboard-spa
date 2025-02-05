@@ -1,17 +1,21 @@
 import { writable, type Writable } from "svelte/store";
+import type { TypeUser } from "./types/user";
 
 export type AppStore = {
-    registeredEmail: string|null
+    registeredEmail: string | null
     isAuthenticated: boolean
-    email: string
+    user: TypeUser
     headerHeight: number
     controlPanelWidth: number
 }
 
-export const appStore:Writable<AppStore> = writable({
+export const appStore: Writable<AppStore> = writable({
     registeredEmail: null,
     isAuthenticated: true,
-    email: "",
+    user: {
+        email: "",
+        uuid: "",
+    },
     headerHeight: 0,
     controlPanelWidth: 0
 });
