@@ -1,3 +1,7 @@
+export function envIsLocal(): boolean {
+    return import.meta.env.VITE_IS_LOCAL === true
+}
+
 export function range(to: number, from: number = 0, step: number = 1): Array<number> {
     const range: Array<number> = [];
     for (let i: number = from; i <= to; i += step) {

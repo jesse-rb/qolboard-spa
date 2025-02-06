@@ -16,6 +16,7 @@
     import { writable, type Writable } from "svelte/store";
     import Cursors from "./Cursors.svelte";
     import type { TypeBindPiece } from "./types/piece";
+    import { envIsLocal } from "$lib/util";
 
     export let id: number | null = null;
     export let preview: boolean = false;
@@ -160,13 +161,18 @@
         if (id) {
             const domain = import.meta.env.VITE_API_DOMAIN;
             const port = import.meta.env.VITE_API_PORT;
+
             let proto = "wss://";
-            if (import.meta.env.VITE_IS_LOCAL === true) {
+            if (envIsLocal()) {
                 proto = "ws://";
             }
-            ws = new WebSocket(
-                `${proto}${domain}:${port}/user/ws/canvas/${id}`,
-            );
+
+            let host = `${proto}${domain}`;
+            if (envIsLocal()) {
+                host = `${host}:${port}`;
+            }
+
+            ws = new WebSocket(`${host}/user/ws/canvas/${id}`);
             console.log("Attempting to connect to websocket");
 
             // Listen for socket open
