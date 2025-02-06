@@ -42,6 +42,5 @@
     >
         <span class="material-icons">mouse</span>
         <span class="text-xs">{email}</span>
-        <span>zoomDx: {$canvasStore.canvasData.zoomDx}</span>
     </div>
 {/each}
