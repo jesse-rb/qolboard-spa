@@ -160,6 +160,10 @@
         if (id) {
             const domain = import.meta.env.VITE_API_DOMAIN;
             const port = import.meta.env.VITE_API_PORT;
+            let proto = "wss://";
+            if (import.meta.env.VITE_IS_LOCAL === true) {
+                proto = "ws://";
+            }
             ws = new WebSocket(`ws://${domain}:${port}/user/ws/canvas/${id}`);
             console.log("Attempting to connect to websocket");
 
