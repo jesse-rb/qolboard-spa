@@ -178,6 +178,7 @@
             // Listen for socket open
             ws.onopen = () => {
                 console.log("Successfully connected to socket");
+                window.setInterval(websocketKeepAlive, 30000 /*ms*/);
             };
 
             // Listen for socket close
@@ -212,6 +213,16 @@
             };
         }
     }
+
+    let websocketKeepAlive = function () {
+        let message = { desc: "keep-alive" };
+        const d = {
+            event: "keep-alive",
+            email: $appStore.user.email,
+            data: null,
+        };
+        ws?.send(JSON.stringify(d));
+    };
 
     function websocketMouseMove() {
         const d = {
