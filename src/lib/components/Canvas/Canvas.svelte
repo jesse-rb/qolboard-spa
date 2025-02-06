@@ -164,7 +164,9 @@
             if (import.meta.env.VITE_IS_LOCAL === true) {
                 proto = "ws://";
             }
-            ws = new WebSocket(`ws://${domain}:${port}/user/ws/canvas/${id}`);
+            ws = new WebSocket(
+                `${proto}${domain}:${port}/user/ws/canvas/${id}`,
+            );
             console.log("Attempting to connect to websocket");
 
             // Listen for socket open
