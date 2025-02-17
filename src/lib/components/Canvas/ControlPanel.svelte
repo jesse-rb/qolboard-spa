@@ -38,6 +38,10 @@
         dispatch("updatedBackgroundColor");
     }
 
+    function dispatchUpdatedCanvasData() {
+        dispatch("updatedCanvasData");
+    }
+
     function dispatchSave() {
         dispatch("save");
     }
@@ -81,6 +85,7 @@
                             class="w-full"
                             type="text"
                             bind:value={$canvasStore.canvasData.name}
+                            on:change={dispatchUpdatedCanvasData}
                         />
                     </h1>
                 {/if}
@@ -125,7 +130,8 @@
             <input
                 bind:value={$canvasStore.canvasData.backgroundColor}
                 type="color"
-                on:input={dispatchUpdatedBackgroundColor}
+                on:change={dispatchUpdatedBackgroundColor}
+                on:change={dispatchUpdatedCanvasData}
             />
         </div>
         <div class="control">

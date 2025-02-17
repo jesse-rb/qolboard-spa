@@ -1,6 +1,6 @@
 <script lang="ts">
     import { get, type Writable } from "svelte/store";
-    import { getContext, tick } from "svelte";
+    import { createEventDispatcher, getContext, tick } from "svelte";
     import Piece from "./Piece.svelte";
     import type { PiecesManagerSerialized } from "./types/piecesManager";
     import type { Canvas } from "./types/canvas";
@@ -12,6 +12,8 @@
         rightMost: number;
         leftMost: number;
     };
+
+    const dispatch = createEventDispatcher();
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
     let selectedPiece: TypeBindPiece | undefined = undefined;
@@ -128,6 +130,11 @@
         }
     }
 
+    function handlePieceUpdate(p: TypeBindPiece, redrawPiece = true) {
+        redrawPieceChunk(p.component, redrawPiece);
+        dispatch("update-piece", p);
+    }
+
     export function reDrawSelectedChunk() {
         // Draw only section background
         if (selectedPiece) {
@@ -223,7 +230,7 @@
             bind:this={p.component}
             settings={{ ...initialPieceSettings() }}
             index={i}
-            on:update={(e) => redrawPieceChunk(p.component, e.detail)}
+            on:update={(e) => handlePieceUpdate(p, e.detail)}
             on:updateBoundingBox={(e) => updateBoundingBox(e.detail)}
         />
     {/each}

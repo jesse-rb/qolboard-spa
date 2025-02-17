@@ -16,7 +16,8 @@
     import { writable, type Writable } from "svelte/store";
     import Cursors from "./Cursors.svelte";
     import type { TypeBindPiece } from "./types/piece";
-    import { envIsLocal } from "$lib/util";
+    import { envIsLocal, sleep } from "$lib/util";
+    import Piece from "./Piece.svelte";
 
     export let id: number | null = null;
     export let preview: boolean = false;
@@ -77,7 +78,7 @@
                     ...getDefaultClientCanvasData(),
                     ...canvas.canvasData,
                 };
-                await deserialize(canvas);
+                deserialize(canvas);
             }
         }
 
@@ -102,6 +103,7 @@
 
                 // Register keyup keyboard shortcuts
                 if (key === " ") {
+                    e.preventDefault();
                     if (overiddenActiveMode) {
                         setActiveMode(overiddenActiveMode);
                     }
@@ -205,6 +207,12 @@
                     }
                     case "update-piece": {
                         piecesManager.updatePiece(message.data);
+                        break;
+                    }
+                    case "update-canvas-data": {
+                        deserialize(message.data);
+                        draw();
+                        break;
                     }
                     default: {
                         break;
@@ -267,10 +275,22 @@
         ws?.send(JSON.stringify(d));
     }
 
+    async function websocketUpdatedCanvasData() {
+        await tick();
+
+        const d = {
+            event: "update-canvas-data",
+            email: $appStore.user.email,
+            data: serialize(),
+        };
+
+        ws?.send(JSON.stringify(d));
+    }
+
     function getDefaultClientCanvasData(): ClientCanvasData {
         return {
-            width: 0,
-            height: 0,
+            width: width,
+            height: height,
             activeMode: CanvasModes.Draw,
             mouseDown: false,
             mouseX: 0,
@@ -311,7 +331,7 @@
         }
         const url = `${domain}/${path}`;
 
-        const body = serialize();
+        const body = serialize().canvasData;
 
         const response = await fetch(url, {
             method: "POST",
@@ -378,38 +398,38 @@
         return null;
     }
 
-    function serialize() {
-        const s: CanvasData & ClientCanvasData = {
+    function serialize(withPiecesManager: boolean = true) {
+        const canvasData: CanvasData = {
             name: $store.canvasData.name,
-            activeMode: $store.canvasData.activeMode,
             backgroundColor: $store.canvasData.backgroundColor,
-            mouseX: $store.canvasData.mouseX,
-            mouseY: $store.canvasData.mouseY,
-            mouseDown: $store.canvasData.mouseDown,
-            prevMouseX: $store.canvasData.prevMouseX,
-            prevMouseY: $store.canvasData.prevMouseY,
-            xPan: $store.canvasData.xPan,
-            yPan: $store.canvasData.yPan,
-            zoom: $store.canvasData.zoom,
-            zoomDx: $store.canvasData.zoomDx,
-            zoomDy: $store.canvasData.zoomDy,
             snapToGrid: $store.canvasData.snapToGrid,
             rulerSettings: $store.canvasData.rulerSettings,
             pieceSettings: $store.canvasData.pieceSettings,
-            piecesManager: piecesManager.serialize(),
         };
 
-        return s;
+        if (withPiecesManager) {
+            canvasData.piecesManager = piecesManager.serialize();
+        }
+
+        const canvas: CanvasWithoutClientCanvasData = {
+            id: $store.id,
+            canvasData: canvasData,
+        };
+
+        return canvas;
     }
 
-    async function deserialize(canvas: Canvas) {
-        const ctx = $store.canvasData.ctx; // Preserve ctx
-        const width = $store.canvasData.width; // Preserve canvas width and height
-        const height = $store.canvasData.height;
-        $store = canvas;
-        $store.canvasData.ctx = ctx;
-        $store.canvasData.width = width;
-        $store.canvasData.height = height;
+    function deserialize(canvas: CanvasWithoutClientCanvasData) {
+        $store.canvasData = { ...$store.canvasData, ...canvas.canvasData };
+        if (canvas.user) {
+            $store.user = canvas.user;
+        }
+        if (canvas.canvas_shared_invitations) {
+            $store.canvas_shared_invitations = canvas.canvas_shared_invitations;
+        }
+        if (canvas.canvas_shared_accesses) {
+            $store.canvas_shared_accesses = canvas.canvas_shared_accesses;
+        }
 
         if ($store.canvasData.piecesManager) {
             piecesManager.deserialize($store.canvasData.piecesManager);
@@ -593,6 +613,7 @@
             on:setActiveMode={(e) => setActiveMode(e.detail)}
             on:action={(e) => action(e.detail)}
             on:updatedBackgroundColor={draw}
+            on:updatedCanvasData={websocketUpdatedCanvasData}
             on:save={saveCanvas}
         />
 
@@ -614,7 +635,10 @@
             />
         </div>
 
-        <PiecesManager bind:this={piecesManager} />
+        <PiecesManager
+            bind:this={piecesManager}
+            on:update-piece={(e) => websocketUpdatePiece(e.detail)}
+        />
 
         <Ruler />
         <Ruler isHorizontal={false} />

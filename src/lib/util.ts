@@ -1,5 +1,6 @@
 export function envIsLocal(): boolean {
-    return import.meta.env.VITE_IS_LOCAL === true
+
+    return import.meta.env.VITE_APP_ENV === "local";
 }
 
 export function range(to: number, from: number = 0, step: number = 1): Array<number> {
@@ -61,3 +62,8 @@ export function teleport(node: HTMLElement, params: { id: string }) {
 export function removeFromArrayByIndex(arr: Array<any>, i: number) {
     return [...arr.slice(0, i), ...arr.slice(i + 1)]
 }
+
+export async function sleep(ms: number) {
+    return new Promise(res => setTimeout(res, ms));
+}
+
