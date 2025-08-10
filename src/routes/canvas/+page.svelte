@@ -27,7 +27,7 @@
 
         if (response.ok) {
             const json: IndexResponse<Canvas> = await response.json();
-            data = json.data;
+            data = json.data ?? [];
         }
 
         loading = false;

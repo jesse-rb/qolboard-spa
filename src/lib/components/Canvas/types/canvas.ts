@@ -36,10 +36,11 @@ export type ClientCanvasData = {
 }
 
 export type Canvas = Model & {
-    canvasData: CanvasData & ClientCanvasData
+    canvas_data: CanvasData & ClientCanvasData
+    user_uuid: string
     user?: TypeUser
     canvas_shared_accesses?: Array<TypeSharedAccess>
     canvas_shared_invitations?: Array<TypeInviteLink>
 }
 
-export type CanvasWithoutClientCanvasData = Omit<Canvas, "canvasData"> & { canvasData: CanvasData };
+export type CanvasWithoutClientCanvasData = Omit<Canvas, "canvas_data"> & { canvas_data: CanvasData };

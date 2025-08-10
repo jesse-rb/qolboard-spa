@@ -159,10 +159,10 @@
             const piece = pieces[i];
             if (
                 piece.component?.isPointInStroke(
-                    $canvasStore.canvasData.mouseX *
-                        $canvasStore.canvasData.zoom,
-                    $canvasStore.canvasData.mouseY *
-                        $canvasStore.canvasData.zoom,
+                    $canvasStore.canvas_data.mouseX *
+                        $canvasStore.canvas_data.zoom,
+                    $canvasStore.canvas_data.mouseY *
+                        $canvasStore.canvas_data.zoom,
                 )
             ) {
                 console.log("SELECTED");
@@ -220,7 +220,7 @@
 
     function initialPieceSettings() {
         const canvasStoreCurrent = get(canvasStore);
-        return canvasStoreCurrent.canvasData.pieceSettings;
+        return canvasStoreCurrent.canvas_data.pieceSettings;
     }
 </script>
 

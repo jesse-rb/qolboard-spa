@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Error, ShowResponse } from "$lib/types/types";
-    import { appStore } from "../../store";
+    import { appStore, getUser } from "../../store";
     import Button from "../Button.svelte";
     import ResendEmailVerificaitonButton from "./ResendEmailVerificaitonButton.svelte";
     import Errors from "../Form/Errors.svelte";
@@ -72,8 +72,7 @@
             if (isRegistration) {
                 $appStore.registeredEmail = responseBody.data.email;
             } else {
-                $appStore.isAuthenticated = true;
-                $appStore.user = responseBody.data;
+                getUser();
             }
         } else {
             if (responseBody.code == "user_already_exists") {
@@ -160,4 +159,3 @@
 
 <style>
 </style>
-

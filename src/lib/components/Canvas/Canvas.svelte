@@ -18,9 +18,11 @@
     import type { TypeBindPiece } from "./types/piece";
     import { envIsLocal, sleep } from "$lib/util";
     import Piece from "./Piece.svelte";
+    import type { ShowResponse } from "$lib/types/types";
 
     export let id: number | null = null;
     export let preview: boolean = false;
+    export let canvasData: CanvasWithoutClientCanvasData | null = null;
 
     let elemContaienr: HTMLDivElement;
     let elemCanvas: HTMLCanvasElement;
@@ -38,7 +40,7 @@
 
     // Allow each canvas instance to have it's own separate store instance (not a shared store)
     const store: Writable<Canvas> = writable({
-        canvasData: {
+        canvas_data: {
             ...getDefaultClientCanvasData(),
             ...getDefaultCanvasData(),
         },
@@ -66,20 +68,32 @@
         // Init canvas context
         const _ctx = elemCanvas.getContext("2d");
         if (_ctx !== null) {
-            $store.canvasData.ctx = _ctx;
+            $store.canvas_data.ctx = _ctx;
         } else {
             throw new Error("2D canvas rendering context is not available");
         }
 
+        // Get canvas data and deserialize if this is an existing canvas
         if (id !== null) {
-            const canvas = await getCanvas(id);
+            let canvas = null;
+
+            if (!preview) {
+                // Fetch canvas data from API
+                canvas = await getCanvas(id);
+            } else if (canvasData) {
+                // Use provided canvas data if in preview mode
+                canvas = canvasData;
+            }
+
             if (canvas) {
-                canvas.canvasData = {
+                canvas.canvas_data = {
                     ...getDefaultClientCanvasData(),
-                    ...canvas.canvasData,
+                    ...canvas.canvas_data,
                 };
                 deserialize(canvas);
             }
+        } else if (preview && canvasData) {
+            // Otherwise if this is a preview, and we have canvas data provided, no need to fetch it
         }
 
         if (!preview) {
@@ -93,7 +107,7 @@
                 if (keyDown === null) {
                     keyDown = key;
                     if (key === " ") {
-                        overiddenActiveMode = $store.canvasData.activeMode;
+                        overiddenActiveMode = $store.canvas_data.activeMode;
                         setActiveMode(CanvasModes.Pan);
                     }
                 }
@@ -108,7 +122,7 @@
                         setActiveMode(overiddenActiveMode);
                     }
                     overiddenActiveMode = null;
-                    $store.canvasData.mouseDown = false;
+                    $store.canvas_data.mouseDown = false;
                 }
 
                 keyDown = null;
@@ -116,30 +130,30 @@
             elemCanvas.addEventListener("wheel", (e) => {
                 const wheelDeltaY = e.deltaY;
                 const zoom = wheelDeltaY < 0 ? 100 / 90 : 90 / 100; // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
-                $store.canvasData.ctx?.scale(zoom, zoom);
+                $store.canvas_data.ctx?.scale(zoom, zoom);
 
-                const oldZoom = $store.canvasData.zoom;
-                $store.canvasData.zoom = $store.canvasData.zoom * zoom;
+                const oldZoom = $store.canvas_data.zoom;
+                $store.canvas_data.zoom = $store.canvas_data.zoom * zoom;
 
                 // Pan according to zoom, to center canvas after zoom
                 let dx =
                     Math.abs(
-                        ($store.canvasData.width ?? 0) /
-                            $store.canvasData.zoom -
-                            ($store.canvasData.width ?? 0) / oldZoom,
+                        ($store.canvas_data.width ?? 0) /
+                            $store.canvas_data.zoom -
+                            ($store.canvas_data.width ?? 0) / oldZoom,
                     ) / 2;
                 let dy =
                     Math.abs(
-                        ($store.canvasData.height ?? 0) /
-                            $store.canvasData.zoom -
-                            ($store.canvasData.height ?? 0) / oldZoom,
+                        ($store.canvas_data.height ?? 0) /
+                            $store.canvas_data.zoom -
+                            ($store.canvas_data.height ?? 0) / oldZoom,
                     ) / 2;
 
                 dx = dx * (wheelDeltaY > 0 ? 1 : -1);
                 dy = dy * (wheelDeltaY > 0 ? 1 : -1);
 
-                $store.canvasData.zoomDx += dx;
-                $store.canvasData.zoomDy += dy;
+                $store.canvas_data.zoomDx += dx;
+                $store.canvas_data.zoomDy += dy;
 
                 piecesManager.pan(dx, dy);
                 draw();
@@ -149,18 +163,18 @@
         // Initial draw
         await tick();
         if (preview) {
-            $store.canvasData.zoom *= 0.1;
+            $store.canvas_data.zoom *= 0.1;
         }
-        $store.canvasData.ctx.scale(
-            $store.canvasData.zoom,
-            $store.canvasData.zoom,
+        $store.canvas_data.ctx.scale(
+            $store.canvas_data.zoom,
+            $store.canvas_data.zoom,
         );
 
         await draw();
     });
 
     function initWebSocket() {
-        if (id) {
+        if (id && false) {
             const domain = import.meta.env.VITE_API_DOMAIN;
             const port = import.meta.env.VITE_API_PORT;
 
@@ -238,13 +252,13 @@
             email: $appStore.user.email,
             data: {
                 x:
-                    $store.canvasData.mouseX -
-                    $store.canvasData.xPan -
-                    $store.canvasData.zoomDx,
+                    $store.canvas_data.mouseX -
+                    $store.canvas_data.xPan -
+                    $store.canvas_data.zoomDx,
                 y:
-                    $store.canvasData.mouseY -
-                    $store.canvasData.yPan -
-                    $store.canvasData.zoomDy,
+                    $store.canvas_data.mouseY -
+                    $store.canvas_data.yPan -
+                    $store.canvas_data.zoomDy,
             },
         };
 
@@ -331,7 +345,7 @@
         }
         const url = `${domain}/${path}`;
 
-        const body = serialize().canvasData;
+        const body = serialize().canvas_data;
 
         const response = await fetch(url, {
             method: "POST",
@@ -353,11 +367,11 @@
 
                     const cd: CanvasData & ClientCanvasData = {
                         ...getDefaultClientCanvasData(),
-                        ...body.canvas.canvasData,
+                        ...body.canvas.canvas_data,
                     };
                     const c: Canvas = {
                         ...body.canvas,
-                        ...{ canvasData: cd },
+                        ...{ canvas_data: cd },
                     };
                     deserialize(c);
                     pushState(`/canvas/${id}`, id);
@@ -374,7 +388,7 @@
         // loading = true;
 
         const domain = import.meta.env.VITE_API_HOST;
-        const path = `user/canvas/${_id}`;
+        const path = `user/canvas/${_id}?with[]=user&with[]=canvas_shared_invitations&with[]=canvas_shared_accesses.user`;
         const url = `${domain}/${path}`;
 
         const response = await fetch(url, {
@@ -386,7 +400,9 @@
         });
 
         if (response.ok) {
-            const canvas: Canvas = await response.json();
+            const json: ShowResponse<Canvas> = await response.json();
+            console.log(json);
+            const canvas = json.data;
             return canvas;
         } else {
             id = null;
@@ -399,28 +415,33 @@
     }
 
     function serialize(withPiecesManager: boolean = true) {
-        const canvasData: CanvasData = {
-            name: $store.canvasData.name,
-            backgroundColor: $store.canvasData.backgroundColor,
-            snapToGrid: $store.canvasData.snapToGrid,
-            rulerSettings: $store.canvasData.rulerSettings,
-            pieceSettings: $store.canvasData.pieceSettings,
+        const canvas_data: CanvasData = {
+            name: $store.canvas_data.name,
+            backgroundColor: $store.canvas_data.backgroundColor,
+            snapToGrid: $store.canvas_data.snapToGrid,
+            rulerSettings: $store.canvas_data.rulerSettings,
+            pieceSettings: $store.canvas_data.pieceSettings,
         };
 
         if (withPiecesManager) {
-            canvasData.piecesManager = piecesManager.serialize();
+            canvas_data.piecesManager = piecesManager.serialize();
         }
 
         const canvas: CanvasWithoutClientCanvasData = {
             id: $store.id,
-            canvasData: canvasData,
+            canvas_data: canvas_data,
         };
 
         return canvas;
     }
 
     function deserialize(canvas: CanvasWithoutClientCanvasData) {
-        $store.canvasData = { ...$store.canvasData, ...canvas.canvasData };
+        $store.id = canvas.id;
+        $store.createdAt = canvas.createdAt;
+        $store.updatedAt = canvas.updatedAt;
+        $store.deletedAt = canvas.deletedAt;
+
+        $store.canvas_data = { ...$store.canvas_data, ...canvas.canvas_data };
         if (canvas.user) {
             $store.user = canvas.user;
         }
@@ -431,13 +452,13 @@
             $store.canvas_shared_accesses = canvas.canvas_shared_accesses;
         }
 
-        if ($store.canvasData.piecesManager) {
-            piecesManager.deserialize($store.canvasData.piecesManager);
+        if ($store.canvas_data.piecesManager) {
+            piecesManager.deserialize($store.canvas_data.piecesManager);
         }
     }
 
     async function draw() {
-        if ($store.canvasData.ctx !== null) {
+        if ($store.canvas_data.ctx !== null) {
             await tick(); // If DOM falls behind... await tick();
             updateBackgroundColor();
             piecesManager.draw();
@@ -445,43 +466,44 @@
     }
 
     function updateBackgroundColor() {
-        if ($store.canvasData.ctx !== undefined) {
-            $store.canvasData.ctx.fillStyle = $store.canvasData.backgroundColor;
-            $store.canvasData.ctx.fillRect(
+        if ($store.canvas_data.ctx !== undefined) {
+            $store.canvas_data.ctx.fillStyle =
+                $store.canvas_data.backgroundColor;
+            $store.canvas_data.ctx.fillRect(
                 0,
                 0,
-                ($store.canvasData.width ?? 0) / $store.canvasData.zoom,
-                ($store.canvasData.height ?? 0) / $store.canvasData.zoom,
+                ($store.canvas_data.width ?? 0) / $store.canvas_data.zoom,
+                ($store.canvas_data.height ?? 0) / $store.canvas_data.zoom,
             );
         }
     }
 
     async function updateCanvasSize(width: number, height: number) {
-        $store.canvasData.width = width;
-        $store.canvasData.height = height;
+        $store.canvas_data.width = width;
+        $store.canvas_data.height = height;
         await tick();
-        $store.canvasData.ctx?.scale(
-            $store.canvasData.zoom,
-            $store.canvasData.zoom,
+        $store.canvas_data.ctx?.scale(
+            $store.canvas_data.zoom,
+            $store.canvas_data.zoom,
         );
         draw();
     }
 
     function setMouseDown(e: MouseEvent, _mouseDown: boolean) {
         e.preventDefault();
-        $store.canvasData.mouseDown = _mouseDown;
+        $store.canvas_data.mouseDown = _mouseDown;
 
         if (
-            $store.canvasData.activeMode === CanvasModes.Draw &&
-            $store.canvasData.mouseDown
+            $store.canvas_data.activeMode === CanvasModes.Draw &&
+            $store.canvas_data.mouseDown
         ) {
             let piece = piecesManager.addPiece();
             websocketAddPiece(piece);
         }
 
         if (
-            $store.canvasData.activeMode === CanvasModes.Grab &&
-            $store.canvasData.mouseDown
+            $store.canvas_data.activeMode === CanvasModes.Grab &&
+            $store.canvas_data.mouseDown
         ) {
             piecesManager.select();
         }
@@ -492,32 +514,32 @@
         const _canvasOffsetTop = elemCanvas.offsetTop;
         const scrollOffsetX = document.documentElement.scrollLeft;
         const scrollOffsetY = document.documentElement.scrollTop;
-        $store.canvasData.prevMouseX = $store.canvasData.mouseX;
-        $store.canvasData.prevMouseY = $store.canvasData.mouseY;
+        $store.canvas_data.prevMouseX = $store.canvas_data.mouseX;
+        $store.canvas_data.prevMouseY = $store.canvas_data.mouseY;
 
-        $store.canvasData.mouseX =
+        $store.canvas_data.mouseX =
             e.clientX - _canvasOffsetLeft + scrollOffsetX;
-        $store.canvasData.mouseY =
+        $store.canvas_data.mouseY =
             e.clientY - _canvasOffsetTop + scrollOffsetY - canvasOffsetTop; // subtract canvas absolute top offset
 
-        $store.canvasData.mouseX = Math.round(
-            $store.canvasData.mouseX / $store.canvasData.zoom,
+        $store.canvas_data.mouseX = Math.round(
+            $store.canvas_data.mouseX / $store.canvas_data.zoom,
         );
-        $store.canvasData.mouseY = Math.round(
-            $store.canvasData.mouseY / $store.canvasData.zoom,
+        $store.canvas_data.mouseY = Math.round(
+            $store.canvas_data.mouseY / $store.canvas_data.zoom,
         );
 
         if (
-            $store.canvasData.activeMode == CanvasModes.Draw &&
-            $store.canvasData.mouseDown
+            $store.canvas_data.activeMode == CanvasModes.Draw &&
+            $store.canvas_data.mouseDown
         ) {
             const piece = piecesManager.addPointToLatestPiece();
             websocketUpdatePiece(piece);
         }
 
         if (
-            $store.canvasData.activeMode == CanvasModes.Grab &&
-            $store.canvasData.mouseDown
+            $store.canvas_data.activeMode == CanvasModes.Grab &&
+            $store.canvas_data.mouseDown
         ) {
             if (piecesManager.getSelected()) {
                 const piece = piecesManager.move();
@@ -530,21 +552,21 @@
         }
 
         if (
-            $store.canvasData.activeMode == CanvasModes.Pan &&
-            $store.canvasData.mouseDown
+            $store.canvas_data.activeMode == CanvasModes.Pan &&
+            $store.canvas_data.mouseDown
         ) {
             piecesManager.pan();
             updateBackgroundColor();
             piecesManager.draw();
-            $store.canvasData.xPan +=
-                $store.canvasData.mouseX - $store.canvasData.prevMouseX;
-            $store.canvasData.yPan +=
-                $store.canvasData.mouseY - $store.canvasData.prevMouseY;
+            $store.canvas_data.xPan +=
+                $store.canvas_data.mouseX - $store.canvas_data.prevMouseX;
+            $store.canvas_data.yPan +=
+                $store.canvas_data.mouseY - $store.canvas_data.prevMouseY;
         }
 
         if (
-            $store.canvasData.activeMode == CanvasModes.Remove &&
-            $store.canvasData.mouseDown
+            $store.canvas_data.activeMode == CanvasModes.Remove &&
+            $store.canvas_data.mouseDown
         ) {
             piecesManager.select();
             piecesManager.remove();
@@ -554,7 +576,7 @@
     }
 
     function setActiveMode(mode: CanvasModes) {
-        $store.canvasData.activeMode = mode;
+        $store.canvas_data.activeMode = mode;
         piecesManager && piecesManager.deselect();
     }
 
@@ -572,15 +594,15 @@
         rgba: Array<number>,
         set: boolean = false,
     ): Array<number> {
-        let imageData = $store.canvasData.ctx?.getImageData(
+        let imageData = $store.canvas_data.ctx?.getImageData(
             0,
             0,
-            $store.canvasData.width ?? 0,
-            $store.canvasData.height ?? 0,
+            $store.canvas_data.width ?? 0,
+            $store.canvas_data.height ?? 0,
         );
         const colorsOffset = 4; // RGBA
         const rx = x * colorsOffset;
-        const ry = y * ($store.canvasData.width ?? 0) * colorsOffset;
+        const ry = y * ($store.canvas_data.width ?? 0) * colorsOffset;
         const _rgba = [];
         if (imageData) {
             for (let i = 0; i < colorsOffset; i++) {
@@ -626,8 +648,8 @@
             <canvas
                 class="absolute hover:cursor-crosshair"
                 bind:this={elemCanvas}
-                width="{$store.canvasData.width}px"
-                height="{$store.canvasData.height}px"
+                width="{$store.canvas_data.width}px"
+                height="{$store.canvas_data.height}px"
                 on:mousedown={(e) => setMouseDown(e, true)}
                 on:mouseup={(e) => setMouseDown(e, false)}
                 on:mouseleave={(e) => setMouseDown(e, false)}

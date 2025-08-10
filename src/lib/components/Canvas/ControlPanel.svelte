@@ -84,7 +84,7 @@
                         <input
                             class="w-full"
                             type="text"
-                            bind:value={$canvasStore.canvasData.name}
+                            bind:value={$canvasStore.canvas_data.name}
                             on:change={dispatchUpdatedCanvasData}
                         />
                     </h1>
@@ -97,25 +97,25 @@
         <h1 class:hidden={!isExpanded}>Tools</h1>
         <Button
             icon="brush"
-            active={$canvasStore.canvasData.activeMode == CanvasModes.Draw}
+            active={$canvasStore.canvas_data.activeMode == CanvasModes.Draw}
             label={isExpanded ? "draw" : ""}
             onclick={() => dispatchSetActiveMode(CanvasModes.Draw)}
         />
         <Button
             icon="pan_tool_alt"
-            active={$canvasStore.canvasData.activeMode == CanvasModes.Grab}
+            active={$canvasStore.canvas_data.activeMode == CanvasModes.Grab}
             label={isExpanded ? "grab" : ""}
             onclick={() => dispatchSetActiveMode(CanvasModes.Grab)}
         />
         <Button
             icon="pan_tool"
-            active={$canvasStore.canvasData.activeMode == CanvasModes.Pan}
+            active={$canvasStore.canvas_data.activeMode == CanvasModes.Pan}
             label={isExpanded ? "pan (Hold Space)" : ""}
             onclick={() => dispatchSetActiveMode(CanvasModes.Pan)}
         />
         <Button
             icon="delete"
-            active={$canvasStore.canvasData.activeMode == CanvasModes.Remove}
+            active={$canvasStore.canvas_data.activeMode == CanvasModes.Remove}
             label={isExpanded ? "remove" : ""}
             onclick={() => dispatchSetActiveMode(CanvasModes.Remove)}
         />
@@ -124,11 +124,11 @@
     <!--global actions-->
     <div class="control-group">
         <h1 class:hidden={!isExpanded}>Canvas Settings</h1>
-        <span>zoom: <em>{$canvasStore.canvasData.zoom.toFixed(2)}</em></span>
+        <span>zoom: <em>{$canvasStore.canvas_data.zoom.toFixed(2)}</em></span>
         <div class="control">
             <label class:hidden={!isExpanded} for="">background color</label>
             <input
-                bind:value={$canvasStore.canvasData.backgroundColor}
+                bind:value={$canvasStore.canvas_data.backgroundColor}
                 type="color"
                 on:change={dispatchUpdatedBackgroundColor}
                 on:change={dispatchUpdatedCanvasData}
@@ -137,19 +137,19 @@
         <div class="control">
             <label class:hidden={!isExpanded} for="">show units</label>
             <Toggle
-                bind:value={$canvasStore.canvasData.rulerSettings.showUnits}
+                bind:value={$canvasStore.canvas_data.rulerSettings.showUnits}
             />
         </div>
         <div class="control">
             <label class:hidden={!isExpanded} for="">show grid</label>
             <Toggle
-                bind:value={$canvasStore.canvasData.rulerSettings.showLines}
+                bind:value={$canvasStore.canvas_data.rulerSettings.showLines}
             />
         </div>
         <div class="control">
             <label class:hidden={!isExpanded} for="">snap to grid</label>
             <Toggle
-                bind:value={$canvasStore.canvasData.snapToGrid}
+                bind:value={$canvasStore.canvas_data.snapToGrid}
                 disabled={true}
             />
         </div>
@@ -169,7 +169,7 @@
             <label class:hidden={!isExpanded} for="">size</label>
             <input
                 class:w-12={!isExpanded}
-                bind:value={$canvasStore.canvasData.pieceSettings.size}
+                bind:value={$canvasStore.canvas_data.pieceSettings.size}
                 type="range"
                 min="1"
                 step="1"
@@ -179,7 +179,7 @@
         <div class="control">
             <label class:hidden={!isExpanded} for="">color</label>
             <input
-                bind:value={$canvasStore.canvasData.pieceSettings.color}
+                bind:value={$canvasStore.canvas_data.pieceSettings.color}
                 type="color"
             />
         </div>

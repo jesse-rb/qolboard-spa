@@ -2,7 +2,7 @@
     import Modal from "../components/Modal.svelte";
     import Button from "../components/Button.svelte";
     import Auth from "../components/Auth/Auth.svelte";
-    import { appStore } from "../store";
+    import { appStore, getUser } from "../store";
     import { inject as injectVercelAnalytics } from "@vercel/analytics"; // Vercel analytics
     import { onMount } from "svelte";
 
@@ -93,27 +93,6 @@
                 "content-type": "application/json",
             },
         });
-        if (response.ok) {
-            const responseBody = await response.json();
-            $appStore.isAuthenticated = true;
-            $appStore.user = responseBody.data;
-        } else {
-            $appStore.isAuthenticated = false;
-            $appStore.user.email = "";
-            $appStore.user.uuid = "";
-        }
-    }
-
-    async function getUser() {
-        const domain = import.meta.env.VITE_API_HOST;
-        const path = "user";
-        const url = `${domain}/${path}`;
-
-        const response = await fetch(url, {
-            method: "GET",
-            credentials: "include",
-        });
-
         if (response.ok) {
             const responseBody = await response.json();
             $appStore.isAuthenticated = true;

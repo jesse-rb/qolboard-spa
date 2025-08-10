@@ -3,10 +3,11 @@
     import Button from "../Button.svelte";
     import Canvas from "./Canvas.svelte";
     import type { Canvas as TypeCanvas } from "../Canvas/types/canvas";
+    import { appStore } from "$lib/store";
 
     export let canvas: TypeCanvas;
 
-    let name = canvas.canvasData.name ?? "Give this canvas a name";
+    let name = canvas.canvas_data.name ?? "Give this canvas a name";
 
     const dispatch = createEventDispatcher();
     let deleteIsLoading = false;
@@ -41,7 +42,7 @@
 
 <div title={name} class="flex flex-col gap-2 bg-back_2 p-4 rounded-md w-56">
     <a class="no-underline" href="/canvas/{canvas.id}">
-        <Canvas id={canvas.id} preview />
+        <Canvas id={canvas.id} preview canvasData={canvas} />
     </a>
     <div class="flex gap-2 justify-between items-end">
         <div class="overflow-hidden">
@@ -52,10 +53,12 @@
                 {name}
             </p>
         </div>
-        <Button
-            icon="clear"
-            onclick={deleteCanvas}
-            isLoading={deleteIsLoading}
-        />
+        {#if canvas.user_uuid === $appStore.user.uuid}
+            <Button
+                icon="clear"
+                onclick={deleteCanvas}
+                isLoading={deleteIsLoading}
+            />
+        {/if}
     </div>
 </div>

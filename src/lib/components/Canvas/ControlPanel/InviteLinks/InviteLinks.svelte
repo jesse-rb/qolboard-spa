@@ -32,6 +32,7 @@
             },
         });
         const body: ShowResponse<TypeInviteLink> = await response.json();
+        console.log(body.data);
 
         if (response.ok) {
             $canvasStore.canvas_shared_invitations = [

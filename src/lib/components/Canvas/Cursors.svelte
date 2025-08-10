@@ -9,16 +9,16 @@
 
     const offset = 0;
 
-    $: canvasZoom = $canvasStore.canvasData.zoom;
+    $: canvasZoom = $canvasStore.canvas_data.zoom;
 
-    $: canvasWidth = $canvasStore.canvasData.width ?? 0;
-    $: canvasHeight = $canvasStore.canvasData.height ?? 0;
+    $: canvasWidth = $canvasStore.canvas_data.width ?? 0;
+    $: canvasHeight = $canvasStore.canvas_data.height ?? 0;
 
     $: canvasWidthScaled = canvasWidth * canvasZoom;
     $: canvasHeightScaled = canvasHeight * canvasZoom;
 
-    $: canvasPanX = $canvasStore.canvasData.xPan;
-    $: canvasPanY = $canvasStore.canvasData.yPan;
+    $: canvasPanX = $canvasStore.canvas_data.xPan;
+    $: canvasPanY = $canvasStore.canvas_data.yPan;
 
     $: zoomClientOffsetX = (canvasWidth - canvasWidthScaled) / 2;
     $: zoomClientOffsetY = (canvasHeight - canvasHeightScaled) / 2;

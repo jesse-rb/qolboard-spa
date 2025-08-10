@@ -14,15 +14,15 @@
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
 
     const dispatch = createEventDispatcher();
-    const ctx = $canvasStore.canvasData.ctx;
+    const ctx = $canvasStore.canvas_data.ctx;
 
     let pathSVG = "";
     let moveMatrix = new DOMMatrix();
     let panMatrix = new DOMMatrix();
     let path = new Path2D();
 
-    let latestPointX = $canvasStore.canvasData.mouseX;
-    let latestPointY = $canvasStore.canvasData.mouseY;
+    let latestPointX = $canvasStore.canvas_data.mouseX;
+    let latestPointY = $canvasStore.canvas_data.mouseY;
 
     let leftMost: number;
     let rightMost: number;
@@ -48,7 +48,7 @@
             ctx.lineCap = reset ? "butt" : "round";
             ctx.lineJoin = reset ? "miter" : "round";
             ctx.strokeStyle = reset
-                ? $canvasStore.canvasData.backgroundColor
+                ? $canvasStore.canvas_data.backgroundColor
                 : settings.color;
             ctx.lineWidth = reset ? 1 : settings.size;
         }
@@ -93,12 +93,12 @@
         updatedPath = new Path2D();
         let clientOffsetMatrix = new DOMMatrix()
             .translate(
-                $canvasStore.canvasData.zoomDx,
-                $canvasStore.canvasData.zoomDy,
+                $canvasStore.canvas_data.zoomDx,
+                $canvasStore.canvas_data.zoomDy,
             )
             .translate(
-                $canvasStore.canvasData.xPan,
-                $canvasStore.canvasData.yPan,
+                $canvasStore.canvas_data.xPan,
+                $canvasStore.canvas_data.yPan,
             );
         updatedPath.addPath(path, clientOffsetMatrix);
         path = updatedPath;
@@ -141,25 +141,25 @@
 
     export function addClientOffsetX(x: number): number {
         return (
-            x + $canvasStore.canvasData.xPan + $canvasStore.canvasData.zoomDx
+            x + $canvasStore.canvas_data.xPan + $canvasStore.canvas_data.zoomDx
         );
     }
 
     export function addClientOffsetY(y: number): number {
         return (
-            y + $canvasStore.canvasData.yPan + $canvasStore.canvasData.zoomDy
+            y + $canvasStore.canvas_data.yPan + $canvasStore.canvas_data.zoomDy
         );
     }
 
     export function subClientOffsetX(x: number): number {
         return (
-            x - $canvasStore.canvasData.xPan - $canvasStore.canvasData.zoomDx
+            x - $canvasStore.canvas_data.xPan - $canvasStore.canvas_data.zoomDx
         );
     }
 
     export function subClientOffsetY(y: number): number {
         return (
-            y - $canvasStore.canvasData.yPan - $canvasStore.canvasData.zoomDy
+            y - $canvasStore.canvas_data.yPan - $canvasStore.canvas_data.zoomDy
         );
     }
 
@@ -193,7 +193,7 @@
 
     export function clearBoundingBox() {
         if (ctx) {
-            const clearMargin = 1 / $canvasStore.canvasData.zoom;
+            const clearMargin = 1 / $canvasStore.canvas_data.zoom;
             const [x, y, width, height] = getBoundingBox();
 
             setDrawSettings(true);
@@ -208,11 +208,11 @@
 
     export function drawBoundingBoxBorder() {
         if (ctx) {
-            const clearMargin = 1 / $canvasStore.canvasData.zoom;
+            const clearMargin = 1 / $canvasStore.canvas_data.zoom;
             const [x, y, width, height] = getBoundingBox();
             ctx.beginPath();
             setDrawSettings(true);
-            ctx.lineWidth = 1 / $canvasStore.canvasData.zoom;
+            ctx.lineWidth = 1 / $canvasStore.canvas_data.zoom;
             ctx.strokeStyle = "#FFFFFF";
             ctx.rect(
                 x + clearMargin,
@@ -226,8 +226,8 @@
     }
 
     export function addPoint() {
-        const mouseX = $canvasStore.canvasData.mouseX;
-        const mouseY = $canvasStore.canvasData.mouseY;
+        const mouseX = $canvasStore.canvas_data.mouseX;
+        const mouseY = $canvasStore.canvas_data.mouseY;
         let thereIsChangeOnX = mouseX >= latestPointX || mouseX <= latestPointX;
         let thereIsChangeOnY = mouseY >= latestPointY || mouseY <= latestPointY;
 
@@ -271,11 +271,11 @@
 
     export function move(isPan = false, dx?: number, dy?: number) {
         if (dx === undefined && dy === undefined) {
-            let mouseX = $canvasStore.canvasData.mouseX;
-            let mouseY = $canvasStore.canvasData.mouseY;
+            let mouseX = $canvasStore.canvas_data.mouseX;
+            let mouseY = $canvasStore.canvas_data.mouseY;
 
-            let prevMouseX = $canvasStore.canvasData.prevMouseX;
-            let prevMouseY = $canvasStore.canvasData.prevMouseY;
+            let prevMouseX = $canvasStore.canvas_data.prevMouseX;
+            let prevMouseY = $canvasStore.canvas_data.prevMouseY;
 
             dx = mouseX - prevMouseX;
             dy = mouseY - prevMouseY;
@@ -319,10 +319,10 @@
 {#if selected}
     <div
         class="piece-settings control-panel z-10"
-        style="bottom: min({($canvasStore.canvasData.height ?? 0) -
-            calcTopMost() * $canvasStore.canvasData.zoom}px, {$canvasStore
-            .canvasData.height ?? 0}px); left: {Math.max(
-            calcLeftMost() * $canvasStore.canvasData.zoom,
+        style="bottom: min({($canvasStore.canvas_data.height ?? 0) -
+            calcTopMost() * $canvasStore.canvas_data.zoom}px, {$canvasStore
+            .canvas_data.height ?? 0}px); left: {Math.max(
+            calcLeftMost() * $canvasStore.canvas_data.zoom,
             0,
         )}px;"
     >

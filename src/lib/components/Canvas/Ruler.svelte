@@ -11,19 +11,19 @@
     let rulerRange: Array<number> = [];
 
     // RangeX zoom point variables
-    let nextRangeZoomIn = $canvasStore.canvasData.zoom * 1.5;
-    let nextRangeZoomOut = $canvasStore.canvasData.zoom;
+    let nextRangeZoomIn = $canvasStore.canvas_data.zoom * 1.5;
+    let nextRangeZoomOut = $canvasStore.canvas_data.zoom;
 
     $: length =
         (isHorizontal
-            ? $canvasStore.canvasData.width
-            : $canvasStore.canvasData.height) ?? 0;
+            ? $canvasStore.canvas_data.width
+            : $canvasStore.canvas_data.height) ?? 0;
     $: pan = isHorizontal
-        ? $canvasStore.canvasData.xPan
-        : $canvasStore.canvasData.yPan;
+        ? $canvasStore.canvas_data.xPan
+        : $canvasStore.canvas_data.yPan;
     $: zoomDelta = isHorizontal
-        ? $canvasStore.canvasData.zoomDx
-        : $canvasStore.canvasData.zoomDy;
+        ? $canvasStore.canvas_data.zoomDx
+        : $canvasStore.canvas_data.zoomDy;
 
     // Update our ruler to/form range when panning the canvas
     $: if (
@@ -36,11 +36,11 @@
         panLeftRange();
     }
 
-    $: if ($canvasStore.canvasData.zoom >= nextRangeZoomIn) {
+    $: if ($canvasStore.canvas_data.zoom >= nextRangeZoomIn) {
         zoomInRange();
     }
 
-    $: if ($canvasStore.canvasData.zoom < nextRangeZoomOut) {
+    $: if ($canvasStore.canvas_data.zoom < nextRangeZoomOut) {
         zoomOutRange();
     }
 
@@ -119,20 +119,20 @@
 
 <div
     class="{isHorizontal ? 'x' : 'y'} ruler pointer-events-none {colorIsDark(
-        $canvasStore.canvasData.backgroundColor,
+        $canvasStore.canvas_data.backgroundColor,
     )
         ? 'text-white'
         : 'text-black'}"
 >
     {#each rulerRange as i}
-        {@const pos = (i + pan + zoomDelta) * $canvasStore.canvasData.zoom}
-        {#if $canvasStore.canvasData.rulerSettings.showUnits}
+        {@const pos = (i + pan + zoomDelta) * $canvasStore.canvas_data.zoom}
+        {#if $canvasStore.canvas_data.rulerSettings.showUnits}
             <span
                 class="opacity-50 absolute font-mono"
                 style="{isHorizontal ? 'left' : 'top'}: {pos}px;">{i}</span
             >
         {/if}
-        {#if $canvasStore.canvasData.rulerSettings.showLines}
+        {#if $canvasStore.canvas_data.rulerSettings.showLines}
             <div
                 class="opacity-10 grid absolute bg-gray-50 overflow-hidden pointer-events-none"
                 style={isHorizontal ? `left: ${pos}px` : `top: ${pos}px;`}
