@@ -174,7 +174,7 @@
     });
 
     function initWebSocket() {
-        if (id && false) {
+        if (id) {
             const domain = import.meta.env.VITE_API_DOMAIN;
             const port = import.meta.env.VITE_API_PORT;
 
