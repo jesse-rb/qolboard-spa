@@ -75,6 +75,8 @@
             index: index,
         };
 
+        s.settings.size = parseInt(s.settings.size.toString(), 10);
+
         return s;
     }
 
@@ -180,6 +182,7 @@
     }
 
     export function getBoundingBox() {
+        const offset = 5;
         const clearMargin = settings.size / 2;
 
         const x = calcLeftMost() - clearMargin;
@@ -188,7 +191,7 @@
         const width = calcRightMost() - calcLeftMost() + clearMargin * 2;
         const height = calcBottomMost() - calcTopMost() + clearMargin * 2;
 
-        return [x, y, width, height];
+        return [x, y, width + offset, height + offset];
     }
 
     export function clearBoundingBox() {

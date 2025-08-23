@@ -98,6 +98,15 @@
         }
     }
 
+    export function removePiece(s: PieceSerialized) {
+        const p = pieces[s.index]?.component;
+
+        if (p) {
+            redrawPieceChunk(p, false);
+            remove(s.index);
+        }
+    }
+
     export function addPointToLatestPiece(): TypeBindPiece {
         const p = pieces[pieces.length - 1];
         if (p.component) {
@@ -135,10 +144,10 @@
         dispatch("update-piece", p);
     }
 
-    export function reDrawSelectedChunk() {
+    export function reDrawSelectedChunk(redrawPiece = true) {
         // Draw only section background
         if (selectedPiece) {
-            redrawPieceChunk(selectedPiece.component);
+            redrawPieceChunk(selectedPiece.component, redrawPiece);
         }
     }
 
@@ -192,15 +201,22 @@
         return selectedPiece;
     }
 
-    export function remove() {
-        if (selectedPieceIndex !== undefined) {
-            pieces = [
-                ...pieces.slice(0, selectedPieceIndex),
-                ...pieces.slice(selectedPieceIndex + 1),
-            ];
+    export function remove(index: number) {
+        pieces = [...pieces.slice(0, index), ...pieces.slice(index + 1)];
+    }
 
-            reDrawSelectedChunk();
-            deselect();
+    export function removeSelected() {
+        if (selectedPieceIndex !== undefined) {
+            const p = pieces[selectedPieceIndex];
+            if (p) {
+                const s = p.component?.serialize();
+                reDrawSelectedChunk(false);
+                remove(selectedPieceIndex);
+
+                deselect();
+
+                dispatch("remove-piece", s);
+            }
         }
     }
 

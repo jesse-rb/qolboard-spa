@@ -15,7 +15,7 @@
     import { pushState } from "$app/navigation";
     import { writable, type Writable } from "svelte/store";
     import Cursors from "./Cursors.svelte";
-    import type { TypeBindPiece } from "./types/piece";
+    import type { PieceSerialized, TypeBindPiece } from "./types/piece";
     import { envIsLocal, sleep } from "$lib/util";
     import Piece from "./Piece.svelte";
     import type { ShowResponse } from "$lib/types/types";
@@ -223,9 +223,18 @@
                         piecesManager.updatePiece(message.data);
                         break;
                     }
+                    case "remove-piece": {
+                        console.log("Removing piece", message.data);
+                        piecesManager.removePiece(message.data);
+                        break;
+                    }
                     case "update-canvas-data": {
                         deserialize(message.data);
                         draw();
+                        break;
+                    }
+                    case "get": {
+                        deserialize(message.data, false);
                         break;
                     }
                     default: {
@@ -284,6 +293,18 @@
             event: "update-piece",
             email: $appStore.user.email,
             data: p.component?.serialize(),
+        };
+
+        ws?.send(JSON.stringify(d));
+    }
+
+    async function websocketRemovePiece(p: PieceSerialized) {
+        await tick();
+
+        const d = {
+            event: "remove-piece",
+            email: $appStore.user.email,
+            data: p,
         };
 
         ws?.send(JSON.stringify(d));
@@ -435,13 +456,22 @@
         return canvas;
     }
 
-    function deserialize(canvas: CanvasWithoutClientCanvasData) {
+    function deserialize(
+        canvas: CanvasWithoutClientCanvasData,
+        deserializeCanvasData: boolean = true,
+    ) {
         $store.id = canvas.id;
         $store.createdAt = canvas.createdAt;
         $store.updatedAt = canvas.updatedAt;
         $store.deletedAt = canvas.deletedAt;
 
-        $store.canvas_data = { ...$store.canvas_data, ...canvas.canvas_data };
+        if (deserializeCanvasData) {
+            $store.canvas_data = {
+                ...$store.canvas_data,
+                ...canvas.canvas_data,
+            };
+        }
+
         if (canvas.user) {
             $store.user = canvas.user;
         }
@@ -452,7 +482,7 @@
             $store.canvas_shared_accesses = canvas.canvas_shared_accesses;
         }
 
-        if ($store.canvas_data.piecesManager) {
+        if (deserializeCanvasData && $store.canvas_data.piecesManager) {
             piecesManager.deserialize($store.canvas_data.piecesManager);
         }
     }
@@ -569,7 +599,7 @@
             $store.canvas_data.mouseDown
         ) {
             piecesManager.select();
-            piecesManager.remove();
+            piecesManager.removeSelected();
         }
 
         websocketMouseMove();
@@ -660,6 +690,7 @@
         <PiecesManager
             bind:this={piecesManager}
             on:update-piece={(e) => websocketUpdatePiece(e.detail)}
+            on:remove-piece={(e) => websocketRemovePiece(e.detail)}
         />
 
         <Ruler />
