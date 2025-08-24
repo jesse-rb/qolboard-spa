@@ -1,16 +1,17 @@
 <script lang="ts">
     import CanvasListing from "$lib/components/Canvas/CanvasListing.svelte";
     import type { Canvas } from "$lib/components/Canvas/types/canvas";
-    import type { IndexResponse } from "$lib/types";
+    import type { IndexResponse } from "$lib/types/types";
+    import { removeFromArrayByIndex } from "$lib/util";
     import { onMount } from "svelte";
 
     let loading = false;
-    let canvases:Array<Canvas> = [];
+    let canvases: Array<Canvas> = [];
 
-    async function getCanvases():Promise<Array<Canvas>> {
+    async function getCanvases(): Promise<Array<Canvas>> {
         loading = true;
 
-        let data:Array<Canvas> = [];
+        let data: Array<Canvas> = [];
 
         const domain = import.meta.env.VITE_API_HOST;
         const path = `user/canvas`;
@@ -20,13 +21,13 @@
             method: "GET",
             credentials: "include",
             headers: {
-                "content-type": "application/json"
-            }
+                "content-type": "application/json",
+            },
         });
 
         if (response.ok) {
-            const json:IndexResponse<Canvas> = await response.json();
-            data = json.data;
+            const json: IndexResponse<Canvas> = await response.json();
+            data = json.data ?? [];
         }
 
         loading = false;
@@ -44,18 +45,24 @@
     {:else if canvases.length > 0}
         {#each canvases as canvas, i (canvas.id)}
             <div>
-                <CanvasListing canvas={canvas} on:delete={() => canvases = [...canvases.slice(0, i), ...canvases.slice(i+1)]} />
+                <CanvasListing
+                    {canvas}
+                    on:delete={() =>
+                        (canvases = removeFromArrayByIndex(canvases, i))}
+                />
             </div>
         {/each}
     {:else}
         <p>No canvases saved yet.</p>
     {/if}
 
-    <a href="/" class="w-[90px] self-stretch bg-back_4 flex justify-center items-center no-underline text-white rounded-md">
+    <a
+        href="/"
+        class="w-[90px] self-stretch bg-back_4 flex justify-center items-center no-underline text-white rounded-md"
+    >
         <span class="material-icons">add</span>
     </a>
 </div>
 
 <style>
-
 </style>

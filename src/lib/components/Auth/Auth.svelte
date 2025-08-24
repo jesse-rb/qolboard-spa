@@ -1,41 +1,39 @@
 <script lang="ts">
-    import type { Error } from "$lib/types";
-    import { teleport } from "$lib/util";
-    import { onMount } from "svelte";
-    import { appStore } from "../../store";
+    import type { Error, ShowResponse } from "$lib/types/types";
+    import { appStore, getUser } from "../../store";
     import Button from "../Button.svelte";
     import ResendEmailVerificaitonButton from "./ResendEmailVerificaitonButton.svelte";
     import Errors from "../Form/Errors.svelte";
+    import type { TypeUser } from "$lib/types/user";
 
     type AuthRequestBody = {
-        email:string
-        password:string
-        password_confirmation?:string
+        email: string;
+        password: string;
+        password_confirmation?: string;
     };
 
     type AuthResponseBody = {
-        email:string,
-        code:string,
-        errors?:Array<Error>
+        user: TypeUser;
+        code: string;
     };
 
-    export let isRegistration:boolean = false;
+    export let isRegistration: boolean = false;
 
-    let email = $appStore.registeredEmail ?? '';
-    let password = '';
-    let passwordConfirmation = '';
+    let email = $appStore.registeredEmail ?? "";
+    let password = "";
+    let passwordConfirmation = "";
     let suggestLogin = false;
 
     let isLoading = false;
-    
-    let errors:Array<Error> = [];
+
+    let errors: Array<Error> = [];
 
     let ok = isRegistration && $appStore.registeredEmail != null;
 
     function resetAuthFields() {
-        email = '';
-        password = '';
-        passwordConfirmation = '';
+        email = "";
+        password = "";
+        passwordConfirmation = "";
     }
 
     async function auth() {
@@ -48,13 +46,13 @@
         const path = `auth/${isRegistration ? "register" : "login"}`;
         const url = `${domain}/${path}`;
 
-        const body:AuthRequestBody = {
+        const body: AuthRequestBody = {
             email: email,
-            password: password
+            password: password,
         };
 
         if (isRegistration) {
-            body.password_confirmation = passwordConfirmation
+            body.password_confirmation = passwordConfirmation;
         }
 
         const response = await fetch(url, {
@@ -62,24 +60,22 @@
             credentials: "include",
             body: JSON.stringify(body),
             headers: {
-                "content-type": "application/json"
-            }
+                "content-type": "application/json",
+            },
         });
 
-        const responseBody:AuthResponseBody = await response.json();
+        const responseBody: ShowResponse<TypeUser> & { code?: string } =
+            await response.json();
 
         if (response.ok) {
             ok = true;
             if (isRegistration) {
-                $appStore.registeredEmail = responseBody.email;
+                $appStore.registeredEmail = responseBody.data.email;
+            } else {
+                getUser();
             }
-            else {
-                $appStore.isAuthenticated = true;
-                $appStore.email = responseBody.email;
-            }
-        }
-        else {
-            if (responseBody.code == 'user_already_exists') {
+        } else {
+            if (responseBody.code == "user_already_exists") {
                 suggestLogin = true;
             }
             errors = responseBody.errors ?? [];
@@ -105,7 +101,10 @@
     {#if ok}
         {#if isRegistration}
             <h2>Thank you for registering</h2>
-            <p>We have sent an email to <em>{$appStore.registeredEmail}</em> with instructions to verify your email address.</p>
+            <p>
+                We have sent an email to <em>{$appStore.registeredEmail}</em> with
+                instructions to verify your email address.
+            </p>
             <Button
                 label="Back to registration"
                 icon="undo"
@@ -115,34 +114,48 @@
         {/if}
     {:else}
         <div class="flex flex-col">
-            <input id="email" bind:value={email} type="email" placeholder="Email">
-            <input id="password" bind:value={password} type="password" placeholder="Password">
+            <input
+                id="email"
+                bind:value={email}
+                type="email"
+                placeholder="Email"
+            />
+            <input
+                id="password"
+                bind:value={password}
+                type="password"
+                placeholder="Password"
+            />
 
             {#if isRegistration}
-                <input id="password_confirmation" bind:value={passwordConfirmation} type="password" placeholder="Confirm password">
+                <input
+                    id="password_confirmation"
+                    bind:value={passwordConfirmation}
+                    type="password"
+                    placeholder="Confirm password"
+                />
             {/if}
         </div>
 
         <Button
-            label="{isRegistration ? "Register" : "Login"}"
+            label={isRegistration ? "Register" : "Login"}
             onclick={auth}
             icon="send"
-            bind:isLoading={isLoading}
+            bind:isLoading
             disabled={isLoading}
         />
 
-        <Errors errors={errors} />
+        <Errors {errors} />
 
         {#if isRegistration && suggestLogin}
-            <p>It looks like your email is already registered with us, please login instead</p>
-            <Button
-                label={"Login instead"}
-                onclick={goToLogin}
-            />
+            <p>
+                It looks like your email is already registered with us, please
+                login instead
+            </p>
+            <Button label={"Login instead"} onclick={goToLogin} />
         {/if}
     {/if}
 </div>
 
 <style>
-
 </style>

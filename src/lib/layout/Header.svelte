@@ -1,31 +1,34 @@
 <script lang="ts">
-    import Modal from '../components/Modal.svelte';
-    import Button from '../components/Button.svelte';
-    import Auth from '../components/Auth/Auth.svelte';
-    import { appStore } from '../store';
-    import { inject as injectVercelAnalytics } from '@vercel/analytics' // Vercel analytics
-    import { onMount } from 'svelte';
+    import Modal from "../components/Modal.svelte";
+    import Button from "../components/Button.svelte";
+    import Auth from "../components/Auth/Auth.svelte";
+    import { appStore, getUser } from "../store";
+    import { inject as injectVercelAnalytics } from "@vercel/analytics"; // Vercel analytics
+    import { onMount } from "svelte";
 
     injectVercelAnalytics();
 
-    let aboutModal:Modal;
-    let registerModal:Modal;
-    let loginModal:Modal;
-    
+    let aboutModal: Modal;
+    let registerModal: Modal;
+    let loginModal: Modal;
+
     let logoutIsLoading = false;
 
     $: if ($appStore.headerHeight) {
-        document.body.style.setProperty('--header-height', `${$appStore.headerHeight}px`);
+        document.body.style.setProperty(
+            "--header-height",
+            `${$appStore.headerHeight}px`,
+        );
     }
 
     onMount(async () => {
         const urlHashesStr = window.location.hash.substring(1);
         const urlHashes = urlHashesStr.split("&");
 
-        const emailVerifiedReturnState:{
-            type?:string
-            access_token?:string
-            expires_in?:string
+        const emailVerifiedReturnState: {
+            type?: string;
+            access_token?: string;
+            expires_in?: string;
         } = {};
         for (const hash of urlHashes) {
             const [k, v] = hash.split("=");
@@ -45,11 +48,9 @@
             const expiresIn = emailVerifiedReturnState.expires_in ?? "0";
 
             setToken(token, parseInt(expiresIn));
-        }
-        else {
+        } else {
             getUser();
         }
-
     });
 
     async function logout() {
@@ -63,64 +64,43 @@
             method: "POST",
             credentials: "include",
             headers: {
-                "content-type": "application/json"
-            }
+                "content-type": "application/json",
+            },
         });
 
         if (response.ok) {
-            $appStore.isAuthenticated = false
+            $appStore.isAuthenticated = false;
         }
 
         logoutIsLoading = false;
     }
 
-    async function setToken(token:string, expires_in:number) {
+    async function setToken(token: string, expires_in: number) {
         // User has returned from verifying their email, login via JWT token
         const domain = import.meta.env.VITE_API_HOST;
         const path = "auth/set_token";
         const url = `${domain}/${path}`;
         const body = {
             token: token,
-            expires_in: expires_in
-        }
+            expires_in: expires_in,
+        };
 
         const response = await fetch(url, {
             method: "POST",
             credentials: "include",
             body: JSON.stringify(body),
             headers: {
-                "content-type": "application/json"
-            }
-        })
-        if (response.ok) {
-            const responseBody = await response.json();
-            $appStore.isAuthenticated = true;
-            $appStore.email = responseBody.email;
-        }
-        else {
-            $appStore.isAuthenticated = false;
-            $appStore.email = "";
-        }
-    }
-
-    async function getUser() {
-        const domain = import.meta.env.VITE_API_HOST;
-        const path = "user";
-        const url = `${domain}/${path}`;
-
-        const response = await fetch(url, {
-            method: "GET",
-            credentials: "include"
+                "content-type": "application/json",
+            },
         });
-
         if (response.ok) {
             const responseBody = await response.json();
             $appStore.isAuthenticated = true;
-            $appStore.email = responseBody.email;
-        }
-        else {
+            $appStore.user = responseBody.data;
+        } else {
             $appStore.isAuthenticated = false;
-            $appStore.email = "";
+            $appStore.user.email = "";
+            $appStore.user.uuid = "";
         }
     }
 </script>
@@ -129,7 +109,11 @@
     <div class="banner gap-2">
         <div class="flex items-center gap-2 w-full sm:w-fit">
             <a class="shrink-0" href="/">
-                <img class="h-8" src="/qolboard.svg" alt="A simple qolboard scribble logo">
+                <img
+                    class="h-8"
+                    src="/qolboard.svg"
+                    alt="A simple qolboard scribble logo"
+                />
             </a>
 
             <Button
@@ -161,7 +145,7 @@
                     }}
                 />
             {:else}
-                <p>{$appStore.email}</p>
+                <p>{$appStore.user.email}</p>
                 <Button
                     label="Logout"
                     icon="logout"
@@ -180,17 +164,38 @@
         <span class="material-icons text-fore2">science</span>
         <span>Open Beta</span>
     </h3>
-    <p>Please note that qolboard 2.0 is in a <em>beta</em> stage of early development. Therefore please bear with us while it is possible for breaking changes to occur occasionally that could affect existing canvases.</p>
-    
+    <p>
+        Please note that qolboard 2.0 is in a <em>beta</em> stage of early development.
+        Therefore please bear with us while it is possible for breaking changes to
+        occur occasionally that could affect existing canvases.
+    </p>
+
     <!--Attributions-->
     <h3 class="flex items-center gap-2">
         <span class="material-icons text-fore2">attribution</span>
         <span>Attributions</span>
     </h3>
     <ul>
-        <li><a target="_blank" rel="noopener noreferrer" href="https://svelte.dev/">Svelte</a></li>
-        <li><a target="_blank" rel="noopener noreferrer" href="https://go.dev/">Golang</a></li>
-        <li><a target="_blank" rel="noopener noreferrer" href="https://fonts.google.com/icons">Google material design icons</a></li>
+        <li>
+            <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://svelte.dev/">Svelte</a
+            >
+        </li>
+        <li>
+            <a target="_blank" rel="noopener noreferrer" href="https://go.dev/"
+                >Golang</a
+            >
+        </li>
+        <li>
+            <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://fonts.google.com/icons"
+                >Google material design icons</a
+            >
+        </li>
     </ul>
 
     <!--Github-->
@@ -198,12 +203,16 @@
         <span class="material-icons text-fore2">code</span>
         <span>Github</span>
     </h3>
-    <a href="https://github.com/jesse-rb" target="_blank" rel="noopener noreferrer">github.com/jesse-rb</a>
+    <a
+        href="https://github.com/jesse-rb"
+        target="_blank"
+        rel="noopener noreferrer">github.com/jesse-rb</a
+    >
 </Modal>
 
 {#if !$appStore.isAuthenticated}
     <Modal bind:this={loginModal}>
-        <Auth/>
+        <Auth />
     </Modal>
 
     <Modal bind:this={registerModal}>

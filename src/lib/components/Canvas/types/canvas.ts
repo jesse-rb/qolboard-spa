@@ -1,15 +1,27 @@
-import type { Model } from "$lib/types";
+import type { Model } from "$lib/types/types";
+import type { TypeUser } from "$lib/types/user";
 import type { CanvasModes } from "../enums/modes"
+import type { TypeInviteLink } from "./inviteLink";
 import type { PieceSettings } from "./piece";
 import type { PiecesManagerSerialized } from "./piecesManager";
 import type { RulerSettings } from "./ruler";
+import type { TypeSharedAccess } from "./sharedAccess";
 
-export type CanvasStore = {
-    ctx: null|CanvasRenderingContext2D
-    id:number|null
-    name:string
-    width: number
-    height: number
+// These canvas data properties do get saved
+export type CanvasData = {
+    name: string
+    backgroundColor: string
+    snapToGrid: boolean
+    pieceSettings: PieceSettings
+    rulerSettings: RulerSettings
+    piecesManager?: PiecesManagerSerialized
+};
+
+// These canvas data properties are related to a client and do not get saved
+export type ClientCanvasData = {
+    ctx?: CanvasRenderingContext2D
+    width?: number
+    height?: number
     activeMode: CanvasModes
     mouseDown: boolean
     mouseX: number
@@ -18,20 +30,17 @@ export type CanvasStore = {
     prevMouseY: number
     xPan: number
     yPan: number
-    backgroundColor: string
-    snapToGrid: boolean
-    pieceSettings: PieceSettings
-    rulerSettings: RulerSettings
     zoom: number
     zoomDx: number
     zoomDy: number
 }
 
-export type CanvasData = Omit<CanvasStore, "ctx"|"width"|"height"> & {
-    piecesManager: PiecesManagerSerialized
-};
-
 export type Canvas = Model & {
-    userEmail: string
-    canvasData: CanvasData
+    canvas_data: CanvasData & ClientCanvasData
+    user_uuid: string
+    user?: TypeUser
+    canvas_shared_accesses?: Array<TypeSharedAccess>
+    canvas_shared_invitations?: Array<TypeInviteLink>
 }
+
+export type CanvasWithoutClientCanvasData = Omit<Canvas, "canvas_data"> & { canvas_data: CanvasData };

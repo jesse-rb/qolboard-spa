@@ -1,8 +1,8 @@
 export type Model = {
-    id: number
-    createdAt: string
-    updatedAt: string
-    deletedAt: string|null
+    id?: number
+    createdAt?: string
+    updatedAt?: string
+    deletedAt?: string
 }
 
 export type Error = {
