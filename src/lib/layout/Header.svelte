@@ -165,9 +165,10 @@
         <span>Open Beta</span>
     </h3>
     <p>
-        Please note that qolboard 2.0 is in a <em>beta</em> stage of early development.
-        Therefore please bear with us while it is possible for breaking changes to
-        occur occasionally that could affect existing canvases.
+        Please note that qolboard 2.0 is in a <em>beta</em> stage of early development
+        and is only a side project. Therefore please bear with us while it is possible
+        for breaking changes to occur occasionally that could affect existing canvases,
+        or erase ALL data.
     </p>
 
     <!--Attributions-->
