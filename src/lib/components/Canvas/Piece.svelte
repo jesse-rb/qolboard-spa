@@ -182,7 +182,7 @@
     }
 
     export function getBoundingBox() {
-        const offset = 5;
+        const offset = 1;
         const clearMargin = settings.size / 2;
 
         const x = calcLeftMost() - clearMargin;
@@ -191,7 +191,7 @@
         const width = calcRightMost() - calcLeftMost() + clearMargin * 2;
         const height = calcBottomMost() - calcTopMost() + clearMargin * 2;
 
-        return [x, y, width + offset, height + offset];
+        return [x - offset, y - offset, width + offset, height + offset];
     }
 
     export function clearBoundingBox() {

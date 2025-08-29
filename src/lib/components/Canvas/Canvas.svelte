@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount, setContext, tick } from "svelte";
+    import { onDestroy, onMount, setContext, tick } from "svelte";
     import PiecesManager from "./PiecesManager.svelte";
     import ControlPanel from "./ControlPanel.svelte";
     import Ruler from "./Ruler.svelte";
@@ -90,7 +90,12 @@
                     ...getDefaultClientCanvasData(),
                     ...canvas.canvas_data,
                 };
-                deserialize(canvas);
+
+                if (!preview) {
+                    deserialize(canvas, false);
+                } else {
+                    deserialize(canvas);
+                }
             }
         } else if (preview && canvasData) {
             // Otherwise if this is a preview, and we have canvas data provided, no need to fetch it
@@ -171,6 +176,12 @@
         );
 
         await draw();
+    });
+
+    onDestroy(() => {
+        if (ws) {
+            ws.close();
+        }
     });
 
     function initWebSocket() {
