@@ -23,7 +23,7 @@
     let { saveIsLoading = false }: Props = $props();
     let isExpanded = $state(false);
 
-    run(() => {
+    $effect(() => {
         if ($appStore.controlPanelWidth) {
             document.body.style.setProperty(
                 "--control-panel-width",
