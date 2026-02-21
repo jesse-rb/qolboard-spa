@@ -1,7 +1,7 @@
 <script lang="ts">
     import { run, handlers } from "svelte/legacy";
 
-    import { getContext, createEventDispatcher, SvelteComponent } from "svelte";
+    import { getContext, createEventDispatcher, type Component } from "svelte";
     import Button from "../Button.svelte";
     import Modal from "../Modal.svelte";
     import { CanvasModes } from "./enums/modes";
@@ -32,7 +32,7 @@
         }
     });
 
-    let brushSettingsModal: SvelteComponent = $state();
+    let brushSettingsModal: Component = $state();
 
     function dispatchSetActiveMode(mode: CanvasModes) {
         dispatch("setActiveMode", mode);
@@ -220,7 +220,7 @@
         @apply right-0;
         @apply overflow-y-auto;
         @apply overflow-x-hidden;
-        @apply bg-black;
+        @apply bg-back;
         @apply z-30;
     }
     .control-panel :global(.control-group) {
