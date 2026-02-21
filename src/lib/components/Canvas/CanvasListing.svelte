@@ -5,12 +5,16 @@
     import type { Canvas as TypeCanvas } from "../Canvas/types/canvas";
     import { appStore } from "$lib/store";
 
-    export let canvas: TypeCanvas;
+    interface Props {
+        canvas: TypeCanvas;
+    }
+
+    let { canvas }: Props = $props();
 
     let name = canvas.canvas_data.name ?? "Give this canvas a name";
 
     const dispatch = createEventDispatcher();
-    let deleteIsLoading = false;
+    let deleteIsLoading = $state(false);
 
     function dispatchDeleted() {
         dispatch("delete");

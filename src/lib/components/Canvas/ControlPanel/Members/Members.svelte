@@ -6,7 +6,7 @@
     import { removeFromArrayByIndex } from "$lib/util";
     import { appStore } from "$lib/store";
 
-    export let isExpanded;
+    let { isExpanded } = $props();
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
     const isCanvasOwner = $canvasStore.user?.uuid == $appStore.user.uuid;

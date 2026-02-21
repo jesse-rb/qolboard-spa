@@ -1,7 +1,11 @@
 <!-- Thank you w3Schools! https://www.w3schools.com/howto/howto_css_switch.asp -->
-<script>
-    export let value = false;
-    export let disabled = false;
+<script lang="ts">
+    interface Props {
+        value?: boolean;
+        disabled?: boolean;
+    }
+
+    let { value = $bindable(false), disabled = false }: Props = $props();
 </script>
 
 <label class="switch">

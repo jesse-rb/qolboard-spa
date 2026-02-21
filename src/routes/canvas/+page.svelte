@@ -5,8 +5,8 @@
     import { removeFromArrayByIndex } from "$lib/util";
     import { onMount } from "svelte";
 
-    let loading = false;
-    let canvases: Array<Canvas> = [];
+    let loading = $state(false);
+    let canvases: Array<Canvas> = $state([]);
 
     async function getCanvases(): Promise<Array<Canvas>> {
         loading = true;

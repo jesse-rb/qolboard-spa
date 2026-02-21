@@ -18,7 +18,7 @@
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
     let selectedPiece: TypeBindPiece | undefined = undefined;
     let selectedPieceIndex: number | undefined = undefined;
-    let pieces: Array<TypeBindPiece> = [];
+    let pieces: Array<TypeBindPiece> = $state([]);
 
     let leftMost: number = 0;
     let rightMost: number = 0;

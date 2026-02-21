@@ -1,8 +1,15 @@
 
-<script>
+<script lang="ts">
+    import { self } from 'svelte/legacy';
+
     import { fade, slide } from 'svelte/transition';
     import Button from './Button.svelte';
-    let open = false;
+    interface Props {
+        children?: import('svelte').Snippet;
+    }
+
+    let { children }: Props = $props();
+    let open = $state(false);
 
     export const toggle = () => {open = !open};
     export const show = () => {open = true};
@@ -13,8 +20,8 @@
 {#if open}
     <div class="modal-component">
         <div transition:fade
-            on:click|self={close}
-            on:keydown={close}
+            onclick={self(close)}
+            onkeydown={close}
             role="button"
             tabindex="-1"
             class="modal-component outer" >
@@ -24,7 +31,7 @@
             <div class="close-button">
                 <Button icon="close" onclick={toggle} />
             </div>
-            <slot></slot>
+            {@render children?.()}
         </div>
     </div>
 {/if}

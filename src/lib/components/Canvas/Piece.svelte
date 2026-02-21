@@ -4,12 +4,16 @@
     import type { Writable } from "svelte/store";
     import type { Canvas } from "./types/canvas";
 
-    export let settings: PieceSettings = {
+    interface Props {
+        settings?: PieceSettings;
+        selected?: boolean;
+        index: number;
+    }
+
+    let { settings = $bindable({
         color: "#FFFFFF",
         size: 0,
-    };
-    export let selected = false;
-    export let index: number;
+    }), selected = $bindable(false), index = $bindable() }: Props = $props();
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
 
@@ -24,9 +28,9 @@
     let latestPointX = $canvasStore.canvas_data.mouseX;
     let latestPointY = $canvasStore.canvas_data.mouseY;
 
-    let leftMost: number;
+    let leftMost: number = $state();
     let rightMost: number;
-    let topMost: number;
+    let topMost: number = $state();
     let bottomMost: number;
 
     function dispatchUpdate(redrawPiece: boolean) {
@@ -344,7 +348,7 @@
                     min="1"
                     step="1"
                     max="100"
-                    on:input={(e) => handleUpdateSettings(e, "size")}
+                    oninput={(e) => handleUpdateSettings(e, "size")}
                 />
             </div>
         </div>
@@ -355,7 +359,7 @@
                 <input
                     value={settings.color}
                     type="color"
-                    on:input={(e) => handleUpdateSettings(e, "color")}
+                    oninput={(e) => handleUpdateSettings(e, "color")}
                 />
             </div>
         </div>

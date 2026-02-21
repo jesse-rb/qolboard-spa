@@ -17,18 +17,22 @@
         code: string;
     };
 
-    export let isRegistration: boolean = false;
+    interface Props {
+        isRegistration?: boolean;
+    }
 
-    let email = $appStore.registeredEmail ?? "";
-    let password = "";
-    let passwordConfirmation = "";
-    let suggestLogin = false;
+    let { isRegistration = $bindable(false) }: Props = $props();
 
-    let isLoading = false;
+    let email = $state($appStore.registeredEmail ?? "");
+    let password = $state("");
+    let passwordConfirmation = $state("");
+    let suggestLogin = $state(false);
 
-    let errors: Array<Error> = [];
+    let isLoading = $state(false);
 
-    let ok = isRegistration && $appStore.registeredEmail != null;
+    let errors: Array<Error> = $state([]);
+
+    let ok = $state(isRegistration && $appStore.registeredEmail != null);
 
     function resetAuthFields() {
         email = "";

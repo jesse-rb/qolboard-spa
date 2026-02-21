@@ -5,8 +5,12 @@
     import { request } from "$lib/http";
     import IfCanvasOwner from "../../IfCanvasOwner.svelte";
 
-    export let data: TypeInviteLink;
-    let deleteIsLoading = false;
+    interface Props {
+        data: TypeInviteLink;
+    }
+
+    let { data }: Props = $props();
+    let deleteIsLoading = $state(false);
 
     const dispatch = createEventDispatcher();
 

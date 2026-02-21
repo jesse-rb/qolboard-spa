@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { run, handlers } from "svelte/legacy";
+
     import { getContext, createEventDispatcher, SvelteComponent } from "svelte";
     import Button from "../Button.svelte";
     import Modal from "../Modal.svelte";
@@ -14,17 +16,23 @@
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
     const dispatch = createEventDispatcher();
 
-    export let saveIsLoading = false;
-    let isExpanded = false;
-
-    $: if ($appStore.controlPanelWidth) {
-        document.body.style.setProperty(
-            "--control-panel-width",
-            `${$appStore.controlPanelWidth}px`,
-        );
+    interface Props {
+        saveIsLoading?: boolean;
     }
 
-    let brushSettingsModal: SvelteComponent;
+    let { saveIsLoading = false }: Props = $props();
+    let isExpanded = $state(false);
+
+    run(() => {
+        if ($appStore.controlPanelWidth) {
+            document.body.style.setProperty(
+                "--control-panel-width",
+                `${$appStore.controlPanelWidth}px`,
+            );
+        }
+    });
+
+    let brushSettingsModal: SvelteComponent = $state();
 
     function dispatchSetActiveMode(mode: CanvasModes) {
         dispatch("setActiveMode", mode);
@@ -85,7 +93,7 @@
                             class="w-full"
                             type="text"
                             bind:value={$canvasStore.canvas_data.name}
-                            on:change={dispatchUpdatedCanvasData}
+                            onchange={dispatchUpdatedCanvasData}
                         />
                     </h1>
                 {/if}
@@ -130,8 +138,10 @@
             <input
                 bind:value={$canvasStore.canvas_data.backgroundColor}
                 type="color"
-                on:change={dispatchUpdatedBackgroundColor}
-                on:change={dispatchUpdatedCanvasData}
+                onchange={handlers(
+                    dispatchUpdatedBackgroundColor,
+                    dispatchUpdatedCanvasData,
+                )}
             />
         </div>
         <div class="control">
@@ -197,6 +207,8 @@
 <Modal bind:this={brushSettingsModal}></Modal>
 
 <style lang="postcss">
+    @reference "../../app.css";
+
     .control-panel {
         @apply gap-12;
         @apply absolute;
@@ -208,7 +220,7 @@
         @apply right-0;
         @apply overflow-y-auto;
         @apply overflow-x-hidden;
-        @apply bg-back;
+        @apply bg-black;
         @apply z-30;
     }
     .control-panel :global(.control-group) {

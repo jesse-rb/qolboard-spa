@@ -9,8 +9,8 @@
     import type { Canvas } from "../../types/canvas";
     import IfCanvasOwner from "../../IfCanvasOwner.svelte";
 
-    export let isExpanded;
-    let createIsLoading = false;
+    let { isExpanded } = $props();
+    let createIsLoading = $state(false);
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
     const domain = import.meta.env.VITE_API_HOST;

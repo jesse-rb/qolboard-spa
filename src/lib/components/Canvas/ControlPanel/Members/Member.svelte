@@ -8,13 +8,17 @@
     import type { Writable } from "svelte/store";
     import type { Canvas } from "../../types/canvas";
 
-    export let data: TypeSharedAccess;
+    interface Props {
+        data: TypeSharedAccess;
+    }
+
+    let { data }: Props = $props();
 
     const dispatch = createEventDispatcher();
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
     const isSelf = data.user?.uuid === $appStore.user.uuid;
     const isCanvasOwner = $canvasStore.user?.uuid == $appStore.user.uuid;
-    let deleteIsLoading = false;
+    let deleteIsLoading = $state(false);
 
     function dispatchDeleted() {
         dispatch("deleted");

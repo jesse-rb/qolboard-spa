@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import { onDestroy, onMount, setContext, tick } from "svelte";
     import PiecesManager from "./PiecesManager.svelte";
     import ControlPanel from "./ControlPanel.svelte";
@@ -20,23 +22,27 @@
     import Piece from "./Piece.svelte";
     import type { ShowResponse } from "$lib/types/types";
 
-    export let id: number | null = null;
-    export let preview: boolean = false;
-    export let canvasData: CanvasWithoutClientCanvasData | null = null;
+    interface Props {
+        id?: number | null;
+        preview?: boolean;
+        canvasData?: CanvasWithoutClientCanvasData | null;
+    }
 
-    let elemContaienr: HTMLDivElement;
-    let elemCanvas: HTMLCanvasElement;
+    let { id = $bindable(null), preview = false, canvasData = null }: Props = $props();
 
-    let piecesManager: PiecesManager;
+    let elemContaienr: HTMLDivElement = $state();
+    let elemCanvas: HTMLCanvasElement = $state();
+
+    let piecesManager: PiecesManager = $state();
 
     let keyDown: string | null = null;
 
     let overiddenActiveMode: CanvasModes | null;
 
-    let width: number;
-    let height: number;
+    let width: number = $state();
+    let height: number = $state();
 
-    let saveIsLoading = false;
+    let saveIsLoading = $state(false);
 
     // Allow each canvas instance to have it's own separate store instance (not a shared store)
     const store: Writable<Canvas> = writable({
@@ -47,12 +53,7 @@
     });
     setContext("canvasStore", store);
 
-    $: canvasOffsetTop = $appStore.headerHeight;
-    $: canvasOffsetLeft = $appStore.controlPanelWidth;
 
-    $: if (width && height) {
-        updateCanvasSize(width, height);
-    }
 
     // Connect to socket
     let ws: WebSocket | null = null;
@@ -62,7 +63,7 @@
         email: string;
         data: any;
     };
-    let cursors: Record<string, { x: number; y: number }> = {};
+    let cursors: Record<string, { x: number; y: number }> = $state({});
 
     onMount(async () => {
         // Init canvas context
@@ -655,6 +656,13 @@
         }
         return _rgba;
     }
+    let canvasOffsetTop = $derived($appStore.headerHeight);
+    let canvasOffsetLeft = $derived($appStore.controlPanelWidth);
+    run(() => {
+        if (width && height) {
+            updateCanvasSize(width, height);
+        }
+    });
 </script>
 
 {#if preview}
@@ -663,7 +671,7 @@
         bind:clientHeight={height}
         class="overflow-hidden"
     >
-        <canvas class="rounded-md" bind:this={elemCanvas} height="90px" />
+        <canvas class="rounded-md" bind:this={elemCanvas} height="90px"></canvas>
     </div>
 
     <PiecesManager bind:this={piecesManager} />
@@ -691,11 +699,11 @@
                 bind:this={elemCanvas}
                 width="{$store.canvas_data.width}px"
                 height="{$store.canvas_data.height}px"
-                on:mousedown={(e) => setMouseDown(e, true)}
-                on:mouseup={(e) => setMouseDown(e, false)}
-                on:mouseleave={(e) => setMouseDown(e, false)}
-                on:mousemove={(e) => setMousePos(e)}
-            />
+                onmousedown={(e) => setMouseDown(e, true)}
+                onmouseup={(e) => setMouseDown(e, false)}
+                onmouseleave={(e) => setMouseDown(e, false)}
+                onmousemove={(e) => setMousePos(e)}
+></canvas>
         </div>
 
         <PiecesManager

@@ -1,58 +1,29 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import { colorIsDark, range, roundToTarget } from "../../util";
     import { getContext, onMount } from "svelte";
     import type { Writable } from "svelte/store";
     import type { Canvas } from "./types/canvas";
 
-    export let isHorizontal = true;
+    interface Props {
+        isHorizontal?: boolean;
+    }
+
+    let { isHorizontal = true }: Props = $props();
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
-    let rulerStep: number = 100;
-    let rulerRange: Array<number> = [];
+    let rulerStep: number = $state(100);
+    let rulerRange: Array<number> = $state([]);
 
     // RangeX zoom point variables
-    let nextRangeZoomIn = $canvasStore.canvas_data.zoom * 1.5;
-    let nextRangeZoomOut = $canvasStore.canvas_data.zoom;
+    let nextRangeZoomIn = $state($canvasStore.canvas_data.zoom * 1.5);
+    let nextRangeZoomOut = $state($canvasStore.canvas_data.zoom);
 
-    $: length =
-        (isHorizontal
-            ? $canvasStore.canvas_data.width
-            : $canvasStore.canvas_data.height) ?? 0;
-    $: pan = isHorizontal
-        ? $canvasStore.canvas_data.xPan
-        : $canvasStore.canvas_data.yPan;
-    $: zoomDelta = isHorizontal
-        ? $canvasStore.canvas_data.zoomDx
-        : $canvasStore.canvas_data.zoomDy;
 
-    // Update our ruler to/form range when panning the canvas
-    $: if (
-        -1 * pan + zoomDelta + length >
-        rulerRange[rulerRange.length - 1] + rulerStep
-    ) {
-        panRightRange();
-    }
-    $: if (-1 * (pan + zoomDelta) < rulerRange[0] - rulerStep) {
-        panLeftRange();
-    }
 
-    $: if ($canvasStore.canvas_data.zoom >= nextRangeZoomIn) {
-        zoomInRange();
-    }
 
-    $: if ($canvasStore.canvas_data.zoom < nextRangeZoomOut) {
-        zoomOutRange();
-    }
 
-    $: if (length) {
-        // Update range start/end
-        const end = roundToTarget(-1 * pan + zoomDelta + length, rulerStep);
-        const start = roundToTarget(-1 * (pan + zoomDelta), rulerStep);
-
-        // Update range
-        rulerRange = range(end, start, rulerStep);
-        // rulerRange = range(length, 0, rulerStep);
-    }
 
     onMount(() => {
         // Update range start/end
@@ -115,6 +86,51 @@
         // Update range
         rulerRange = range(end, start, rulerStep);
     }
+    let length =
+        $derived((isHorizontal
+            ? $canvasStore.canvas_data.width
+            : $canvasStore.canvas_data.height) ?? 0);
+    let pan = $derived(isHorizontal
+        ? $canvasStore.canvas_data.xPan
+        : $canvasStore.canvas_data.yPan);
+    let zoomDelta = $derived(isHorizontal
+        ? $canvasStore.canvas_data.zoomDx
+        : $canvasStore.canvas_data.zoomDy);
+    run(() => {
+        if (length) {
+            // Update range start/end
+            const end = roundToTarget(-1 * pan + zoomDelta + length, rulerStep);
+            const start = roundToTarget(-1 * (pan + zoomDelta), rulerStep);
+
+            // Update range
+            rulerRange = range(end, start, rulerStep);
+            // rulerRange = range(length, 0, rulerStep);
+        }
+    });
+    // Update our ruler to/form range when panning the canvas
+    run(() => {
+        if (
+            -1 * pan + zoomDelta + length >
+            rulerRange[rulerRange.length - 1] + rulerStep
+        ) {
+            panRightRange();
+        }
+    });
+    run(() => {
+        if (-1 * (pan + zoomDelta) < rulerRange[0] - rulerStep) {
+            panLeftRange();
+        }
+    });
+    run(() => {
+        if ($canvasStore.canvas_data.zoom >= nextRangeZoomIn) {
+            zoomInRange();
+        }
+    });
+    run(() => {
+        if ($canvasStore.canvas_data.zoom < nextRangeZoomOut) {
+            zoomOutRange();
+        }
+    });
 </script>
 
 <div

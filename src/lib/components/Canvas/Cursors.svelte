@@ -3,25 +3,29 @@
     import type { Canvas } from "./types/canvas";
     import { getContext } from "svelte";
 
-    export let cursors: Record<string, { x: number; y: number }> = {};
+    interface Props {
+        cursors?: Record<string, { x: number; y: number }>;
+    }
+
+    let { cursors = {} }: Props = $props();
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
 
     const offset = 0;
 
-    $: canvasZoom = $canvasStore.canvas_data.zoom;
+    let canvasZoom = $derived($canvasStore.canvas_data.zoom);
 
-    $: canvasWidth = $canvasStore.canvas_data.width ?? 0;
-    $: canvasHeight = $canvasStore.canvas_data.height ?? 0;
+    let canvasWidth = $derived($canvasStore.canvas_data.width ?? 0);
+    let canvasHeight = $derived($canvasStore.canvas_data.height ?? 0);
 
-    $: canvasWidthScaled = canvasWidth * canvasZoom;
-    $: canvasHeightScaled = canvasHeight * canvasZoom;
+    let canvasWidthScaled = $derived(canvasWidth * canvasZoom);
+    let canvasHeightScaled = $derived(canvasHeight * canvasZoom);
 
-    $: canvasPanX = $canvasStore.canvas_data.xPan;
-    $: canvasPanY = $canvasStore.canvas_data.yPan;
+    let canvasPanX = $derived($canvasStore.canvas_data.xPan);
+    let canvasPanY = $derived($canvasStore.canvas_data.yPan);
 
-    $: zoomClientOffsetX = (canvasWidth - canvasWidthScaled) / 2;
-    $: zoomClientOffsetY = (canvasHeight - canvasHeightScaled) / 2;
+    let zoomClientOffsetX = $derived((canvasWidth - canvasWidthScaled) / 2);
+    let zoomClientOffsetY = $derived((canvasHeight - canvasHeightScaled) / 2);
 </script>
 
 {#each Object.entries(cursors) as [email, pos]}

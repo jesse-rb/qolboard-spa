@@ -1,14 +1,25 @@
-<script>
-    export let label = '';
-    export let icon = '';
-    export let onclick = () => {};
-    export let active = false; 
-    export let isLoading = false;
-    export let disabled = false;
+<script lang="ts">
+    interface Props {
+        label?: string;
+        icon?: string;
+        onclick?: any;
+        active?: boolean;
+        isLoading?: boolean;
+        disabled?: boolean;
+    }
+
+    let {
+        label = '',
+        icon = '',
+        onclick = () => {},
+        active = false,
+        isLoading = false,
+        disabled = false
+    }: Props = $props();
     
 </script>
 
-<button class="button-component" class:icon-only={label.length<=0} class:active={active} on:click="{ onclick }" disabled={disabled} >
+<button class="button-component" class:icon-only={label.length<=0} class:active={active} {onclick} disabled={disabled} >
     {#if isLoading}
         <span class="material-icons icon animate-spin" class:icon-only={label.length<=0} >sync</span>
     {:else}

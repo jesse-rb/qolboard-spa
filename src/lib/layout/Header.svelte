@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { run } from 'svelte/legacy';
+
     import Modal from "../components/Modal.svelte";
     import Button from "../components/Button.svelte";
     import Auth from "../components/Auth/Auth.svelte";
@@ -8,18 +10,20 @@
 
     injectVercelAnalytics();
 
-    let aboutModal: Modal;
-    let registerModal: Modal;
-    let loginModal: Modal;
+    let aboutModal: Modal = $state();
+    let registerModal: Modal = $state();
+    let loginModal: Modal = $state();
 
-    let logoutIsLoading = false;
+    let logoutIsLoading = $state(false);
 
-    $: if ($appStore.headerHeight) {
-        document.body.style.setProperty(
-            "--header-height",
-            `${$appStore.headerHeight}px`,
-        );
-    }
+    run(() => {
+        if ($appStore.headerHeight) {
+            document.body.style.setProperty(
+                "--header-height",
+                `${$appStore.headerHeight}px`,
+            );
+        }
+    });
 
     onMount(async () => {
         const urlHashesStr = window.location.hash.substring(1);
