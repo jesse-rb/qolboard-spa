@@ -690,18 +690,22 @@
         ></canvas>
     </div>
 
-    <PiecesManager bind:this={piecesManager} />
+    <PiecesManager
+        bind:this={piecesManager}
+        updatedPiece={() => 0}
+        removedPiece={() => 0}
+    />
 {:else}
     <Cursors {cursors} />
 
     <div class="canvas-component">
         <ControlPanel
             {saveIsLoading}
-            on:setActiveMode={(e) => setActiveMode(e.detail)}
-            on:action={(e) => action(e.detail)}
-            on:updatedBackgroundColor={draw}
-            on:updatedCanvasData={websocketUpdatedCanvasData}
-            on:save={saveCanvas}
+            setActiveMode={(v: CanvasModes) => setActiveMode(v)}
+            action={(v: CanvasActions) => action(v)}
+            updatedBackgroundColor={draw}
+            updatedCanvasData={websocketUpdatedCanvasData}
+            save={saveCanvas}
         />
 
         <div
@@ -724,8 +728,8 @@
 
         <PiecesManager
             bind:this={piecesManager}
-            on:update-piece={(e) => websocketUpdatePiece(e.detail)}
-            on:remove-piece={(e) => websocketRemovePiece(e.detail)}
+            updatedPiece={(v: TypeBindPiece) => websocketUpdatePiece(v)}
+            removedPiece={(v: PieceSerialized) => websocketRemovePiece(v)}
         />
 
         <Ruler />

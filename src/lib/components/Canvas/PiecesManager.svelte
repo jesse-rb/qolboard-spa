@@ -1,6 +1,6 @@
 <script lang="ts">
     import { get, type Writable } from "svelte/store";
-    import { createEventDispatcher, getContext, tick } from "svelte";
+    import { getContext, tick } from "svelte";
     import Piece from "./Piece.svelte";
     import type { PiecesManagerSerialized } from "./types/piecesManager";
     import type { Canvas } from "./types/canvas";
@@ -13,7 +13,12 @@
         leftMost: number;
     };
 
-    const dispatch = createEventDispatcher();
+    interface Props {
+        updatedPiece: Function;
+        removedPiece: Function;
+    }
+
+    let { updatedPiece, removedPiece }: Props = $props();
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
     let selectedPiece: TypeBindPiece | undefined = undefined;
@@ -141,7 +146,7 @@
 
     function handlePieceUpdate(p: TypeBindPiece, redrawPiece = true) {
         redrawPieceChunk(p.component, redrawPiece);
-        dispatch("update-piece", p);
+        updatedPiece(p);
     }
 
     export function reDrawSelectedChunk(redrawPiece = true) {
@@ -215,23 +220,13 @@
 
                 deselect();
 
-                dispatch("remove-piece", s);
+                removedPiece(s);
             }
         }
     }
 
     export function getSelected() {
         return selectedPiece;
-    }
-
-    export function debugLogLatestPiece() {
-        if (pieces.length == 0) {
-            console.log("no pieces");
-            return;
-        }
-
-        const latestPiece = pieces[pieces.length - 1];
-        console.log(latestPiece.component?.getPoints());
     }
 
     function initialPieceSettings() {
@@ -246,8 +241,8 @@
             bind:this={p.component}
             settings={{ ...initialPieceSettings() }}
             index={i}
-            on:update={(e) => handlePieceUpdate(p, e.detail)}
-            on:updateBoundingBox={(e) => updateBoundingBox(e.detail)}
+            updated={(v: boolean) => handlePieceUpdate(p, v)}
+            updatedBoundingBox={(v: TypeBoundingBox) => updateBoundingBox(v)}
         />
     {/each}
 </div>
