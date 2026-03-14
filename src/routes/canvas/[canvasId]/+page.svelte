@@ -1,10 +1,11 @@
 <script lang="ts">
-    import { page } from '$app/state';
+    import { page } from "$app/state";
     import Canvas from "$lib/components/Canvas/Canvas.svelte";
 
-    const id = parseInt(page.params.canvasId);
+    let id = undefined;
+    if (page.params.canvasId) {
+        id = parseInt(page.params.canvasId);
+    }
 </script>
 
-<Canvas
-    id={id}
-/>
+<Canvas {id} />

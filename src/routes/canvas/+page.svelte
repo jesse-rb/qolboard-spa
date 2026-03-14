@@ -47,7 +47,7 @@
             <div>
                 <CanvasListing
                     {canvas}
-                    on:delete={() =>
+                    dispatchDeleted={() =>
                         (canvases = removeFromArrayByIndex(canvases, i))}
                 />
             </div>
@@ -58,7 +58,7 @@
 
     <a
         href="/"
-        class="w-[90px] self-stretch bg-back_4 flex justify-center items-center no-underline text-white rounded-md"
+        class="w-22.5 self-stretch bg-back-4 flex justify-center items-center no-underline! text-white rounded-md"
     >
         <span class="material-icons">add</span>
     </a>

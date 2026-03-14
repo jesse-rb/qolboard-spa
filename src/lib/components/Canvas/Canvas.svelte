@@ -548,7 +548,6 @@
             const i = getPiecesManager().addPiece();
             tick().then(() => {
                 const p = getPiecesManager().getPiece(i);
-                console.log(p);
                 if (p) {
                     websocketAddPiece(p);
                 }

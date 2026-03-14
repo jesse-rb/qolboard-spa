@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { run } from 'svelte/legacy';
-
     import { colorIsDark, range, roundToTarget } from "../../util";
     import { getContext, onMount } from "svelte";
     import type { Writable } from "svelte/store";
@@ -19,11 +17,6 @@
     // RangeX zoom point variables
     let nextRangeZoomIn = $state($canvasStore.canvas_data.zoom * 1.5);
     let nextRangeZoomOut = $state($canvasStore.canvas_data.zoom);
-
-
-
-
-
 
     onMount(() => {
         // Update range start/end
@@ -86,17 +79,22 @@
         // Update range
         rulerRange = range(end, start, rulerStep);
     }
-    let length =
-        $derived((isHorizontal
+    let length = $derived(
+        (isHorizontal
             ? $canvasStore.canvas_data.width
-            : $canvasStore.canvas_data.height) ?? 0);
-    let pan = $derived(isHorizontal
-        ? $canvasStore.canvas_data.xPan
-        : $canvasStore.canvas_data.yPan);
-    let zoomDelta = $derived(isHorizontal
-        ? $canvasStore.canvas_data.zoomDx
-        : $canvasStore.canvas_data.zoomDy);
-    run(() => {
+            : $canvasStore.canvas_data.height) ?? 0,
+    );
+    let pan = $derived(
+        isHorizontal
+            ? $canvasStore.canvas_data.xPan
+            : $canvasStore.canvas_data.yPan,
+    );
+    let zoomDelta = $derived(
+        isHorizontal
+            ? $canvasStore.canvas_data.zoomDx
+            : $canvasStore.canvas_data.zoomDy,
+    );
+    $effect.pre(() => {
         if (length) {
             // Update range start/end
             const end = roundToTarget(-1 * pan + zoomDelta + length, rulerStep);
@@ -108,7 +106,7 @@
         }
     });
     // Update our ruler to/form range when panning the canvas
-    run(() => {
+    $effect.pre(() => {
         if (
             -1 * pan + zoomDelta + length >
             rulerRange[rulerRange.length - 1] + rulerStep
@@ -116,17 +114,17 @@
             panRightRange();
         }
     });
-    run(() => {
+    $effect.pre(() => {
         if (-1 * (pan + zoomDelta) < rulerRange[0] - rulerStep) {
             panLeftRange();
         }
     });
-    run(() => {
+    $effect.pre(() => {
         if ($canvasStore.canvas_data.zoom >= nextRangeZoomIn) {
             zoomInRange();
         }
     });
-    run(() => {
+    $effect.pre(() => {
         if ($canvasStore.canvas_data.zoom < nextRangeZoomOut) {
             zoomOutRange();
         }

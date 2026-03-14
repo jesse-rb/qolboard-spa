@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { run } from 'svelte/legacy';
-
     import Modal from "../components/Modal.svelte";
     import Button from "../components/Button.svelte";
     import Auth from "../components/Auth/Auth.svelte";
@@ -10,13 +8,13 @@
 
     injectVercelAnalytics();
 
-    let aboutModal: Modal = $state();
-    let registerModal: Modal = $state();
-    let loginModal: Modal = $state();
+    let aboutModal: Modal | undefined = $state();
+    let registerModal: Modal | undefined = $state();
+    let loginModal: Modal | undefined = $state();
 
     let logoutIsLoading = $state(false);
 
-    run(() => {
+    $effect.pre(() => {
         if ($appStore.headerHeight) {
             document.body.style.setProperty(
                 "--header-height",
