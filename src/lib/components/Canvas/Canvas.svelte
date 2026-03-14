@@ -15,9 +15,10 @@
     import { pushState } from "$app/navigation";
     import { writable, type Writable } from "svelte/store";
     import Cursors from "./Cursors.svelte";
-    import type { PieceSerialized, TypeBindPiece } from "./types/piece";
+    import type { PieceSerialized } from "./types/piece";
     import { envIsLocal } from "$lib/util";
     import type { ShowResponse } from "$lib/types/types";
+    import Piece from "./Piece.svelte";
 
     interface Props {
         id?: number | null;
@@ -106,8 +107,6 @@
                     deserialize(canvas);
                 }
             }
-        } else if (preview && canvasData) {
-            // Otherwise if this is a preview, and we have canvas data provided, no need to fetch it
         }
 
         if (!preview) {
@@ -175,7 +174,6 @@
         }
 
         // Initial draw
-        await tick();
         if (preview) {
             $store.canvas_data.zoom *= 0.1;
         }
@@ -301,33 +299,27 @@
         ws?.send(JSON.stringify(d));
     }
 
-    async function websocketAddPiece(p: TypeBindPiece) {
-        await tick(); // Wait for this piece svelte component to be initialized
-
+    async function websocketAddPiece(p: Piece) {
         const d = {
             event: "add-piece",
             email: $appStore.user.email,
-            data: p?.component?.serialize(),
+            data: p.serialize(),
         };
 
         ws?.send(JSON.stringify(d));
     }
 
-    async function websocketUpdatePiece(p: TypeBindPiece) {
-        await tick();
-
+    async function websocketUpdatePiece(p: Piece) {
         const d = {
             event: "update-piece",
             email: $appStore.user.email,
-            data: p.component?.serialize(),
+            data: p.serialize(),
         };
 
         ws?.send(JSON.stringify(d));
     }
 
     async function websocketRemovePiece(p: PieceSerialized) {
-        await tick();
-
         const d = {
             event: "remove-piece",
             email: $appStore.user.email,
@@ -338,8 +330,6 @@
     }
 
     async function websocketUpdatedCanvasData() {
-        await tick();
-
         const d = {
             event: "update-canvas-data",
             email: $appStore.user.email,
@@ -555,8 +545,14 @@
             $store.canvas_data.activeMode === CanvasModes.Draw &&
             $store.canvas_data.mouseDown
         ) {
-            let piece = getPiecesManager().addPiece();
-            websocketAddPiece(piece);
+            const i = getPiecesManager().addPiece();
+            tick().then(() => {
+                const p = getPiecesManager().getPiece(i);
+                console.log(p);
+                if (p) {
+                    websocketAddPiece(p);
+                }
+            });
         }
 
         if (
@@ -599,7 +595,7 @@
             $store.canvas_data.activeMode == CanvasModes.Grab &&
             $store.canvas_data.mouseDown
         ) {
-            if (getPiecesManager().getSelected()) {
+            if (getPiecesManager().getSelectedPiece() !== undefined) {
                 const piece = getPiecesManager().move();
                 if (piece) {
                     websocketUpdatePiece(piece);
@@ -728,7 +724,7 @@
 
         <PiecesManager
             bind:this={piecesManager}
-            updatedPiece={(v: TypeBindPiece) => websocketUpdatePiece(v)}
+            updatedPiece={(v: Piece) => websocketUpdatePiece(v)}
             removedPiece={(v: PieceSerialized) => websocketRemovePiece(v)}
         />
 
