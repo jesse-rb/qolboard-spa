@@ -60,7 +60,7 @@
         {#each $canvasStore.canvas_shared_invitations ?? [] as d, i}
             <InviteLink
                 data={d}
-                on:deleted={() =>
+                dispatchDeleted={() =>
                     ($canvasStore.canvas_shared_invitations =
                         removeFromArrayByIndex(
                             $canvasStore.canvas_shared_invitations ?? [],
