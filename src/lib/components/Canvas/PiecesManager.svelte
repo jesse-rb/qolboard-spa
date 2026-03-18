@@ -112,8 +112,8 @@
             remove(s.index);
         }
     }
-    export function addPointToLatestPiece(): Piece {
-        const p = pieceRefs[pieceRefs.length - 1];
+    export function addPointToPiece(i: number): Piece {
+        const p = pieceRefs[i];
         if (p) {
             p.addPoint();
         }
