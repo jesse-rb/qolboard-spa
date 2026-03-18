@@ -46,6 +46,8 @@
 
     let saveIsLoading = $state(false);
 
+    let addingPieceIndex = 0;
+
     // Allow each canvas instance to have it's own separate store instance (not a shared store)
     const store: Writable<Canvas> = writable({
         canvas_data: {
@@ -545,9 +547,9 @@
             $store.canvas_data.activeMode === CanvasModes.Draw &&
             $store.canvas_data.mouseDown
         ) {
-            const i = getPiecesManager().addPiece();
+            addingPieceIndex = getPiecesManager().addPiece();
             tick().then(() => {
-                const p = getPiecesManager().getPiece(i);
+                const p = getPiecesManager().getPiece(addingPieceIndex);
                 if (p) {
                     websocketAddPiece(p);
                 }
@@ -586,7 +588,7 @@
             $store.canvas_data.activeMode == CanvasModes.Draw &&
             $store.canvas_data.mouseDown
         ) {
-            const piece = getPiecesManager().addPointToLatestPiece();
+            const piece = getPiecesManager().addPointToPiece(addingPieceIndex);
             websocketUpdatePiece(piece);
         }
 
