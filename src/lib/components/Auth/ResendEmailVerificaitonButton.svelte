@@ -5,8 +5,8 @@
     import Errors from "../Form/Errors.svelte";
 
     let ok:boolean = false;
-    let isLoading:boolean = false;
-    let errors:Array<Error> = [];
+    let isLoading:boolean = $state(false);
+    let errors:Array<Error> = $state([]);
 
     async function resendEmailVerification() {
         ok = false;

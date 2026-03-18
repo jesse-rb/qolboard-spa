@@ -9,8 +9,8 @@
     import type { Canvas } from "../../types/canvas";
     import IfCanvasOwner from "../../IfCanvasOwner.svelte";
 
-    export let isExpanded;
-    let createIsLoading = false;
+    let { isExpanded } = $props();
+    let createIsLoading = $state(false);
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
     const domain = import.meta.env.VITE_API_HOST;
@@ -60,7 +60,7 @@
         {#each $canvasStore.canvas_shared_invitations ?? [] as d, i}
             <InviteLink
                 data={d}
-                on:deleted={() =>
+                dispatchDeleted={() =>
                     ($canvasStore.canvas_shared_invitations =
                         removeFromArrayByIndex(
                             $canvasStore.canvas_shared_invitations ?? [],

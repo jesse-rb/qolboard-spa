@@ -6,7 +6,7 @@
     import { removeFromArrayByIndex } from "$lib/util";
     import { appStore } from "$lib/store";
 
-    export let isExpanded;
+    let { isExpanded } = $props();
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
     const isCanvasOwner = $canvasStore.user?.uuid == $appStore.user.uuid;
@@ -30,7 +30,7 @@
     {:else}
         {#each $canvasStore.canvas_shared_accesses ?? [] as d, i}
             <Member
-                on:deleted={() =>
+                dispatchDeleted={() =>
                     ($canvasStore.canvas_shared_accesses =
                         removeFromArrayByIndex(
                             $canvasStore.canvas_shared_accesses ?? [],

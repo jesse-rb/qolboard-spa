@@ -1,10 +1,10 @@
 <script lang="ts">
     import { get, type Writable } from "svelte/store";
-    import { createEventDispatcher, getContext, tick } from "svelte";
+    import { getContext, tick } from "svelte";
     import Piece from "./Piece.svelte";
     import type { PiecesManagerSerialized } from "./types/piecesManager";
     import type { Canvas } from "./types/canvas";
-    import type { PieceSerialized, TypeBindPiece } from "./types/piece";
+    import type { PieceSerialized } from "./types/piece";
 
     type TypeBoundingBox = {
         topMost: number;
@@ -13,12 +13,17 @@
         leftMost: number;
     };
 
-    const dispatch = createEventDispatcher();
+    interface Props {
+        updatedPiece: Function;
+        removedPiece: Function;
+    }
+
+    let { updatedPiece, removedPiece }: Props = $props();
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
-    let selectedPiece: TypeBindPiece | undefined = undefined;
-    let selectedPieceIndex: number | undefined = undefined;
-    let pieces: Array<TypeBindPiece> = [];
+    let selectedPieceIndex: number | undefined = $state(undefined);
+    let pieces: Array<number> = $state([]);
+    let pieceRefs: Array<Piece> = $state([]);
 
     let leftMost: number = 0;
     let rightMost: number = 0;
@@ -41,9 +46,9 @@
             bottomMost: bottomMost,
         };
 
-        for (const p of pieces) {
-            if (p.component) {
-                const serializedPiece = p.component.serialize();
+        for (const p of pieceRefs) {
+            if (p) {
+                const serializedPiece = p.serialize();
                 s.pieces.push(serializedPiece);
             }
         }
@@ -56,40 +61,41 @@
         topMost = s.topMost;
         bottomMost = s.bottomMost;
 
-        for (const serializedPiece of s.pieces) {
-            addSerializedPiece(serializedPiece);
-        }
+        pieces = s.pieces.map(() => 0);
+
+        tick().then(() => {
+            s.pieces.forEach((serialized, i) => {
+                pieceRefs[i]?.deserialize(serialized);
+            });
+        });
     }
 
-    export async function addSerializedPiece(s: PieceSerialized) {
-        let p: TypeBindPiece = {
-            component: undefined,
-        };
-        pieces = [...pieces, p];
-        await tick();
-        p.component?.deserialize(s);
+    export function addSerializedPiece(s: PieceSerialized) {
+        pieces = [...pieces, 0];
+
+        const index = pieces.length - 1;
+        tick().then(() => {
+            pieceRefs[index]?.deserialize(s);
+        });
     }
 
     export function clear() {
         deselect();
         pieces = [];
+        pieceRefs = [];
     }
 
-    export function addPiece(): TypeBindPiece {
+    export function addPiece(): number {
         deselect();
-        const newPiece: TypeBindPiece = {
-            component: undefined,
-        };
-        pieces = [...pieces, newPiece];
 
-        selectedPiece = newPiece;
-        selectedPieceIndex = pieces.length - 1;
+        pieces = [...pieces, 0];
 
-        return newPiece;
+        const index = pieces.length - 1;
+        return index;
     }
 
     export function updatePiece(s: PieceSerialized) {
-        const p = pieces[s.index]?.component;
+        const p = pieceRefs[s.index];
 
         if (p) {
             p.clearBoundingBox();
@@ -99,85 +105,97 @@
     }
 
     export function removePiece(s: PieceSerialized) {
-        const p = pieces[s.index]?.component;
+        const p = pieceRefs[s.index];
 
         if (p) {
             redrawPieceChunk(p, false);
             remove(s.index);
         }
     }
-
-    export function addPointToLatestPiece(): TypeBindPiece {
-        const p = pieces[pieces.length - 1];
-        if (p.component) {
-            p.component.addPoint();
+    export function addPointToLatestPiece(): Piece {
+        const p = pieceRefs[pieceRefs.length - 1];
+        if (p) {
+            p.addPoint();
         }
 
         return p;
     }
 
     export function draw() {
-        for (let i = 0; i < pieces.length; i++) {
-            pieces[i] && pieces[i].component?.draw();
+        for (let i = 0; i < pieceRefs.length; i++) {
+            pieceRefs[i] && pieceRefs[i].draw();
         }
     }
 
     export function redrawPieceChunk(piece?: Piece, redrawPiece = true) {
         piece?.clearBoundingBox();
         // Only redraw pieces that are inbound of section
-        for (const p of pieces) {
-            if (p.component) {
-                if (!redrawPiece && p.component === piece) {
+        for (const p of pieceRefs) {
+            if (p) {
+                if (!redrawPiece && p === piece) {
                     continue;
                 }
-                if (
-                    piece?.doesBoundingBoxOverlap(p.component.getBoundingBox())
-                ) {
-                    p.component?.draw();
+                if (piece?.doesBoundingBoxOverlap(p.getBoundingBox())) {
+                    p?.draw();
                 }
             }
         }
     }
 
-    function handlePieceUpdate(p: TypeBindPiece, redrawPiece = true) {
-        redrawPieceChunk(p.component, redrawPiece);
-        dispatch("update-piece", p);
+    function handlePieceUpdate(i: number, redrawPiece = true) {
+        const p = pieceRefs[i];
+        redrawPieceChunk(p, redrawPiece);
+        updatedPiece(p);
+    }
+
+    export function getSelectedPiece(): Piece | undefined {
+        if (selectedPieceIndex !== undefined && pieceRefs[selectedPieceIndex]) {
+            return pieceRefs[selectedPieceIndex];
+        }
+        return undefined;
+    }
+
+    export function getPiece(i: number): Piece | undefined {
+        const p = pieceRefs[i];
+        if (p) {
+            return p;
+        }
+        return undefined;
     }
 
     export function reDrawSelectedChunk(redrawPiece = true) {
         // Draw only section background
-        if (selectedPiece) {
-            redrawPieceChunk(selectedPiece.component, redrawPiece);
+        const p = getSelectedPiece();
+        if (p) {
+            redrawPieceChunk(p, redrawPiece);
         }
     }
 
     export function deselect() {
         // Deselect old selected piece
-        if (selectedPiece?.component) {
-            selectedPiece.component.deselect();
+        const p = getSelectedPiece();
+        if (p) {
+            p.deselect();
             reDrawSelectedChunk();
         }
-        selectedPiece = undefined;
         selectedPieceIndex = undefined;
     }
 
     export function select() {
         deselect();
+
         // Select new piece
-        for (let i = pieces.length - 1; i >= 0; i--) {
-            const piece = pieces[i];
+        for (let i = 0; i <= pieceRefs.length; i++) {
+            const p = pieceRefs[i];
             if (
-                piece.component?.isPointInStroke(
+                p?.isPointInStroke(
                     $canvasStore.canvas_data.mouseX *
                         $canvasStore.canvas_data.zoom,
                     $canvasStore.canvas_data.mouseY *
                         $canvasStore.canvas_data.zoom,
                 )
             ) {
-                console.log("SELECTED");
-                selectedPiece = piece;
                 selectedPieceIndex = i;
-                selectedPiece.component?.select();
 
                 reDrawSelectedChunk();
                 return;
@@ -186,52 +204,48 @@
     }
 
     export function pan(dx?: number, dy?: number) {
-        for (const p of pieces) {
-            p.component?.move(true, dx, dy);
+        for (const p of pieceRefs) {
+            p?.move(true, dx, dy);
         }
     }
 
-    export function move(): TypeBindPiece | undefined {
-        if (selectedPiece?.component) {
-            selectedPiece.component.clearBoundingBox();
-            selectedPiece.component.move();
+    export function move(): Piece | undefined {
+        const p = getSelectedPiece();
+        if (p) {
+            p.clearBoundingBox();
+            p.move();
             reDrawSelectedChunk();
         }
 
-        return selectedPiece;
+        return p;
     }
 
     export function remove(index: number) {
-        pieces = [...pieces.slice(0, index), ...pieces.slice(index + 1)];
+        pieces.splice(index, 1);
+        pieceRefs.splice(index, 1);
+
+        if (selectedPieceIndex !== undefined) {
+            if (selectedPieceIndex === index) {
+                selectedPieceIndex = undefined;
+            } else if (selectedPieceIndex > index) {
+                selectedPieceIndex--;
+            }
+        }
     }
 
     export function removeSelected() {
         if (selectedPieceIndex !== undefined) {
-            const p = pieces[selectedPieceIndex];
+            const p = getSelectedPiece();
             if (p) {
-                const s = p.component?.serialize();
+                const s = p.serialize();
                 reDrawSelectedChunk(false);
                 remove(selectedPieceIndex);
 
                 deselect();
 
-                dispatch("remove-piece", s);
+                removedPiece(s);
             }
         }
-    }
-
-    export function getSelected() {
-        return selectedPiece;
-    }
-
-    export function debugLogLatestPiece() {
-        if (pieces.length == 0) {
-            console.log("no pieces");
-            return;
-        }
-
-        const latestPiece = pieces[pieces.length - 1];
-        console.log(latestPiece.component?.getPoints());
     }
 
     function initialPieceSettings() {
@@ -241,13 +255,14 @@
 </script>
 
 <div id="pieces">
-    {#each pieces as p, i (p)}
+    {#each pieces as _, i (i)}
         <Piece
-            bind:this={p.component}
+            selected={i === selectedPieceIndex}
+            bind:this={pieceRefs[i]}
             settings={{ ...initialPieceSettings() }}
             index={i}
-            on:update={(e) => handlePieceUpdate(p, e.detail)}
-            on:updateBoundingBox={(e) => updateBoundingBox(e.detail)}
+            updated={(v: boolean) => handlePieceUpdate(i, v)}
+            updatedBoundingBox={(v: TypeBoundingBox) => updateBoundingBox(v)}
         />
     {/each}
 </div>

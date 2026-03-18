@@ -1,8 +1,13 @@
-<script>
+<script lang="ts">
 import { onMount } from "svelte";
+    interface Props {
+        children?: import('svelte').Snippet;
+    }
+
+    let { children }: Props = $props();
 
 
-    let formElement;
+    let formElement = $state();
 
     onMount(()=> {
         formElement.addEventListener('submit', (e)=>e.preventDefault());
@@ -10,5 +15,5 @@ import { onMount } from "svelte";
 </script>
 
 <form bind:this={formElement} action="">
-    <slot></slot>
+    {@render children?.()}
 </form>

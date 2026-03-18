@@ -1,19 +1,30 @@
 <script lang="ts">
-    import { createEventDispatcher, getContext, tick } from "svelte";
+    import { getContext } from "svelte";
     import type { PieceSerialized, PieceSettings } from "./types/piece";
     import type { Writable } from "svelte/store";
     import type { Canvas } from "./types/canvas";
 
-    export let settings: PieceSettings = {
-        color: "#FFFFFF",
-        size: 0,
-    };
-    export let selected = false;
-    export let index: number;
+    interface Props {
+        settings?: PieceSettings;
+        selected?: boolean;
+        index: number;
+        updated: Function;
+        updatedBoundingBox: Function;
+    }
+
+    let {
+        settings = $bindable({
+            color: "#FFFFFF",
+            size: 0,
+        }),
+        selected = $bindable(false),
+        index = $bindable(),
+        updated,
+        updatedBoundingBox,
+    }: Props = $props();
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
 
-    const dispatch = createEventDispatcher();
     const ctx = $canvasStore.canvas_data.ctx;
 
     let pathSVG = "";
@@ -24,24 +35,10 @@
     let latestPointX = $canvasStore.canvas_data.mouseX;
     let latestPointY = $canvasStore.canvas_data.mouseY;
 
-    let leftMost: number;
-    let rightMost: number;
-    let topMost: number;
-    let bottomMost: number;
-
-    function dispatchUpdate(redrawPiece: boolean) {
-        dispatch("update", redrawPiece);
-    }
-
-    function dispatchUpdateBoundingBox() {
-        const box = {
-            topMost,
-            rightMost,
-            bottomMost,
-            leftMost,
-        };
-        dispatch("updateBoundingBox", box);
-    }
+    let leftMost: number = $state(0);
+    let rightMost: number = 0;
+    let topMost: number = $state(0);
+    let bottomMost: number = 0;
 
     function setDrawSettings(reset = false) {
         if (ctx) {
@@ -55,12 +52,28 @@
     }
 
     function updateBoundingBox(x: number, y: number) {
-        leftMost = leftMost < x ? leftMost : x;
+        if (
+            leftMost === rightMost &&
+            leftMost === topMost &&
+            leftMost === bottomMost &&
+            leftMost === 0
+        ) {
+            leftMost = x;
+            topMost = y;
+        } else {
+            leftMost = leftMost < x ? leftMost : x;
+            topMost = topMost < y ? topMost : y;
+        }
         rightMost = rightMost > x ? rightMost : x;
-        topMost = topMost < y ? topMost : y;
         bottomMost = bottomMost > y ? bottomMost : y;
 
-        dispatchUpdateBoundingBox();
+        const box = {
+            topMost,
+            rightMost,
+            bottomMost,
+            leftMost,
+        };
+        updatedBoundingBox(box);
     }
 
     export function serialize(): PieceSerialized {
@@ -86,6 +99,7 @@
         pathSVG = s.path;
         path = new Path2D(s.path + "C");
 
+        // moveMatrix = new DOMMatrix(s.move);
         moveMatrix = DOMMatrix.fromMatrix(s.move);
 
         let updatedPath = new Path2D();
@@ -308,9 +322,9 @@
         setting: K,
         value: PieceSettings[K],
     ) {
-        dispatchUpdate(false);
+        updated(false);
         settings[setting] = value;
-        dispatchUpdate(true);
+        updated(true);
     }
 
     function handleUpdateSettings(e: Event, setting: keyof PieceSettings) {
@@ -344,7 +358,7 @@
                     min="1"
                     step="1"
                     max="100"
-                    on:input={(e) => handleUpdateSettings(e, "size")}
+                    oninput={(e) => handleUpdateSettings(e, "size")}
                 />
             </div>
         </div>
@@ -355,7 +369,7 @@
                 <input
                     value={settings.color}
                     type="color"
-                    on:input={(e) => handleUpdateSettings(e, "color")}
+                    oninput={(e) => handleUpdateSettings(e, "color")}
                 />
             </div>
         </div>

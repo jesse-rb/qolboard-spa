@@ -1,12 +1,20 @@
-<script>
+<script lang="ts">
     import { browser } from "$app/environment";
     import { appStore } from "$lib/store";
-
-    $: if (!$appStore.isAuthenticated) {
-        if (browser) {
-            window.location.assign("/");
-        }
+    interface Props {
+        children?: import("svelte").Snippet;
     }
+
+    let { children }: Props = $props();
+
+    $effect.pre(() => {
+        if (!$appStore.isAuthenticated) {
+            if (browser) {
+                window.location.assign("/");
+            }
+        }
+    });
 </script>
 
-<slot></slot>
+{@render children?.()}
+

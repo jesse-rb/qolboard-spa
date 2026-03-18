@@ -1,24 +1,23 @@
 <script lang="ts">
     import Button from "$lib/components/Button.svelte";
     import { request } from "$lib/http";
-    import { createEventDispatcher, getContext } from "svelte";
+    import { getContext } from "svelte";
     import type { TypeSharedAccess } from "../../types/sharedAccess";
     import { appStore } from "$lib/store";
-    import IfCanvasOwner from "../../IfCanvasOwner.svelte";
     import type { Writable } from "svelte/store";
     import type { Canvas } from "../../types/canvas";
 
-    export let data: TypeSharedAccess;
+    interface Props {
+        data: TypeSharedAccess;
+        dispatchDeleted: Function;
+    }
 
-    const dispatch = createEventDispatcher();
+    let { data, dispatchDeleted }: Props = $props();
+
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
     const isSelf = data.user?.uuid === $appStore.user.uuid;
     const isCanvasOwner = $canvasStore.user?.uuid == $appStore.user.uuid;
-    let deleteIsLoading = false;
-
-    function dispatchDeleted() {
-        dispatch("deleted");
-    }
+    let deleteIsLoading = $state(false);
 
     async function deleteMember() {
         deleteIsLoading = true;

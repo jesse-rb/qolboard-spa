@@ -1,20 +1,19 @@
 <script lang="ts">
-    import { createEventDispatcher } from "svelte";
     import Button from "../Button.svelte";
     import Canvas from "./Canvas.svelte";
     import type { Canvas as TypeCanvas } from "../Canvas/types/canvas";
     import { appStore } from "$lib/store";
 
-    export let canvas: TypeCanvas;
-
-    let name = canvas.canvas_data.name ?? "Give this canvas a name";
-
-    const dispatch = createEventDispatcher();
-    let deleteIsLoading = false;
-
-    function dispatchDeleted() {
-        dispatch("delete");
+    interface Props {
+        canvas: TypeCanvas;
+        dispatchDeleted: Function;
     }
+
+    let { canvas, dispatchDeleted }: Props = $props();
+
+    let name = $derived(canvas.canvas_data.name ?? "Give this canvas a name");
+
+    let deleteIsLoading = $state(false);
 
     async function deleteCanvas() {
         deleteIsLoading = true;
@@ -40,7 +39,7 @@
     }
 </script>
 
-<div title={name} class="flex flex-col gap-2 bg-back_2 p-4 rounded-md w-56">
+<div title={name} class="flex flex-col gap-2 bg-back-2 p-4 rounded-md w-56">
     <a class="no-underline" href="/canvas/{canvas.id}">
         <Canvas id={canvas.id} preview canvasData={canvas} />
     </a>

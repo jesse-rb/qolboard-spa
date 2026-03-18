@@ -2,7 +2,11 @@
     import type { Error } from "$lib/types";
     import { teleport } from "$lib/util";
 
-    export let errors:Array<Error> = [];
+    interface Props {
+        errors?: Array<Error>;
+    }
+
+    let { errors = [] }: Props = $props();
 </script>
 
 {#if errors.length > 0}

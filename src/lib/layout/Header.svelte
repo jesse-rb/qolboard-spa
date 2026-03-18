@@ -8,18 +8,20 @@
 
     injectVercelAnalytics();
 
-    let aboutModal: Modal;
-    let registerModal: Modal;
-    let loginModal: Modal;
+    let aboutModal: Modal | undefined = $state();
+    let registerModal: Modal | undefined = $state();
+    let loginModal: Modal | undefined = $state();
 
-    let logoutIsLoading = false;
+    let logoutIsLoading = $state(false);
 
-    $: if ($appStore.headerHeight) {
-        document.body.style.setProperty(
-            "--header-height",
-            `${$appStore.headerHeight}px`,
-        );
-    }
+    $effect.pre(() => {
+        if ($appStore.headerHeight) {
+            document.body.style.setProperty(
+                "--header-height",
+                `${$appStore.headerHeight}px`,
+            );
+        }
+    });
 
     onMount(async () => {
         const urlHashesStr = window.location.hash.substring(1);

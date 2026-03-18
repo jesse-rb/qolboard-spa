@@ -1,6 +1,14 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+    --color-back: #222222;
+    --color-back-2: #2e2e2e;
+    --color-back-3: #383838;
+    --color-back-4: #454055;
+    --color-back-autofill: #e9f0fd;
+    --color-fore: #4fbb7c;
+    --color-fore-2: #71bb4f;
+}
 
 body {
     --color-back: #222222;

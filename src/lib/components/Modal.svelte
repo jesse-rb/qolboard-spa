@@ -1,30 +1,43 @@
+<script lang="ts">
+    import { fade, slide } from "svelte/transition";
+    import Button from "./Button.svelte";
+    interface Props {
+        children?: import("svelte").Snippet;
+    }
 
-<script>
-    import { fade, slide } from 'svelte/transition';
-    import Button from './Button.svelte';
-    let open = false;
+    let { children }: Props = $props();
+    let open = $state(false);
 
-    export const toggle = () => {open = !open};
-    export const show = () => {open = true};
-    export const close = () => {open = false};
+    export const toggle = () => {
+        open = !open;
+    };
+    export const show = () => {
+        open = true;
+    };
+    export const close = (e: Event) => {
+        if (e.target == e.currentTarget) {
+            open = false;
+        }
+    };
 </script>
-
 
 {#if open}
     <div class="modal-component">
-        <div transition:fade
-            on:click|self={close}
-            on:keydown={close}
+        <div
+            transition:fade
+            onclick={close}
+            onkeydown={close}
             role="button"
             tabindex="-1"
-            class="modal-component outer" >
+            class="modal-component outer"
+        >
             <!--empty div to simulate containing div with opacity that does not affect child elements opacity-->
         </div>
         <div transition:slide class="inner">
             <div class="close-button">
                 <Button icon="close" onclick={toggle} />
             </div>
-            <slot></slot>
+            {@render children?.()}
         </div>
     </div>
 {/if}
@@ -66,3 +79,4 @@
         top: 0px;
     }
 </style>
+

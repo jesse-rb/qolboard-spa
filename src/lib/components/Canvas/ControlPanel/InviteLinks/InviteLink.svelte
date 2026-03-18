@@ -1,18 +1,16 @@
 <script lang="ts">
-    import { createEventDispatcher, getContext } from "svelte";
     import Button from "$lib/components/Button.svelte";
     import type { TypeInviteLink } from "../../types/inviteLink";
     import { request } from "$lib/http";
     import IfCanvasOwner from "../../IfCanvasOwner.svelte";
 
-    export let data: TypeInviteLink;
-    let deleteIsLoading = false;
-
-    const dispatch = createEventDispatcher();
-
-    function dispatchDeleted() {
-        dispatch("deleted");
+    interface Props {
+        data: TypeInviteLink;
+        dispatchDeleted: Function;
     }
+
+    let { data, dispatchDeleted }: Props = $props();
+    let deleteIsLoading = $state(false);
 
     function copyLinkToClipboard() {
         navigator.clipboard.writeText(data.link);

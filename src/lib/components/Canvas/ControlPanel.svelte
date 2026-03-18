@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { getContext, createEventDispatcher, SvelteComponent } from "svelte";
+    import { getContext } from "svelte";
     import Button from "../Button.svelte";
     import Modal from "../Modal.svelte";
     import { CanvasModes } from "./enums/modes";
@@ -12,39 +12,37 @@
     import type { Canvas } from "./types/canvas";
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
-    const dispatch = createEventDispatcher();
 
-    export let saveIsLoading = false;
-    let isExpanded = false;
-
-    $: if ($appStore.controlPanelWidth) {
-        document.body.style.setProperty(
-            "--control-panel-width",
-            `${$appStore.controlPanelWidth}px`,
-        );
+    interface Props {
+        setActiveMode: Function;
+        action: Function;
+        updatedBackgroundColor: Function;
+        updatedCanvasData: Function;
+        save: Function;
+        saveIsLoading?: boolean;
     }
 
-    let brushSettingsModal: SvelteComponent;
+    let {
+        saveIsLoading = false,
+        setActiveMode,
+        action,
+        updatedBackgroundColor,
+        updatedCanvasData,
+        save,
+    }: Props = $props();
 
-    function dispatchSetActiveMode(mode: CanvasModes) {
-        dispatch("setActiveMode", mode);
-    }
+    let isExpanded = $state(false);
 
-    function dispatchAction(action: CanvasActions) {
-        dispatch("action", action);
-    }
+    $effect(() => {
+        if ($appStore.controlPanelWidth) {
+            document.body.style.setProperty(
+                "--control-panel-width",
+                `${$appStore.controlPanelWidth}px`,
+            );
+        }
+    });
 
-    function dispatchUpdatedBackgroundColor() {
-        dispatch("updatedBackgroundColor");
-    }
-
-    function dispatchUpdatedCanvasData() {
-        dispatch("updatedCanvasData");
-    }
-
-    function dispatchSave() {
-        dispatch("save");
-    }
+    let brushSettingsModal: Modal | null = $state(null);
 </script>
 
 <div
@@ -71,7 +69,7 @@
                 <Button
                     icon="save"
                     label={isExpanded ? "save" : ""}
-                    onclick={dispatchSave}
+                    onclick={save}
                     isLoading={saveIsLoading}
                 />
             {/if}
@@ -80,14 +78,12 @@
         {#if $appStore.isAuthenticated}
             <div class="control-group sticky">
                 {#if isExpanded}
-                    <h1>
-                        <input
-                            class="w-full"
-                            type="text"
-                            bind:value={$canvasStore.canvas_data.name}
-                            on:change={dispatchUpdatedCanvasData}
-                        />
-                    </h1>
+                    <input
+                        class="w-full font-bold text-2xl"
+                        type="text"
+                        bind:value={$canvasStore.canvas_data.name}
+                        onchange={() => updatedCanvasData()}
+                    />
                 {/if}
             </div>
         {/if}
@@ -99,25 +95,25 @@
             icon="brush"
             active={$canvasStore.canvas_data.activeMode == CanvasModes.Draw}
             label={isExpanded ? "draw" : ""}
-            onclick={() => dispatchSetActiveMode(CanvasModes.Draw)}
+            onclick={() => setActiveMode(CanvasModes.Draw)}
         />
         <Button
             icon="pan_tool_alt"
             active={$canvasStore.canvas_data.activeMode == CanvasModes.Grab}
             label={isExpanded ? "grab" : ""}
-            onclick={() => dispatchSetActiveMode(CanvasModes.Grab)}
+            onclick={() => setActiveMode(CanvasModes.Grab)}
         />
         <Button
             icon="pan_tool"
             active={$canvasStore.canvas_data.activeMode == CanvasModes.Pan}
             label={isExpanded ? "pan (Hold Space)" : ""}
-            onclick={() => dispatchSetActiveMode(CanvasModes.Pan)}
+            onclick={() => setActiveMode(CanvasModes.Pan)}
         />
         <Button
             icon="delete"
             active={$canvasStore.canvas_data.activeMode == CanvasModes.Remove}
             label={isExpanded ? "remove" : ""}
-            onclick={() => dispatchSetActiveMode(CanvasModes.Remove)}
+            onclick={() => setActiveMode(CanvasModes.Remove)}
         />
     </div>
 
@@ -130,8 +126,10 @@
             <input
                 bind:value={$canvasStore.canvas_data.backgroundColor}
                 type="color"
-                on:change={dispatchUpdatedBackgroundColor}
-                on:change={dispatchUpdatedCanvasData}
+                onchange={() => {
+                    updatedBackgroundColor();
+                    updatedCanvasData();
+                }}
             />
         </div>
         <div class="control">
@@ -157,7 +155,7 @@
             <Button
                 icon="clear_all"
                 label={isExpanded ? "clear all" : ""}
-                onclick={() => dispatchAction(CanvasActions.Clear)}
+                onclick={() => action(CanvasActions.Clear)}
             />
         </div>
     </div>
@@ -197,6 +195,8 @@
 <Modal bind:this={brushSettingsModal}></Modal>
 
 <style lang="postcss">
+    @reference "../../app.css";
+
     .control-panel {
         @apply gap-12;
         @apply absolute;
