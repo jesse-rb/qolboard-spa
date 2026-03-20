@@ -539,7 +539,8 @@
         draw();
     }
 
-    function setMouseDown(e: MouseEvent, _mouseDown: boolean) {
+    function setMouseDown(e: PointerEvent, _mouseDown: boolean) {
+        console.log("pointer down, up, leave");
         e.preventDefault();
         $store.canvas_data.mouseDown = _mouseDown;
 
@@ -564,7 +565,7 @@
         }
     }
 
-    function setMousePos(e: MouseEvent) {
+    function setMousePos(e: PointerEvent) {
         const _canvasOffsetLeft = elemCanvas?.offsetLeft ?? 0;
         const _canvasOffsetTop = elemCanvas?.offsetTop ?? 0;
         const scrollOffsetX = document.documentElement.scrollLeft;
@@ -716,10 +717,10 @@
                 bind:this={elemCanvas}
                 width="{$store.canvas_data.width}px"
                 height="{$store.canvas_data.height}px"
-                onmousedown={(e) => setMouseDown(e, true)}
-                onmouseup={(e) => setMouseDown(e, false)}
-                onmouseleave={(e) => setMouseDown(e, false)}
-                onmousemove={(e) => setMousePos(e)}
+                onpointerdown={(e) => setMouseDown(e, true)}
+                onpointerup={(e) => setMouseDown(e, false)}
+                onpointerleave={(e) => setMouseDown(e, false)}
+                onpointermove={(e) => setMousePos(e)}
             ></canvas>
         </div>
 
