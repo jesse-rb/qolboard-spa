@@ -50,7 +50,7 @@
 
     // For mobile style gestures we need to keep track of/handle multiple pointers
     const activePointers = new Map<number, { x: number; y: number }>();
-    let startingDistanceBetweenPointers: number = 0;
+    let prevDistanceBetweenPointers: number = 0;
 
     // Allow each canvas instance to have it's own separate store instance (not a shared store)
     const store: Writable<Canvas> = writable({
@@ -556,22 +556,12 @@
         }
 
         // Automatically go in, and out of pan mode for multiple pointers
-        if (activePointers.size == 2) {
-            overiddenActiveMode = $store.canvas_data.activeMode;
-            setActiveMode(CanvasModes.Pan);
-            const [p1, p2] = [...activePointers.values()];
-            startingDistanceBetweenPointers = distanceBetweenPointers(p1, p2);
-            return;
-        } else if (
-            activePointers.size <= 1 &&
+        if (
+            activePointers.size == 2 &&
             $store.canvas_data.activeMode === CanvasModes.Pan
         ) {
-            if (overiddenActiveMode) {
-                setActiveMode(overiddenActiveMode);
-            }
-            overiddenActiveMode = null;
-            $store.canvas_data.mouseDown = false;
-            startingDistanceBetweenPointers = 0;
+            const [p1, p2] = [...activePointers.values()];
+            prevDistanceBetweenPointers = distanceBetweenPointers(p1, p2);
         }
 
         setMousePos(e); // For mobile onpointermove only runs when the "mouse/finger/pointer" is actually "pressed down", so we need to ensure we update pos before hadnling setMouseDown
@@ -655,10 +645,17 @@
             // Handle a mobile style pinch zoom if we have two active pointers
             if (activePointers.size >= 2) {
                 const [p1, p2] = [...activePointers.values()];
-                const distance: number = distanceBetweenPointers(p1, p2);
-                const delta = distance - startingDistanceBetweenPointers;
+                const currentDistanceBetweenPointers: number =
+                    distanceBetweenPointers(p1, p2);
+                const delta =
+                    currentDistanceBetweenPointers -
+                    prevDistanceBetweenPointers;
 
-                scaleCanvas(delta, 0.001);
+                prevDistanceBetweenPointers = currentDistanceBetweenPointers;
+
+                if (delta > 10 || delta < 10) {
+                    scaleCanvas(delta, 0.001);
+                }
             }
         }
 
