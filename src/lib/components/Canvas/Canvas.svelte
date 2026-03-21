@@ -147,34 +147,7 @@
             });
             elemCanvas.addEventListener("wheel", (e) => {
                 const wheelDeltaY = e.deltaY;
-                const zoom = wheelDeltaY < 0 ? 100 / 90 : 90 / 100; // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
-                $store.canvas_data.ctx?.scale(zoom, zoom);
-
-                const oldZoom = $store.canvas_data.zoom;
-                $store.canvas_data.zoom = $store.canvas_data.zoom * zoom;
-
-                // Pan according to zoom, to center canvas after zoom
-                let dx =
-                    Math.abs(
-                        ($store.canvas_data.width ?? 0) /
-                            $store.canvas_data.zoom -
-                            ($store.canvas_data.width ?? 0) / oldZoom,
-                    ) / 2;
-                let dy =
-                    Math.abs(
-                        ($store.canvas_data.height ?? 0) /
-                            $store.canvas_data.zoom -
-                            ($store.canvas_data.height ?? 0) / oldZoom,
-                    ) / 2;
-
-                dx = dx * (wheelDeltaY > 0 ? 1 : -1);
-                dy = dy * (wheelDeltaY > 0 ? 1 : -1);
-
-                $store.canvas_data.zoomDx += dx;
-                $store.canvas_data.zoomDy += dy;
-
-                getPiecesManager().pan(dx, dy);
-                draw();
+                scaleCanvas(wheelDeltaY);
             });
         }
 
@@ -189,6 +162,35 @@
 
         await draw();
     });
+
+    function scaleCanvas(delta: number) {
+        const zoom = delta < 0 ? 100 / 90 : 90 / 100; // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
+        $store.canvas_data.ctx?.scale(zoom, zoom);
+
+        const oldZoom = $store.canvas_data.zoom;
+        $store.canvas_data.zoom = $store.canvas_data.zoom * zoom;
+
+        // Pan according to zoom, to center canvas after zoom
+        let dx =
+            Math.abs(
+                ($store.canvas_data.width ?? 0) / $store.canvas_data.zoom -
+                    ($store.canvas_data.width ?? 0) / oldZoom,
+            ) / 2;
+        let dy =
+            Math.abs(
+                ($store.canvas_data.height ?? 0) / $store.canvas_data.zoom -
+                    ($store.canvas_data.height ?? 0) / oldZoom,
+            ) / 2;
+
+        dx = dx * (delta > 0 ? 1 : -1);
+        dy = dy * (delta > 0 ? 1 : -1);
+
+        $store.canvas_data.zoomDx += dx;
+        $store.canvas_data.zoomDy += dy;
+
+        getPiecesManager().pan(dx, dy);
+        draw();
+    }
 
     onDestroy(() => {
         if (ws) {
@@ -650,10 +652,9 @@
             // Handle a mobile style pinch zoom if we have two active pointers
             if (activePointers.size >= 2) {
                 const [p1, p2] = [...activePointers.values()];
-                const currentDistance = distanceBetweenPointers(p1, p2);
+                const delta = distanceBetweenPointers(p1, p2);
 
-                const scale = currentDistance / $store.canvas_data.zoom;
-                $store.canvas_data.zoom = $store.canvas_data.zoom * scale;
+                scaleCanvas(delta);
             }
         }
 
