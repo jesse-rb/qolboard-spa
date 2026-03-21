@@ -555,13 +555,18 @@
             activePointers.delete(e.pointerId);
         }
 
-        // Automatically go in, and out of pan mode for multiple pointers
+        // Get initial distance between pointers
         if (
             activePointers.size == 2 &&
             $store.canvas_data.activeMode === CanvasModes.Pan
         ) {
             const [p1, p2] = [...activePointers.values()];
             prevDistanceBetweenPointers = distanceBetweenPointers(p1, p2);
+        }
+
+        if (activePointers.size > 1) {
+            // Past this point is only applicable for 1 pointer
+            return;
         }
 
         setMousePos(e); // For mobile onpointermove only runs when the "mouse/finger/pointer" is actually "pressed down", so we need to ensure we update pos before hadnling setMouseDown
@@ -589,6 +594,25 @@
     }
 
     function setMousePos(e: PointerEvent) {
+        // Handle a mobile style pinch zoom if we have two active pointers
+        if (
+            $store.canvas_data.activeMode === CanvasModes.Pan &&
+            activePointers.size >= 2
+        ) {
+            const [p1, p2] = [...activePointers.values()];
+            const currentDistanceBetweenPointers: number =
+                distanceBetweenPointers(p1, p2);
+            const delta =
+                currentDistanceBetweenPointers - prevDistanceBetweenPointers;
+
+            prevDistanceBetweenPointers = currentDistanceBetweenPointers;
+
+            if (delta > 100 || delta < 100) {
+                scaleCanvas(delta, 0.001);
+            }
+            return;
+        }
+
         const _canvasOffsetLeft = elemCanvas?.offsetLeft ?? 0;
         const _canvasOffsetTop = elemCanvas?.offsetTop ?? 0;
         const scrollOffsetX = document.documentElement.scrollLeft;
@@ -641,22 +665,6 @@
                 $store.canvas_data.mouseX - $store.canvas_data.prevMouseX;
             $store.canvas_data.yPan +=
                 $store.canvas_data.mouseY - $store.canvas_data.prevMouseY;
-
-            // Handle a mobile style pinch zoom if we have two active pointers
-            if (activePointers.size >= 2) {
-                const [p1, p2] = [...activePointers.values()];
-                const currentDistanceBetweenPointers: number =
-                    distanceBetweenPointers(p1, p2);
-                const delta =
-                    currentDistanceBetweenPointers -
-                    prevDistanceBetweenPointers;
-
-                prevDistanceBetweenPointers = currentDistanceBetweenPointers;
-
-                if (delta > 10 || delta < 10) {
-                    scaleCanvas(delta, 0.001);
-                }
-            }
         }
 
         if (
