@@ -148,7 +148,7 @@
             });
             elemCanvas.addEventListener("wheel", (e) => {
                 const wheelDeltaY = e.deltaY;
-                scaleCanvas(wheelDeltaY);
+                scaleCanvas(wheelDeltaY, 0.1);
             });
         }
 
@@ -164,8 +164,8 @@
         await draw();
     });
 
-    function scaleCanvas(delta: number) {
-        const zoom = delta < 0 ? 100 / 90 : 90 / 100; // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
+    function scaleCanvas(delta: number, step: number) {
+        const zoom = delta < 0 ? 1 - step : 1 / (1 - step); // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
         $store.canvas_data.ctx?.scale(zoom, zoom);
 
         const oldZoom = $store.canvas_data.zoom;
@@ -656,10 +656,9 @@
             if (activePointers.size >= 2) {
                 const [p1, p2] = [...activePointers.values()];
                 const distance: number = distanceBetweenPointers(p1, p2);
-                const delta =
-                    (distance - startingDistanceBetweenPointers) / 100;
+                const delta = distance - startingDistanceBetweenPointers;
 
-                scaleCanvas(delta);
+                scaleCanvas(delta, 0.001);
             }
         }
 
@@ -747,7 +746,6 @@
     />
 {:else}
     <Cursors {cursors} />
-
     <div class="canvas-component">
         <ControlPanel
             {saveIsLoading}
