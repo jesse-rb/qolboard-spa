@@ -540,8 +540,8 @@
     }
 
     function setMouseDown(e: PointerEvent, _mouseDown: boolean) {
-        console.log("pointer down, up, leave");
         e.preventDefault();
+        setMousePos(e); // For mobile onpointermove only runs when the "mouse/finger/pointer" is actually "pressed down", so we need to ensure we update pos before hadnling setMouseDown
         $store.canvas_data.mouseDown = _mouseDown;
 
         if (
@@ -713,14 +713,14 @@
             class="canvas-container absolute right-0 bottom-0 left-0 -z-10"
         >
             <canvas
-                class="absolute hover:cursor-crosshair"
+                class="absolute hover:cursor-crosshair touch-none"
                 bind:this={elemCanvas}
                 width="{$store.canvas_data.width}px"
                 height="{$store.canvas_data.height}px"
+                onpointermove={(e) => setMousePos(e)}
                 onpointerdown={(e) => setMouseDown(e, true)}
                 onpointerup={(e) => setMouseDown(e, false)}
                 onpointerleave={(e) => setMouseDown(e, false)}
-                onpointermove={(e) => setMousePos(e)}
             ></canvas>
         </div>
 
