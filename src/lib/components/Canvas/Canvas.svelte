@@ -572,7 +572,6 @@
             overiddenActiveMode = null;
             $store.canvas_data.mouseDown = false;
             startingDistanceBetweenPointers = 0;
-            return;
         }
 
         setMousePos(e); // For mobile onpointermove only runs when the "mouse/finger/pointer" is actually "pressed down", so we need to ensure we update pos before hadnling setMouseDown
@@ -657,7 +656,8 @@
             if (activePointers.size >= 2) {
                 const [p1, p2] = [...activePointers.values()];
                 const distance: number = distanceBetweenPointers(p1, p2);
-                const delta = startingDistanceBetweenPointers - distance;
+                const delta =
+                    (distance - startingDistanceBetweenPointers) / 100;
 
                 scaleCanvas(delta);
             }
