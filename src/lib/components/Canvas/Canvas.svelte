@@ -50,6 +50,7 @@
 
     // For mobile style gestures we need to keep track of/handle multiple pointers
     const activePointers = new Map<number, { x: number; y: number }>();
+    let startingDistanceBetweenPointers: number = 0;
 
     // Allow each canvas instance to have it's own separate store instance (not a shared store)
     const store: Writable<Canvas> = writable({
@@ -555,19 +556,22 @@
         }
 
         // Automatically go in, and out of pan mode for multiple pointers
-        if (activePointers.size > 1) {
+        if (activePointers.size == 2) {
             overiddenActiveMode = $store.canvas_data.activeMode;
             setActiveMode(CanvasModes.Pan);
+            const [p1, p2] = [...activePointers.values()];
+            startingDistanceBetweenPointers = distanceBetweenPointers(p1, p2);
             return;
         } else if (
-            $store.canvas_data.activeMode === CanvasModes.Pan &&
-            activePointers.size === 1
+            activePointers.size <= 1 &&
+            $store.canvas_data.activeMode === CanvasModes.Pan
         ) {
             if (overiddenActiveMode) {
                 setActiveMode(overiddenActiveMode);
             }
             overiddenActiveMode = null;
             $store.canvas_data.mouseDown = false;
+            startingDistanceBetweenPointers = 0;
             return;
         }
 
@@ -652,7 +656,8 @@
             // Handle a mobile style pinch zoom if we have two active pointers
             if (activePointers.size >= 2) {
                 const [p1, p2] = [...activePointers.values()];
-                const delta = distanceBetweenPointers(p1, p2);
+                const distance: number = distanceBetweenPointers(p1, p2);
+                const delta = startingDistanceBetweenPointers - distance;
 
                 scaleCanvas(delta);
             }
