@@ -48,6 +48,9 @@
 
     let addingPieceIndex = 0;
 
+    // For mobile style gestures we need to keep track of/handle multiple pointers
+    const activePointers = new Map<number, { x: number; y: number }>();
+
     // Allow each canvas instance to have it's own separate store instance (not a shared store)
     const store: Writable<Canvas> = writable({
         canvas_data: {
@@ -541,6 +544,31 @@
 
     function setMouseDown(e: PointerEvent, _mouseDown: boolean) {
         e.preventDefault();
+
+        // Keep track of multiple pointers for mobile style pointers
+        if (_mouseDown) {
+            activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        } else {
+            activePointers.delete(e.pointerId);
+        }
+
+        // Automatically go in, and out of pan mode for multiple pointers
+        if (activePointers.size > 1) {
+            overiddenActiveMode = $store.canvas_data.activeMode;
+            setActiveMode(CanvasModes.Pan);
+            return;
+        } else if (
+            $store.canvas_data.activeMode === CanvasModes.Pan &&
+            activePointers.size === 1
+        ) {
+            if (overiddenActiveMode) {
+                setActiveMode(overiddenActiveMode);
+            }
+            overiddenActiveMode = null;
+            $store.canvas_data.mouseDown = false;
+            return;
+        }
+
         setMousePos(e); // For mobile onpointermove only runs when the "mouse/finger/pointer" is actually "pressed down", so we need to ensure we update pos before hadnling setMouseDown
         $store.canvas_data.mouseDown = _mouseDown;
 
@@ -618,6 +646,15 @@
                 $store.canvas_data.mouseX - $store.canvas_data.prevMouseX;
             $store.canvas_data.yPan +=
                 $store.canvas_data.mouseY - $store.canvas_data.prevMouseY;
+
+            // Handle a mobile style pinch zoom if we have two active pointers
+            if (activePointers.size >= 2) {
+                const [p1, p2] = [...activePointers.values()];
+                const currentDistance = distanceBetweenPointers(p1, p2);
+
+                const scale = currentDistance / $store.canvas_data.zoom;
+                $store.canvas_data.zoom = $store.canvas_data.zoom * scale;
+            }
         }
 
         if (
@@ -629,6 +666,15 @@
         }
 
         websocketMouseMove();
+    }
+
+    function distanceBetweenPointers(
+        a: { x: number; y: number },
+        b: { x: number; y: number },
+    ) {
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        return Math.hypot(dx, dy);
     }
 
     function setActiveMode(mode: CanvasModes) {
