@@ -50,7 +50,7 @@
 
     // For mobile style gestures we need to keep track of/handle multiple pointers
     const activePointers = new Map<number, { x: number; y: number }>();
-    let prevDistanceBetweenPointers: number = 0;
+    let prevDistanceBetweenPointers: number = $state(0);
 
     // Allow each canvas instance to have it's own separate store instance (not a shared store)
     const store: Writable<Canvas> = writable({
@@ -165,7 +165,7 @@
     });
 
     function scaleCanvas(delta: number, step: number) {
-        const zoom = delta < 0 ? 1 - step : 1 / (1 - step); // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
+        const zoom = delta > 0 ? 1 - step : 1 / (1 - step); // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
         $store.canvas_data.ctx?.scale(zoom, zoom);
 
         const oldZoom = $store.canvas_data.zoom;
@@ -547,24 +547,30 @@
 
     function setMouseDown(e: PointerEvent, _mouseDown: boolean) {
         e.preventDefault();
-
         // Keep track of multiple pointers for mobile style pointers
+        const wasMoreThanOneActivePointer = activePointers.size > 1;
         if (_mouseDown) {
             activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
         } else {
             activePointers.delete(e.pointerId);
         }
+        const isMoreThanOneActivePointer = activePointers.size > 1;
+
+        if (!isMoreThanOneActivePointer) {
+            prevDistanceBetweenPointers = 0;
+        }
 
         // Get initial distance between pointers
         if (
-            activePointers.size == 2 &&
-            $store.canvas_data.activeMode === CanvasModes.Pan
+            isMoreThanOneActivePointer &&
+            $store.canvas_data.activeMode === CanvasModes.Pan &&
+            prevDistanceBetweenPointers === 0
         ) {
             const [p1, p2] = [...activePointers.values()];
             prevDistanceBetweenPointers = distanceBetweenPointers(p1, p2);
         }
 
-        if (activePointers.size > 1) {
+        if (wasMoreThanOneActivePointer) {
             // Past this point is only applicable for 1 pointer
             return;
         }
@@ -594,10 +600,17 @@
     }
 
     function setMousePos(e: PointerEvent) {
+        const isMoreThanOneActivePointer = activePointers.size > 1;
+
+        // Update our record of active pointers X and Y pos
+        if (activePointers.has(e.pointerId)) {
+            activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        }
+
         // Handle a mobile style pinch zoom if we have two active pointers
         if (
             $store.canvas_data.activeMode === CanvasModes.Pan &&
-            activePointers.size >= 2
+            isMoreThanOneActivePointer
         ) {
             const [p1, p2] = [...activePointers.values()];
             const currentDistanceBetweenPointers: number =
@@ -605,11 +618,18 @@
             const delta =
                 currentDistanceBetweenPointers - prevDistanceBetweenPointers;
 
-            prevDistanceBetweenPointers = currentDistanceBetweenPointers;
-
-            if (delta > 100 || delta < 100) {
-                scaleCanvas(delta, 0.001);
+            currentDistanceBetweenPointers;
+            if (delta < -1 || delta > 1) {
+                scaleCanvas(delta * -1, 0.02);
+                prevDistanceBetweenPointers = currentDistanceBetweenPointers;
             }
+            return;
+        }
+        if (
+            isMoreThanOneActivePointer ||
+            e.type === "pointerup" ||
+            e.type === "pointerleave"
+        ) {
             return;
         }
 
