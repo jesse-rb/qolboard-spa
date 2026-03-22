@@ -80,6 +80,18 @@ em {
     font-style: normal;
 }
 
+.debug {
+    z-index: 99999999999999999;
+    background-color: black;
+    padding: 1em;
+    color: red;
+    position: fixed;
+    left: 25px;
+    top: 25px;
+    max-width: 100vw;
+    overflow: scroll;
+}
+
 
 /*
     Style our scroll bar (thank you w3schools)

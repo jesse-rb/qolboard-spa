@@ -48,6 +48,10 @@
 
     let addingPieceIndex = 0;
 
+    // For mobile style gestures we need to keep track of/handle multiple pointers
+    const activePointers = new Map<number, { x: number; y: number }>();
+    let prevDistanceBetweenPointers: number = $state(0);
+
     // Allow each canvas instance to have it's own separate store instance (not a shared store)
     const store: Writable<Canvas> = writable({
         canvas_data: {
@@ -144,34 +148,7 @@
             });
             elemCanvas.addEventListener("wheel", (e) => {
                 const wheelDeltaY = e.deltaY;
-                const zoom = wheelDeltaY < 0 ? 100 / 90 : 90 / 100; // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
-                $store.canvas_data.ctx?.scale(zoom, zoom);
-
-                const oldZoom = $store.canvas_data.zoom;
-                $store.canvas_data.zoom = $store.canvas_data.zoom * zoom;
-
-                // Pan according to zoom, to center canvas after zoom
-                let dx =
-                    Math.abs(
-                        ($store.canvas_data.width ?? 0) /
-                            $store.canvas_data.zoom -
-                            ($store.canvas_data.width ?? 0) / oldZoom,
-                    ) / 2;
-                let dy =
-                    Math.abs(
-                        ($store.canvas_data.height ?? 0) /
-                            $store.canvas_data.zoom -
-                            ($store.canvas_data.height ?? 0) / oldZoom,
-                    ) / 2;
-
-                dx = dx * (wheelDeltaY > 0 ? 1 : -1);
-                dy = dy * (wheelDeltaY > 0 ? 1 : -1);
-
-                $store.canvas_data.zoomDx += dx;
-                $store.canvas_data.zoomDy += dy;
-
-                getPiecesManager().pan(dx, dy);
-                draw();
+                scaleCanvas(wheelDeltaY, 0.1);
             });
         }
 
@@ -186,6 +163,35 @@
 
         await draw();
     });
+
+    function scaleCanvas(delta: number, step: number) {
+        const zoom = delta > 0 ? 1 - step : 1 / (1 - step); // Once again the answer was in the original qolboard codebase. Not falling for ? 1.05 : 0.95 again! lol >:(
+        $store.canvas_data.ctx?.scale(zoom, zoom);
+
+        const oldZoom = $store.canvas_data.zoom;
+        $store.canvas_data.zoom = $store.canvas_data.zoom * zoom;
+
+        // Pan according to zoom, to center canvas after zoom
+        let dx =
+            Math.abs(
+                ($store.canvas_data.width ?? 0) / $store.canvas_data.zoom -
+                    ($store.canvas_data.width ?? 0) / oldZoom,
+            ) / 2;
+        let dy =
+            Math.abs(
+                ($store.canvas_data.height ?? 0) / $store.canvas_data.zoom -
+                    ($store.canvas_data.height ?? 0) / oldZoom,
+            ) / 2;
+
+        dx = dx * (delta > 0 ? 1 : -1);
+        dy = dy * (delta > 0 ? 1 : -1);
+
+        $store.canvas_data.zoomDx += dx;
+        $store.canvas_data.zoomDy += dy;
+
+        getPiecesManager().pan(dx, dy);
+        draw();
+    }
 
     onDestroy(() => {
         if (ws) {
@@ -539,8 +545,37 @@
         draw();
     }
 
-    function setMouseDown(e: MouseEvent, _mouseDown: boolean) {
+    function setMouseDown(e: PointerEvent, _mouseDown: boolean) {
         e.preventDefault();
+        // Keep track of multiple pointers for mobile style pointers
+        const wasMoreThanOneActivePointer = activePointers.size > 1;
+        if (_mouseDown) {
+            activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        } else {
+            activePointers.delete(e.pointerId);
+        }
+        const isMoreThanOneActivePointer = activePointers.size > 1;
+
+        if (!isMoreThanOneActivePointer) {
+            prevDistanceBetweenPointers = 0;
+        }
+
+        // Get initial distance between pointers
+        if (
+            isMoreThanOneActivePointer &&
+            $store.canvas_data.activeMode === CanvasModes.Pan &&
+            prevDistanceBetweenPointers === 0
+        ) {
+            const [p1, p2] = [...activePointers.values()];
+            prevDistanceBetweenPointers = distanceBetweenPointers(p1, p2);
+        }
+
+        if (wasMoreThanOneActivePointer) {
+            // Past this point is only applicable for 1 pointer
+            return;
+        }
+
+        setMousePos(e); // For mobile onpointermove only runs when the "mouse/finger/pointer" is actually "pressed down", so we need to ensure we update pos before hadnling setMouseDown
         $store.canvas_data.mouseDown = _mouseDown;
 
         if (
@@ -564,7 +599,40 @@
         }
     }
 
-    function setMousePos(e: MouseEvent) {
+    function setMousePos(e: PointerEvent) {
+        const isMoreThanOneActivePointer = activePointers.size > 1;
+
+        // Update our record of active pointers X and Y pos
+        if (activePointers.has(e.pointerId)) {
+            activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        }
+
+        // Handle a mobile style pinch zoom if we have two active pointers
+        if (
+            $store.canvas_data.activeMode === CanvasModes.Pan &&
+            isMoreThanOneActivePointer
+        ) {
+            const [p1, p2] = [...activePointers.values()];
+            const currentDistanceBetweenPointers: number =
+                distanceBetweenPointers(p1, p2);
+            const delta =
+                currentDistanceBetweenPointers - prevDistanceBetweenPointers;
+
+            currentDistanceBetweenPointers;
+            if (delta < -1 || delta > 1) {
+                scaleCanvas(delta * -1, 0.02);
+                prevDistanceBetweenPointers = currentDistanceBetweenPointers;
+            }
+            return;
+        }
+        if (
+            isMoreThanOneActivePointer ||
+            e.type === "pointerup" ||
+            e.type === "pointerleave"
+        ) {
+            return;
+        }
+
         const _canvasOffsetLeft = elemCanvas?.offsetLeft ?? 0;
         const _canvasOffsetTop = elemCanvas?.offsetTop ?? 0;
         const scrollOffsetX = document.documentElement.scrollLeft;
@@ -628,6 +696,15 @@
         }
 
         websocketMouseMove();
+    }
+
+    function distanceBetweenPointers(
+        a: { x: number; y: number },
+        b: { x: number; y: number },
+    ) {
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        return Math.hypot(dx, dy);
     }
 
     function setActiveMode(mode: CanvasModes) {
@@ -694,7 +771,6 @@
     />
 {:else}
     <Cursors {cursors} />
-
     <div class="canvas-component">
         <ControlPanel
             {saveIsLoading}
@@ -712,14 +788,14 @@
             class="canvas-container absolute right-0 bottom-0 left-0 -z-10"
         >
             <canvas
-                class="absolute hover:cursor-crosshair"
+                class="absolute hover:cursor-crosshair touch-none"
                 bind:this={elemCanvas}
                 width="{$store.canvas_data.width}px"
                 height="{$store.canvas_data.height}px"
-                onmousedown={(e) => setMouseDown(e, true)}
-                onmouseup={(e) => setMouseDown(e, false)}
-                onmouseleave={(e) => setMouseDown(e, false)}
-                onmousemove={(e) => setMousePos(e)}
+                onpointermove={(e) => setMousePos(e)}
+                onpointerdown={(e) => setMouseDown(e, true)}
+                onpointerup={(e) => setMouseDown(e, false)}
+                onpointerleave={(e) => setMouseDown(e, false)}
             ></canvas>
         </div>
 
