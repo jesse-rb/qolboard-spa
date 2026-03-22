@@ -11,7 +11,7 @@ export type AppStore = {
 
 export const appStore: Writable<AppStore> = writable({
     registeredEmail: null,
-    isAuthenticated: true,
+    isAuthenticated: false,
     user: {
         email: "",
         uuid: "",
@@ -25,21 +25,30 @@ export async function getUser() {
     const path = "user";
     const url = `${domain}/${path}`;
 
-    const response = await fetch(url, {
-        method: "GET",
-        credentials: "include",
-    });
-
-    if (response.ok) {
-        const responseBody = await response.json();
-        appStore.update((store) => {
-            store.isAuthenticated = true;
-            store.user = responseBody.data;
-
-            return store;
+    let ok: boolean = false;
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            credentials: "include",
         });
+
+        if (response.ok) {
+            ok = true
+
+            const responseBody = await response.json();
+            appStore.update((store) => {
+                store.isAuthenticated = true;
+                store.user = responseBody.data;
+
+                return store;
+            });
+        }
     }
-    else {
+    catch {
+        ok = false
+    }
+
+    if (!ok) {
         appStore.update((store) => {
             store.isAuthenticated = false;
             store.user.email = "";
