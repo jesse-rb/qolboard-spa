@@ -9,7 +9,7 @@
     let { isExpanded } = $props();
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
-    const isCanvasOwner = $canvasStore.user?.uuid == $appStore.user.uuid;
+    const isCanvasOwner = $canvasStore.user?.id == $appStore.user.id;
 
     onMount(() => {});
 </script>

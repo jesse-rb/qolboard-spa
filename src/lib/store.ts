@@ -3,6 +3,7 @@ import type { TypeUser } from "./types/user";
 
 export type AppStore = {
     registeredEmail: string | null
+    checkedIsAuthenticated: boolean
     isAuthenticated: boolean
     user: TypeUser
     headerHeight: number
@@ -11,10 +12,11 @@ export type AppStore = {
 
 export const appStore: Writable<AppStore> = writable({
     registeredEmail: null,
+    checkedIsAuthenticated: false,
     isAuthenticated: false,
     user: {
         email: "",
-        uuid: "",
+        id: "",
     },
     headerHeight: 0,
     controlPanelWidth: 0
@@ -37,6 +39,7 @@ export async function getUser() {
 
             const responseBody = await response.json();
             appStore.update((store) => {
+                store.checkedIsAuthenticated = true;
                 store.isAuthenticated = true;
                 store.user = responseBody.data;
 
@@ -50,9 +53,10 @@ export async function getUser() {
 
     if (!ok) {
         appStore.update((store) => {
+            store.checkedIsAuthenticated = true;
             store.isAuthenticated = false;
             store.user.email = "";
-            store.user.uuid = "";
+            store.user.id = "";
 
             return store;
         });

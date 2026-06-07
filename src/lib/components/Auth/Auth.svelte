@@ -8,13 +8,7 @@
 
     type AuthRequestBody = {
         email: string;
-        password: string;
-        password_confirmation?: string;
-    };
-
-    type AuthResponseBody = {
-        user: TypeUser;
-        code: string;
+        otp?: string;
     };
 
     interface Props {
@@ -24,9 +18,9 @@
     let { isRegistration = $bindable(false) }: Props = $props();
 
     let email = $state($appStore.registeredEmail ?? "");
-    let password = $state("");
-    let passwordConfirmation = $state("");
+    let otp = $state("");
     let suggestLogin = $state(false);
+    let showOTP = $state(false);
 
     let isLoading = $state(false);
 
@@ -36,8 +30,7 @@
 
     function resetAuthFields() {
         email = "";
-        password = "";
-        passwordConfirmation = "";
+        otp = "";
     }
 
     async function auth() {
@@ -47,16 +40,15 @@
         isLoading = true;
 
         const domain = import.meta.env.VITE_API_HOST;
-        const path = `auth/${isRegistration ? "register" : "login"}`;
+        const path = `auth/${isRegistration ? "register" : showOTP ? "login" : "request_otp"}`;
         const url = `${domain}/${path}`;
 
         const body: AuthRequestBody = {
             email: email,
-            password: password,
         };
 
-        if (isRegistration) {
-            body.password_confirmation = passwordConfirmation;
+        if (!isRegistration && showOTP) {
+            body.otp = otp;
         }
 
         const response = await fetch(url, {
@@ -75,17 +67,23 @@
             ok = true;
             if (isRegistration) {
                 $appStore.registeredEmail = responseBody.data.email;
-            } else {
+            } else if (showOTP) {
                 getUser();
             }
+
+            if (!isRegistration) {
+                if (showOTP) {
+                    resetAuthFields();
+                } else {
+                    showOTP = true;
+                }
+            }
         } else {
-            if (responseBody.code == "user_already_exists") {
+            if (response.status == 409) {
                 suggestLogin = true;
             }
             errors = responseBody.errors ?? [];
         }
-
-        resetAuthFields();
 
         isLoading = false;
     }
@@ -101,21 +99,19 @@
     }
 </script>
 
-<div class="flex flex-col gap-2">
-    {#if ok}
-        {#if isRegistration}
-            <h2>Thank you for registering</h2>
-            <p>
-                We have sent an email to <em>{$appStore.registeredEmail}</em> with
-                instructions to verify your email address.
-            </p>
-            <Button
-                label="Back to registration"
-                icon="undo"
-                onclick={backToRegistration}
-            />
-            <ResendEmailVerificaitonButton />
-        {/if}
+<div class="flex flex-col gap-2 max-w-96">
+    {#if isRegistration && ok}
+        <h2>Thank you for registering</h2>
+        <p>
+            We have sent an email to <em>{$appStore.registeredEmail}</em> with instructions
+            to verify your email address.
+        </p>
+        <Button
+            label="Back to registration"
+            icon="undo"
+            onclick={backToRegistration}
+        />
+        <ResendEmailVerificaitonButton />
     {:else}
         <div class="flex flex-col">
             <input
@@ -124,30 +120,46 @@
                 type="email"
                 placeholder="Email"
             />
-            <input
-                id="password"
-                bind:value={password}
-                type="password"
-                placeholder="Password"
-            />
-
-            {#if isRegistration}
+            {#if !isRegistration && showOTP}
                 <input
-                    id="password_confirmation"
-                    bind:value={passwordConfirmation}
-                    type="password"
-                    placeholder="Confirm password"
+                    id="otp"
+                    bind:value={otp}
+                    type="text"
+                    placeholder="Temporary Login Code"
                 />
             {/if}
         </div>
 
+        {#if !isRegistration && showOTP}
+            <p>
+                We sent an email to "{email}" containing your OTP login code,
+                please enter it here to login.
+            </p>
+        {/if}
+
         <Button
-            label={isRegistration ? "Register" : "Login"}
+            label={isRegistration ? "Register" : showOTP ? "Login" : "Send OTP"}
             onclick={auth}
-            icon="send"
-            bind:isLoading
+            icon={isRegistration || showOTP ? "send" : "mark_email_unread"}
+            {isLoading}
             disabled={isLoading}
         />
+
+        {#if !isRegistration && !showOTP}
+            <p>
+                We will send a "one time password" (OTP) login code to your
+                email. If you have already requested one, use the button below
+                to enter your OTP.
+            </p>
+            <Button
+                label="Already requested OTP"
+                onclick={() => {
+                    showOTP = true;
+                }}
+                icon="mark_email_read"
+                disabled={isLoading}
+            />
+        {/if}
 
         <Errors {errors} />
 

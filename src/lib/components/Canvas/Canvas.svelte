@@ -21,7 +21,7 @@
     import Piece from "./Piece.svelte";
 
     interface Props {
-        id?: number | null;
+        id?: string | null;
         preview?: boolean;
         canvasData?: CanvasWithoutClientCanvasData | null;
     }
@@ -58,7 +58,7 @@
             ...getDefaultClientCanvasData(),
             ...getDefaultCanvasData(),
         },
-        user_uuid: "",
+        user_id: "",
     });
     setContext("canvasStore", store);
 
@@ -371,8 +371,8 @@
             backgroundColor: "#1A1A1A",
             snapToGrid: false,
             pieceSettings: {
-                size: 20,
-                color: "#D55C1A",
+                size: 5,
+                color: "#A5A5A5",
             },
             rulerSettings: {
                 showUnits: true,
@@ -429,7 +429,7 @@
     }
 
     async function getCanvas(
-        _id: number,
+        _id: string,
     ): Promise<CanvasWithoutClientCanvasData | null> {
         // loading = true;
 
@@ -475,7 +475,7 @@
 
         const canvas: CanvasWithoutClientCanvasData = {
             id: $store.id,
-            user_uuid: $store.user_uuid,
+            user_id: $store.user_id,
             canvas_data: canvas_data,
         };
 

@@ -128,15 +128,19 @@
     }
 
     export function redrawPieceChunk(piece?: Piece, redrawPiece = true) {
+        if (!piece) {
+            return;
+        }
         piece?.clearBoundingBox();
+
         // Only redraw pieces that are inbound of section
         for (const p of pieceRefs) {
             if (p) {
                 if (!redrawPiece && p === piece) {
                     continue;
                 }
-                if (piece?.doesBoundingBoxOverlap(p.getBoundingBox())) {
-                    p?.draw();
+                if (p && piece?.doesBoundingBoxOverlap(p.getBoundingBox())) {
+                    p.draw();
                 }
             }
         }

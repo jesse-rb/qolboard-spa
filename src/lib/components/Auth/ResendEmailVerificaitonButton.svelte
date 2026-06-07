@@ -1,38 +1,39 @@
 <script lang="ts">
     import { appStore } from "$lib/store";
-    import type { Error } from "$lib/types";
+    import type { ShowResponse } from "$lib/types/types";
+    import type { TypeUser } from "$lib/types/user";
+    import type { Error } from "$lib/types/types";
     import Button from "../Button.svelte";
     import Errors from "../Form/Errors.svelte";
 
-    let ok:boolean = false;
-    let isLoading:boolean = $state(false);
-    let errors:Array<Error> = $state([]);
+    let ok: boolean = false;
+    let isLoading: boolean = $state(false);
+    let errors: Array<Error> = $state([]);
 
     async function resendEmailVerification() {
         ok = false;
         isLoading = true;
 
         const domain = import.meta.env.VITE_API_HOST;
-        const path = "auth/resend_verification_email";
+        const path = "auth/register";
         const url = `${domain}/${path}`;
         const body = {
-            email: $appStore.registeredEmail
+            email: $appStore.registeredEmail,
         };
         const response = await fetch(url, {
             method: "POST",
             headers: {
-                "content-type": "application/json"
+                "content-type": "application/json",
             },
             credentials: "include",
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
         });
 
-        const responseBody = await response.json();
+        const responseBody: ShowResponse<TypeUser> = await response.json();
 
         if (response.ok) {
             ok = true;
-        }
-        else {
+        } else {
             errors = responseBody.errors ?? [];
         }
 
@@ -44,10 +45,9 @@
     label="Resend"
     onclick={resendEmailVerification}
     icon="refresh"
-    bind:isLoading={isLoading}
+    {isLoading}
 />
-<Errors errors={errors} />
+<Errors {errors} />
 
 <style>
-
 </style>

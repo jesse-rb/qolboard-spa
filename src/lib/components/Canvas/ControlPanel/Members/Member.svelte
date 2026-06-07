@@ -15,8 +15,8 @@
     let { data, dispatchDeleted }: Props = $props();
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
-    const isSelf = data.user?.uuid === $appStore.user.uuid;
-    const isCanvasOwner = $canvasStore.user?.uuid == $appStore.user.uuid;
+    const isSelf = data.user?.id === $appStore.user.id;
+    const isCanvasOwner = $canvasStore.user?.id == $appStore.user.id;
     let deleteIsLoading = $state(false);
 
     async function deleteMember() {

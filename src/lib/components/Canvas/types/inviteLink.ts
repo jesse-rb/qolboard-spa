@@ -1,6 +1,6 @@
 export type TypeInviteLink = {
-    id: number
-    user_uuid: string
-    canvas_id: number
+    id: string
+    user_id: string
+    canvas_id: string
     link: string
 }
