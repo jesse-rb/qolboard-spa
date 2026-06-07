@@ -1,4 +1,4 @@
 export type TypeUser = {
-    uuid: string
+    id: string
     email: string
 }

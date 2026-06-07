@@ -14,7 +14,7 @@ export const appStore: Writable<AppStore> = writable({
     isAuthenticated: false,
     user: {
         email: "",
-        uuid: "",
+        id: "",
     },
     headerHeight: 0,
     controlPanelWidth: 0
@@ -52,7 +52,7 @@ export async function getUser() {
         appStore.update((store) => {
             store.isAuthenticated = false;
             store.user.email = "";
-            store.user.uuid = "";
+            store.user.id = "";
 
             return store;
         });

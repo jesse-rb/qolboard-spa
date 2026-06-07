@@ -21,7 +21,7 @@
     import Piece from "./Piece.svelte";
 
     interface Props {
-        id?: number | null;
+        id?: string | null;
         preview?: boolean;
         canvasData?: CanvasWithoutClientCanvasData | null;
     }
@@ -429,7 +429,7 @@
     }
 
     async function getCanvas(
-        _id: number,
+        _id: string,
     ): Promise<CanvasWithoutClientCanvasData | null> {
         // loading = true;
 
