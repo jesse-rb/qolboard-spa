@@ -58,7 +58,7 @@
             ...getDefaultClientCanvasData(),
             ...getDefaultCanvasData(),
         },
-        user_uuid: "",
+        user_id: "",
     });
     setContext("canvasStore", store);
 
@@ -475,7 +475,7 @@
 
         const canvas: CanvasWithoutClientCanvasData = {
             id: $store.id,
-            user_uuid: $store.user_uuid,
+            user_id: $store.user_id,
             canvas_data: canvas_data,
         };
 

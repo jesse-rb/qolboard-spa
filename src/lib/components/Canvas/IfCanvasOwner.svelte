@@ -4,13 +4,13 @@
     import type { Canvas } from "./types/canvas";
     import { appStore } from "$lib/store";
     interface Props {
-        children?: import('svelte').Snippet;
+        children?: import("svelte").Snippet;
     }
 
     let { children }: Props = $props();
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
-    const isCanvasOwner = $appStore.user.uuid === $canvasStore.user?.uuid;
+    const isCanvasOwner = $appStore.user.id === $canvasStore.user?.id;
 </script>
 
 {#if isCanvasOwner}

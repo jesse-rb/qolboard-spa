@@ -4,7 +4,7 @@
 
     let id = undefined;
     if (page.params.canvasId) {
-        id = parseInt(page.params.canvasId);
+        id = page.params.canvasId;
     }
 </script>
 

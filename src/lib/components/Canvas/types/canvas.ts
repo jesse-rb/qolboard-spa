@@ -37,7 +37,7 @@ export type ClientCanvasData = {
 
 export type Canvas = Model & {
     canvas_data: CanvasData & ClientCanvasData
-    user_uuid: string
+    user_id: string
     user?: TypeUser
     canvas_shared_accesses?: Array<TypeSharedAccess>
     canvas_shared_invitations?: Array<TypeInviteLink>

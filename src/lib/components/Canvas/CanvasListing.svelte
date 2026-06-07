@@ -52,7 +52,7 @@
                 {name}
             </p>
         </div>
-        {#if canvas.user_uuid === $appStore.user.uuid}
+        {#if canvas.user_id === $appStore.user.id}
             <Button
                 icon="clear"
                 onclick={deleteCanvas}
