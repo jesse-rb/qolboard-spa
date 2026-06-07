@@ -135,11 +135,15 @@
     }
 
     export function doesBoundingBoxOverlap(boundingBox: Array<number>) {
+        const margin = 50;
+
         const [x, y, width, height] = getBoundingBox();
         const [_x, _y, _width, _height] = boundingBox;
 
-        const xOverlap = x < _x + _width && x + width > _x;
-        const yOverlap = y < _y + _height && y + height > _y;
+        const xOverlap =
+            x < _x - margin + (_width + margin) && x + width > _x - margin;
+        const yOverlap =
+            y < _y - margin + (_height + margin) && y + height > _y - margin;
 
         return xOverlap && yOverlap;
     }
@@ -196,7 +200,7 @@
     }
 
     export function getBoundingBox() {
-        const offset = 1;
+        const offset = 5;
         const clearMargin = settings.size / 2;
 
         const x = calcLeftMost() - clearMargin;

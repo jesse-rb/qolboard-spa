@@ -371,8 +371,8 @@
             backgroundColor: "#1A1A1A",
             snapToGrid: false,
             pieceSettings: {
-                size: 20,
-                color: "#D55C1A",
+                size: 5,
+                color: "#A5A5A5",
             },
             rulerSettings: {
                 showUnits: true,
