@@ -5,6 +5,7 @@
     import type { Error } from "$lib/types/types";
     import Button from "../Button.svelte";
     import Errors from "../Form/Errors.svelte";
+    import { request } from "$lib/http";
 
     let ok: boolean = false;
     let isLoading: boolean = $state(false);
@@ -14,20 +15,11 @@
         ok = false;
         isLoading = true;
 
-        const domain = import.meta.env.VITE_API_HOST;
         const path = "auth/register";
-        const url = `${domain}/${path}`;
         const body = {
             email: $appStore.registeredEmail,
         };
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                "content-type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify(body),
-        });
+        const response = await request("POST", path, body);
 
         const responseBody: ShowResponse<TypeUser> = await response.json();
 

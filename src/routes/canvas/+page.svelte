@@ -1,6 +1,7 @@
 <script lang="ts">
     import CanvasListing from "$lib/components/Canvas/CanvasListing.svelte";
     import type { Canvas } from "$lib/components/Canvas/types/canvas";
+    import { request } from "$lib/http";
     import type { IndexResponse } from "$lib/types/types";
     import { removeFromArrayByIndex } from "$lib/util";
     import { onMount } from "svelte";
@@ -13,17 +14,9 @@
 
         let data: Array<Canvas> = [];
 
-        const domain = import.meta.env.VITE_API_HOST;
         const path = `user/canvas`;
-        const url = `${domain}/${path}`;
 
-        const response = await fetch(url, {
-            method: "GET",
-            credentials: "include",
-            headers: {
-                "content-type": "application/json",
-            },
-        });
+        const response = await request("GET", path);
 
         if (response.ok) {
             const json: IndexResponse<Canvas> = await response.json();

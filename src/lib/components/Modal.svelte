@@ -1,12 +1,20 @@
 <script lang="ts">
     import { fade, slide } from "svelte/transition";
     import Button from "./Button.svelte";
+    import { navigating } from "$app/state";
     interface Props {
         children?: import("svelte").Snippet;
     }
 
     let { children }: Props = $props();
     let open = $state(false);
+
+    // Side effect: Close modals upon navigation e.g. via goto()
+    $effect(() => {
+        if (navigating.from) {
+            open = false;
+        }
+    });
 
     export const toggle = () => {
         open = !open;
@@ -79,4 +87,3 @@
         top: 0px;
     }
 </style>
-

@@ -5,6 +5,7 @@
     import ResendEmailVerificaitonButton from "./ResendEmailVerificaitonButton.svelte";
     import Errors from "../Form/Errors.svelte";
     import type { TypeUser } from "$lib/types/user";
+    import { request } from "$lib/http";
 
     type AuthRequestBody = {
         email: string;
@@ -39,9 +40,7 @@
 
         isLoading = true;
 
-        const domain = import.meta.env.VITE_API_HOST;
         const path = `auth/${isRegistration ? "register" : showOTP ? "login" : "request_otp"}`;
-        const url = `${domain}/${path}`;
 
         const body: AuthRequestBody = {
             email: email,
@@ -51,14 +50,7 @@
             body.otp = otp;
         }
 
-        const response = await fetch(url, {
-            method: "POST",
-            credentials: "include",
-            body: JSON.stringify(body),
-            headers: {
-                "content-type": "application/json",
-            },
-        });
+        const response = await request("POST", path, body);
 
         const responseBody: ShowResponse<TypeUser> & { code?: string } =
             await response.json();

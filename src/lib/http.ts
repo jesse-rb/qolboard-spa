@@ -1,3 +1,5 @@
+import { goto } from "$app/navigation";
+
 export type TypeHttpMethods = "GET" | "POST" | "PUT" | "DELETE";
 
 export function getApiHost(): string {
@@ -7,7 +9,7 @@ export function getApiHost(): string {
 export async function request(method: TypeHttpMethods, path: string, requestBody: object | null = null): Promise<Response> {
     const apiHost = getApiHost();
     const url = `${apiHost}/${path}`;
-    return fetch(url, {
+    const resp = await fetch(url, {
         method: method,
         credentials: "include",
         headers: {
@@ -15,4 +17,9 @@ export async function request(method: TypeHttpMethods, path: string, requestBody
         },
         body: requestBody ? JSON.stringify(requestBody) : null
     });
+    if (resp.status == 429) {
+        goto("/error?status=429");
+    }
+
+    return resp
 }

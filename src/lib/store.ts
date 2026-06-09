@@ -1,5 +1,6 @@
 import { writable, type Writable } from "svelte/store";
 import type { TypeUser } from "./types/user";
+import { request } from "./http";
 
 export type AppStore = {
     registeredEmail: string | null
@@ -19,20 +20,15 @@ export const appStore: Writable<AppStore> = writable({
         id: "",
     },
     headerHeight: 0,
-    controlPanelWidth: 0
+    controlPanelWidth: 0,
 });
 
 export async function getUser() {
-    const domain = import.meta.env.VITE_API_HOST;
     const path = "user";
-    const url = `${domain}/${path}`;
 
     let ok: boolean = false;
     try {
-        const response = await fetch(url, {
-            method: "GET",
-            credentials: "include",
-        });
+        const response = await request("GET", path);
 
         if (response.ok) {
             ok = true

@@ -5,6 +5,7 @@
     import { appStore, getUser } from "../store";
     import { inject as injectVercelAnalytics } from "@vercel/analytics"; // Vercel analytics
     import { onMount } from "svelte";
+    import { request } from "$lib/http";
 
     injectVercelAnalytics();
 
@@ -13,6 +14,8 @@
     let loginModal: Modal | undefined = $state();
 
     let logoutIsLoading = $state(false);
+
+    const authenticatedRoutes = ["/canvas"];
 
     $effect.pre(() => {
         if ($appStore.headerHeight) {
@@ -26,7 +29,9 @@
     $effect.pre(() => {
         if (!$appStore.isAuthenticated && $appStore.checkedIsAuthenticated) {
             if (window.location.pathname !== "/") {
-                window.location.assign("/");
+                if (isAuthenticatedRoute(window.location.pathname)) {
+                    window.location.assign("/");
+                }
             }
         }
     });
@@ -35,20 +40,20 @@
         await getUser();
     });
 
+    function isAuthenticatedRoute(path: string): boolean {
+        return (
+            authenticatedRoutes.filter(
+                (route) => route === path.substring(0, route.length),
+            ).length > 0
+        );
+    }
+
     async function logout() {
         logoutIsLoading = true;
 
-        const domain = import.meta.env.VITE_API_HOST;
         const path = "user/logout";
-        const url = `${domain}/${path}`;
 
-        const response = await fetch(url, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "content-type": "application/json",
-            },
-        });
+        const response = await request("POST", path);
 
         if (response.ok) {
             $appStore.isAuthenticated = false;
@@ -76,6 +81,12 @@
                     aboutModal.toggle();
                 }}
             />
+
+            {#if $appStore.error}
+                <div class="error">
+                    <p>{$appStore.error}</p>
+                </div>
+            {/if}
         </div>
 
         <div class="flex flex-wrap items-center gap-2 w-full sm:w-fit">

@@ -19,6 +19,7 @@
     import { envIsLocal } from "$lib/util";
     import type { ShowResponse } from "$lib/types/types";
     import Piece from "./Piece.svelte";
+    import { request } from "$lib/http";
 
     interface Props {
         id?: string | null;
@@ -384,23 +385,14 @@
     async function saveCanvas() {
         saveIsLoading = true;
 
-        const domain = import.meta.env.VITE_API_HOST;
         let path = "user/canvas";
         if (id !== null) {
             path = `${path}/${id}`;
         }
-        const url = `${domain}/${path}`;
 
         const body = serialize().canvas_data;
 
-        const response = await fetch(url, {
-            method: "POST",
-            credentials: "include",
-            body: JSON.stringify(body),
-            headers: {
-                "content-type": "application/json",
-            },
-        });
+        const response = await request("POST", path, body);
 
         if (response.ok) {
             if (id === null) {
@@ -433,17 +425,9 @@
     ): Promise<CanvasWithoutClientCanvasData | null> {
         // loading = true;
 
-        const domain = import.meta.env.VITE_API_HOST;
         const path = `user/canvas/${_id}?with[]=user&with[]=canvas_shared_invitations&with[]=canvas_shared_accesses.user`;
-        const url = `${domain}/${path}`;
 
-        const response = await fetch(url, {
-            method: "GET",
-            credentials: "include",
-            headers: {
-                "content-type": "application/json",
-            },
-        });
+        const response = await request("GET", path);
 
         if (response.ok) {
             const json: ShowResponse<Canvas> = await response.json();

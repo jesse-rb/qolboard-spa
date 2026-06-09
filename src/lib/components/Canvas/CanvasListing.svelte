@@ -3,6 +3,7 @@
     import Canvas from "./Canvas.svelte";
     import type { Canvas as TypeCanvas } from "../Canvas/types/canvas";
     import { appStore } from "$lib/store";
+    import { request } from "$lib/http";
 
     interface Props {
         canvas: TypeCanvas;
@@ -20,18 +21,10 @@
 
         const id = canvas.id;
 
-        const domain = import.meta.env.VITE_API_HOST;
-        const path = `user/canvas`;
-        const url = `${domain}/${path}/${id}`;
+        const path = `user/canvas/${id}`;
 
-        const resp = await fetch(url, {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: "include",
-        });
-        const json = await resp.json();
+        const resp = await request("DELETE", path);
+        await resp.json();
 
         deleteIsLoading = false;
 

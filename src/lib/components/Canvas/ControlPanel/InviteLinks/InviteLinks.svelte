@@ -8,12 +8,12 @@
     import { removeFromArrayByIndex } from "$lib/util";
     import type { Canvas } from "../../types/canvas";
     import IfCanvasOwner from "../../IfCanvasOwner.svelte";
+    import { request } from "$lib/http";
 
     let { isExpanded } = $props();
     let createIsLoading = $state(false);
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
-    const domain = import.meta.env.VITE_API_HOST;
     const canvasId = $canvasStore.id;
 
     onMount(() => {});
@@ -22,15 +22,8 @@
         createIsLoading = true;
 
         const path = `user/canvas/${canvasId}/shared_invitation`;
-        const url = `${domain}/${path}`;
 
-        const response = await fetch(url, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "content-type": "application/json",
-            },
-        });
+        const response = await request("POST", path);
         const body: ShowResponse<TypeInviteLink> = await response.json();
         console.log(body.data);
 
