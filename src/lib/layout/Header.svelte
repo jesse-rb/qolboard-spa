@@ -6,6 +6,7 @@
     import { inject as injectVercelAnalytics } from "@vercel/analytics"; // Vercel analytics
     import { onMount } from "svelte";
     import { request } from "$lib/http";
+    import { goto } from "$app/navigation";
 
     injectVercelAnalytics();
 
@@ -30,7 +31,7 @@
         if (!$appStore.isAuthenticated && $appStore.checkedIsAuthenticated) {
             if (window.location.pathname !== "/") {
                 if (isAuthenticatedRoute(window.location.pathname)) {
-                    window.location.assign("/");
+                    goto("/");
                 }
             }
         }
