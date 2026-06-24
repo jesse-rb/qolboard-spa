@@ -5,6 +5,7 @@
     import type { PiecesManagerSerialized } from "./types/piecesManager";
     import type { Canvas } from "./types/canvas";
     import type { PieceSerialized } from "./types/piece";
+    import { SvelteSet } from "svelte/reactivity";
 
     type TypeBoundingBox = {
         topMost: number;
@@ -21,7 +22,7 @@
     let { updatedPiece, removedPiece }: Props = $props();
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
-    let selectedPieceIndex: number | undefined = $state(undefined);
+    let selectedPieceIndex: Set<number> = $state(new SvelteSet());
     let pieces: Array<number> = $state([]);
     let pieceRefs: Array<Piece> = $state([]);
 
@@ -152,11 +153,14 @@
         updatedPiece(p);
     }
 
-    export function getSelectedPiece(): Piece | undefined {
-        if (selectedPieceIndex !== undefined && pieceRefs[selectedPieceIndex]) {
-            return pieceRefs[selectedPieceIndex];
+    export function getSelectedPieces(): Array<Piece> {
+        const selected: Array<Piece> = [];
+        for (const i of selectedPieceIndex) {
+            if (pieceRefs[i]) {
+                selected.push(pieceRefs[i]);
+            }
         }
-        return undefined;
+        return selected;
     }
 
     export function getPiece(i: number): Piece | undefined {
@@ -169,24 +173,24 @@
 
     export function reDrawSelectedChunk(redrawPiece = true) {
         // Draw only section background
-        const p = getSelectedPiece();
-        if (p) {
+        const selected = getSelectedPieces();
+        for (const p of selected) {
             redrawPieceChunk(p, redrawPiece);
         }
     }
 
     export function deselect() {
         // Deselect old selected piece
-        const p = getSelectedPiece();
-        if (p) {
+        const selected = getSelectedPieces();
+        for (const p of selected) {
             p.deselect();
             reDrawSelectedChunk();
         }
-        selectedPieceIndex = undefined;
+        selectedPieceIndex.clear();
     }
 
     export function select() {
-        deselect();
+        // deselect();
 
         // Select new piece
         for (let i = 0; i <= pieceRefs.length; i++) {
@@ -199,7 +203,7 @@
                         $canvasStore.canvas_data.zoom,
                 )
             ) {
-                selectedPieceIndex = i;
+                selectedPieceIndex.add(i);
 
                 reDrawSelectedChunk();
                 return;
@@ -213,37 +217,38 @@
         }
     }
 
-    export function move(): Piece | undefined {
-        const p = getSelectedPiece();
-        if (p) {
+    export function move(): Array<Piece> {
+        const selected = getSelectedPieces();
+        for (const p of selected) {
             p.clearBoundingBox();
             p.move();
-            reDrawSelectedChunk();
         }
+        reDrawSelectedChunk();
 
-        return p;
+        return selected;
     }
 
     export function remove(index: number) {
         pieces.splice(index, 1);
         pieceRefs.splice(index, 1);
 
-        if (selectedPieceIndex !== undefined) {
-            if (selectedPieceIndex === index) {
-                selectedPieceIndex = undefined;
-            } else if (selectedPieceIndex > index) {
-                selectedPieceIndex--;
+        for (const i of selectedPieceIndex) {
+            if (i === index) {
+                selectedPieceIndex.delete(i);
             }
+            // else if (selectedPieceIndex > index) {
+            //     selectedPieceIndex--;
+            // }
         }
     }
 
     export function removeSelected() {
         if (selectedPieceIndex !== undefined) {
-            const p = getSelectedPiece();
-            if (p) {
+            for (const i of selectedPieceIndex) {
+                const p = pieceRefs[i];
                 const s = p.serialize();
                 reDrawSelectedChunk(false);
-                remove(selectedPieceIndex);
+                remove(i);
 
                 deselect();
 
@@ -261,7 +266,7 @@
 <div id="pieces">
     {#each pieces as _, i (i)}
         <Piece
-            selected={i === selectedPieceIndex}
+            selected={selectedPieceIndex.has(i)}
             bind:this={pieceRefs[i]}
             settings={{ ...initialPieceSettings() }}
             index={i}

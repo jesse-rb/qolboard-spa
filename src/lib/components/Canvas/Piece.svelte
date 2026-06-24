@@ -134,9 +134,10 @@
         return ctx?.isPointInStroke(path, x, y);
     }
 
-    export function doesBoundingBoxOverlap(boundingBox: Array<number>) {
-        const margin = 50;
-
+    export function doesBoundingBoxOverlap(
+        boundingBox: Array<number>,
+        margin: number,
+    ) {
         const [x, y, width, height] = getBoundingBox();
         const [_x, _y, _width, _height] = boundingBox;
 

@@ -648,10 +648,10 @@
             $store.canvas_data.activeMode == CanvasModes.Grab &&
             $store.canvas_data.mouseDown
         ) {
-            if (getPiecesManager().getSelectedPiece() !== undefined) {
-                const piece = getPiecesManager().move();
-                if (piece) {
-                    websocketUpdatePiece(piece);
+            if (getPiecesManager().getSelectedPieces().length > 0) {
+                const moved = getPiecesManager().move();
+                for (const p of moved) {
+                    websocketUpdatePiece(p);
                 }
             } else {
                 getPiecesManager().select();
