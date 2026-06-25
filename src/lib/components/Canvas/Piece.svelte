@@ -134,17 +134,12 @@
         return ctx?.isPointInStroke(path, x, y);
     }
 
-    export function doesBoundingBoxOverlap(
-        boundingBox: Array<number>,
-        margin: number,
-    ) {
+    export function doesBoundingBoxOverlap(boundingBox: Array<number>) {
         const [x, y, width, height] = getBoundingBox();
         const [_x, _y, _width, _height] = boundingBox;
 
-        const xOverlap =
-            x < _x - margin + (_width + margin) && x + width > _x - margin;
-        const yOverlap =
-            y < _y - margin + (_height + margin) && y + height > _y - margin;
+        const xOverlap = x < _x + _width && x + width > _x;
+        const yOverlap = y < _y + _height && y + height > _y;
 
         return xOverlap && yOverlap;
     }
@@ -289,6 +284,10 @@
 
     export function deselect() {
         selected = false;
+    }
+
+    export function isSelected(): boolean {
+        return selected;
     }
 
     export function move(isPan = false, dx?: number, dy?: number) {

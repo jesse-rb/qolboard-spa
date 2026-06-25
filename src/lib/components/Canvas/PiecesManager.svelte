@@ -137,7 +137,7 @@
         // Only redraw pieces that are inbound of section
         for (const p of pieceRefs) {
             if (p) {
-                if (!redrawPiece && p === piece) {
+                if (!redrawPiece && p.isSelected()) {
                     continue;
                 }
                 if (p && piece?.doesBoundingBoxOverlap(p.getBoundingBox())) {
@@ -219,12 +219,11 @@
 
     export function move(): Array<Piece> {
         const selected = getSelectedPieces();
+        reDrawSelectedChunk(false);
         for (const p of selected) {
-            p.clearBoundingBox();
             p.move();
         }
-        reDrawSelectedChunk();
-
+        reDrawSelectedChunk(true);
         return selected;
     }
 
