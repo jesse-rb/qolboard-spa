@@ -164,6 +164,21 @@
         return selected;
     }
 
+    export function isMouseOverASelectedBorderBox(): boolean {
+        const borderBox = [
+            $canvasStore.canvas_data.mouseX,
+            $canvasStore.canvas_data.mouseY,
+            0,
+            0,
+        ];
+        for (const i of selectedPieceIndex) {
+            if (pieceRefs[i]?.doesBoundingBoxOverlap(borderBox)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     export function getPiece(i: number): Piece | undefined {
         const p = pieceRefs[i];
         if (p) {

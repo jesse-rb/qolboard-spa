@@ -575,20 +575,6 @@
                 }
             });
         }
-
-        if ($store.canvas_data.activeMode === CanvasModes.Grab) {
-            if ($store.canvas_data.mouseDown) {
-                if (!$store.canvas_data.grabStartPoint) {
-                    $store.canvas_data.grabStartPoint = {
-                        x: $store.canvas_data.mouseX,
-                        y: $store.canvas_data.mouseY,
-                    };
-                }
-            } else {
-                getPiecesManager().select();
-                $store.canvas_data.grabStartPoint = undefined;
-            }
-        }
     }
 
     function setMousePos(e: PointerEvent) {
@@ -652,17 +638,40 @@
             websocketUpdatePiece(piece);
         }
 
-        if (
-            $store.canvas_data.activeMode == CanvasModes.Grab &&
-            $store.canvas_data.mouseDown
-        ) {
-            if (getPiecesManager().getSelectedPieces().length > 0) {
-                const moved = getPiecesManager().move();
-                for (const p of moved) {
-                    websocketUpdatePiece(p);
+        // if (
+        //     $store.canvas_data.activeMode == CanvasModes.Grab &&
+        //     $store.canvas_data.mouseDown
+        // ) {
+        //     if (getPiecesManager().getSelectedPieces().length > 0) {
+        //         const moved = getPiecesManager().move();
+        //         for (const p of moved) {
+        //             websocketUpdatePiece(p);
+        //         }
+        //     } else {
+        //         // getPiecesManager().select();
+        //     }
+        // }
+
+        if ($store.canvas_data.activeMode === CanvasModes.Grab) {
+            if ($store.canvas_data.mouseDown) {
+                if (
+                    getPiecesManager().getSelectedPieces().length > 0 &&
+                    getPiecesManager().isMouseOverASelectedBorderBox()
+                ) {
+                    const moved = getPiecesManager().move();
+                    for (const p of moved) {
+                        websocketUpdatePiece(p);
+                    }
+                } else if (!$store.canvas_data.grabStartPoint) {
+                    getPiecesManager().deselect();
+                    $store.canvas_data.grabStartPoint = {
+                        x: $store.canvas_data.mouseX,
+                        y: $store.canvas_data.mouseY,
+                    };
                 }
-            } else {
-                // getPiecesManager().select();
+            } else if ($store.canvas_data.grabStartPoint != undefined) {
+                getPiecesManager().select();
+                $store.canvas_data.grabStartPoint = undefined;
             }
         }
 
@@ -701,7 +710,7 @@
 
     function setActiveMode(mode: CanvasModes) {
         $store.canvas_data.activeMode = mode;
-        piecesManager && piecesManager.deselect();
+        // piecesManager && piecesManager.deselect();
     }
 
     function action(action: CanvasActions) {
