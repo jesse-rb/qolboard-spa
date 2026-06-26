@@ -20,6 +20,7 @@
     import type { ShowResponse } from "$lib/types/types";
     import Piece from "./Piece.svelte";
     import { request } from "$lib/http";
+    import Selection from "./Selection.svelte";
 
     interface Props {
         id?: string | null;
@@ -575,11 +576,18 @@
             });
         }
 
-        if (
-            $store.canvas_data.activeMode === CanvasModes.Grab &&
-            $store.canvas_data.mouseDown
-        ) {
-            getPiecesManager().select();
+        if ($store.canvas_data.activeMode === CanvasModes.Grab) {
+            if ($store.canvas_data.mouseDown) {
+                if (!$store.canvas_data.grabStartPoint) {
+                    $store.canvas_data.grabStartPoint = {
+                        x: $store.canvas_data.mouseX,
+                        y: $store.canvas_data.mouseY,
+                    };
+                }
+            } else {
+                getPiecesManager().select();
+                $store.canvas_data.grabStartPoint = undefined;
+            }
         }
     }
 
@@ -654,7 +662,7 @@
                     websocketUpdatePiece(p);
                 }
             } else {
-                getPiecesManager().select();
+                // getPiecesManager().select();
             }
         }
 
@@ -791,6 +799,18 @@
 
         <Ruler />
         <Ruler isHorizontal={false} />
+        {#if $store.canvas_data.grabStartPoint}
+            <Selection
+                p1={{
+                    x: $store.canvas_data.mouseX,
+                    y: $store.canvas_data.mouseY,
+                }}
+                p2={{
+                    x: $store.canvas_data.grabStartPoint.x,
+                    y: $store.canvas_data.grabStartPoint.y,
+                }}
+            />
+        {/if}
     </div>
 {/if}
 

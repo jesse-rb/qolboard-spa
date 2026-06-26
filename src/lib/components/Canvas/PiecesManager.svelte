@@ -6,6 +6,7 @@
     import type { Canvas } from "./types/canvas";
     import type { PieceSerialized } from "./types/piece";
     import { SvelteSet } from "svelte/reactivity";
+    import { calcBoundingBoxFromTwoPoints } from "$lib/util";
 
     type TypeBoundingBox = {
         topMost: number;
@@ -190,24 +191,22 @@
     }
 
     export function select() {
-        // deselect();
+        deselect();
 
         // Select new piece
         for (let i = 0; i <= pieceRefs.length; i++) {
             const p = pieceRefs[i];
-            if (
-                p?.isPointInStroke(
-                    $canvasStore.canvas_data.mouseX *
-                        $canvasStore.canvas_data.zoom,
-                    $canvasStore.canvas_data.mouseY *
-                        $canvasStore.canvas_data.zoom,
-                )
-            ) {
-                selectedPieceIndex.add(i);
+            const boundingBox = calcBoundingBoxFromTwoPoints(
+                $canvasStore.canvas_data.mouseX,
+                $canvasStore.canvas_data.mouseY,
+                $canvasStore.canvas_data.grabStartPoint?.x || 0,
+                $canvasStore.canvas_data.grabStartPoint?.y || 0,
+            );
 
-                reDrawSelectedChunk();
-                return;
+            if (p?.doesBoundingBoxOverlap(boundingBox)) {
+                selectedPieceIndex.add(i);
             }
+            reDrawSelectedChunk();
         }
     }
 

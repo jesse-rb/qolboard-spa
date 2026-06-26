@@ -67,3 +67,25 @@ export async function sleep(ms: number) {
     return new Promise(res => setTimeout(res, ms));
 }
 
+export function calcBoundingBoxFromTwoPoints(x1: number, y1: number, x2: number, y2: number): Array<number> {
+    const x = Math.min(
+        x1,
+        x2,
+    );
+    const y = Math.min(
+        y1,
+        y2,
+    );
+    const width =
+        Math.max(
+            x1,
+            x2,
+        ) - x;
+    const height =
+        Math.max(
+            y1,
+            y2,
+        ) - y;
+
+    return [x, y, width, height]
+}

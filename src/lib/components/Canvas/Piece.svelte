@@ -196,7 +196,7 @@
     }
 
     export function getBoundingBox() {
-        const offset = 5;
+        const offset = 0;
         const clearMargin = settings.size / 2;
 
         const x = calcLeftMost() - clearMargin;

@@ -24,6 +24,10 @@ export type ClientCanvasData = {
     height?: number
     activeMode: CanvasModes
     mouseDown: boolean
+    grabStartPoint?: {
+        x: number
+        y: number
+    }
     mouseX: number
     mouseY: number
     prevMouseX: number
