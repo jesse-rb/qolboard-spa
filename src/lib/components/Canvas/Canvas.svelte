@@ -811,12 +811,16 @@
         {#if $store.canvas_data.grabStartPoint}
             <Selection
                 p1={{
-                    x: $store.canvas_data.mouseX,
-                    y: $store.canvas_data.mouseY,
+                    x: $store.canvas_data.mouseX * $store.canvas_data.zoom,
+                    y: $store.canvas_data.mouseY * $store.canvas_data.zoom,
                 }}
                 p2={{
-                    x: $store.canvas_data.grabStartPoint.x,
-                    y: $store.canvas_data.grabStartPoint.y,
+                    x:
+                        $store.canvas_data.grabStartPoint.x *
+                        $store.canvas_data.zoom,
+                    y:
+                        $store.canvas_data.grabStartPoint.y *
+                        $store.canvas_data.zoom,
                 }}
             />
         {/if}
