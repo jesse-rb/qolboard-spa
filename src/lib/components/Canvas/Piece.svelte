@@ -3,6 +3,7 @@
     import type { PieceSerialized, PieceSettings } from "./types/piece";
     import type { Writable } from "svelte/store";
     import type { Canvas } from "./types/canvas";
+    import Button from "../Button.svelte";
 
     interface Props {
         settings?: PieceSettings;
@@ -10,6 +11,7 @@
         index: number;
         updated: Function;
         updatedBoundingBox: Function;
+        removedPiece: Function;
     }
 
     let {
@@ -21,6 +23,7 @@
         index = $bindable(),
         updated,
         updatedBoundingBox,
+        removedPiece,
     }: Props = $props();
 
     const canvasStore: Writable<Canvas> = getContext("canvasStore");
@@ -196,7 +199,7 @@
     }
 
     export function getBoundingBox() {
-        const offset = 0;
+        const offset = 5;
         const clearMargin = settings.size / 2;
 
         const x = calcLeftMost() - clearMargin;
@@ -339,7 +342,7 @@
 
 {#if selected}
     <div
-        class="piece-settings control-panel z-10"
+        class="py-2 piece-settings control-panel z-10 opacity-25 hover:opacity-100 hover:z-30"
         style="bottom: min({($canvasStore.canvas_data.height ?? 0) -
             calcTopMost() * $canvasStore.canvas_data.zoom}px, {$canvasStore
             .canvas_data.height ?? 0}px); left: {Math.max(
@@ -365,9 +368,7 @@
                     oninput={(e) => handleUpdateSettings(e, "size")}
                 />
             </div>
-        </div>
 
-        <div class="control-group">
             <div class="control">
                 <label for="">color</label>
                 <input
@@ -375,6 +376,10 @@
                     type="color"
                     oninput={(e) => handleUpdateSettings(e, "color")}
                 />
+            </div>
+
+            <div class="control">
+                <Button icon="delete" label="remove" onclick={removedPiece} />
             </div>
         </div>
     </div>
@@ -384,7 +389,7 @@
     .piece-settings {
         position: absolute;
         background-color: var(--color-back-2);
-        padding: 0 1em 0 1em;
+        padding: 0.5rem 1rem 0.5rem 1rem;
         border-radius: 5px;
         border-top: 10px var(--color-back-3) solid;
         border-bottom: 10px var(--color-back-3) solid;

@@ -106,12 +106,12 @@
         }
     }
 
-    export function removePiece(s: PieceSerialized) {
-        const p = pieceRefs[s.index];
+    export function removePiece(i: number) {
+        const p = pieceRefs[i];
 
         if (p) {
             redrawPieceChunk(p, false);
-            remove(s.index);
+            remove(i);
         }
     }
     export function addPointToPiece(i: number): Piece {
@@ -249,9 +249,6 @@
             if (i === index) {
                 selectedPieceIndex.delete(i);
             }
-            // else if (selectedPieceIndex > index) {
-            //     selectedPieceIndex--;
-            // }
         }
     }
 
@@ -285,6 +282,7 @@
             index={i}
             updated={(v: boolean) => handlePieceUpdate(i, v)}
             updatedBoundingBox={(v: TypeBoundingBox) => updateBoundingBox(v)}
+            removedPiece={() => removedPiece(i)}
         />
     {/each}
 </div>

@@ -109,12 +109,6 @@
             label={isExpanded ? "pan (Hold Space)" : ""}
             onclick={() => setActiveMode(CanvasModes.Pan)}
         />
-        <Button
-            icon="delete"
-            active={$canvasStore.canvas_data.activeMode == CanvasModes.Remove}
-            label={isExpanded ? "remove" : ""}
-            onclick={() => setActiveMode(CanvasModes.Remove)}
-        />
     </div>
 
     <!--global actions-->
@@ -200,7 +194,7 @@
     .control-panel {
         @apply gap-12;
         @apply absolute;
-        @apply top-[var(--header-height)];
+        @apply top-(--header-height);
         @apply items-center;
         @apply flex;
         @apply flex-col;

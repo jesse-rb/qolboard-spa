@@ -261,7 +261,7 @@
                     }
                     case "remove-piece": {
                         console.log("Removing piece", message.data);
-                        getPiecesManager().removePiece(message.data);
+                        getPiecesManager().removePiece(message.data.index);
                         break;
                     }
                     case "update-canvas-data": {
@@ -686,14 +686,6 @@
                 $store.canvas_data.mouseX - $store.canvas_data.prevMouseX;
             $store.canvas_data.yPan +=
                 $store.canvas_data.mouseY - $store.canvas_data.prevMouseY;
-        }
-
-        if (
-            $store.canvas_data.activeMode == CanvasModes.Remove &&
-            $store.canvas_data.mouseDown
-        ) {
-            getPiecesManager().select();
-            getPiecesManager().removeSelected();
         }
 
         websocketMouseMove();
