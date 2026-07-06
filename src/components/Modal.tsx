@@ -56,7 +56,7 @@ function Modal({ children, isOpen, close }: TypeProps) {
                     className={`${isOpen ? "animate-fade-in" : "animate-fade-out"}`}
                 >
                     {/* Empty so that opacity does not affect "inner" */}
-                    <div className="bg-back-3 opacity-40 z-unset absolute inset-0 "></div>
+                    <div className="bg-[#303030] opacity-50 z-unset absolute inset-0 "></div>
                 </div>
                 <div
                     className={`z-10 rounded-md border-t-8 border-b-8 border-back-3 p-4 opacity-100 h-fit w-full sm:w-fit sm:min-w-md bg-back-2 ${isOpen ? "animate-slide-in" : "animate-slide-out"}`}

@@ -80,8 +80,6 @@ body {
     margin: 0;
     background-color: var(--color-back);
     color: var(--color-fore);
-
-    @apply text-lg;
 }
 
 * {
