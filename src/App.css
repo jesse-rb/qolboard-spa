@@ -8,6 +8,59 @@
     --color-back-autofill: #e9f0fd;
     --color-fore: #4fbb7c;
     --color-fore-2: #71bb4f;
+
+    --animate-hover: hover 0.2s forwards;
+    --animate-click: click 0.5s;
+    --animate-fade-in: fade-in 0.5s forwards ease-in-out;
+    --animate-fade-out: fade-out 0.5s forwards ease-in-out;
+    --animate-slide-in: slide-in 0.3s forwards ease-out;
+    --animate-slide-out: slide-out 0.3s forwards ease-in;
+
+    @keyframes hover {
+        100% {
+            transform: scale(1.05);
+        }
+    }
+    @keyframes click {
+        50% {
+            transform: scale(0.95);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+    @keyframes fade-in {
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+    @keyframes fade-out {
+        0% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+        }
+    }
+    @keyframes slide-in {
+        0% {
+            transform: scale(1, 0);
+        }
+        100% {
+            transform: scale(1, 1);
+        }
+    }
+    @keyframes slide-out {
+        0% {
+            transform: scale(1, 1);
+        }
+        100% {
+            transform: scale(1, 0);
+        }
+    }
 }
 
 body {
@@ -27,6 +80,8 @@ body {
     margin: 0;
     background-color: var(--color-back);
     color: var(--color-fore);
+
+    @apply text-lg;
 }
 
 * {
@@ -71,7 +126,7 @@ input[type="password"] {
 }
 
 input:disabled {
-    @apply text-gray-400
+    @apply text-gray-400;
 }
 
 a {
@@ -104,6 +159,9 @@ em {
     color: lightcoral;
 }
 
+.z-unset {
+    z-index: unset;
+}
 
 /*
     Style our scroll bar (thank you w3schools)
