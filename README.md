@@ -1,3 +1,18 @@
-# qolboard 2.0
+# qolboard SPA
 
-...work in progress
+## Running locally
+
+**requirements**
+
++ node v24
++ `cp .env.example .env`
+
+**install dependencies**
+```
+npm ci
+```
+
+**run project**
+```
+npm run dev
+```
