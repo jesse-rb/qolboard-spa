@@ -1,11 +1,12 @@
 type TypeProps = {
+    className?: string;
     iconName: string;
 };
 
-function Icon({ iconName }: TypeProps) {
+function Icon({ className, iconName }: TypeProps) {
     return (
         <>
-            <span className="material-icons">{iconName}</span>
+            <span className={`material-icons ${className}`}>{iconName}</span>
         </>
     );
 }

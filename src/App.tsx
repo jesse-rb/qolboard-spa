@@ -13,7 +13,7 @@ function App() {
 
     return (
         <>
-            <AuthProvider>
+            <AuthProvider authService={authService}>
                 <BrowserRouter>
                     <Routes>
                         <Route

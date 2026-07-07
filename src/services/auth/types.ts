@@ -1,9 +1,12 @@
+import type { TypeShowResponse } from "../api_service/types";
 import type { Model } from "../common/types";
 
 export type TypeAuthService = {
-    requestOTP: (email: string) => Promise<TypeUser | null>;
-    login: (otp: string) => Promise<TypeUser | null>;
+    register: (email: string) => Promise<TypeShowResponse<TypeUser>>;
+    requestOTP: (email: string) => Promise<TypeShowResponse<TypeUser>>;
+    login: (otp: string) => Promise<TypeShowResponse<TypeUser>>;
     logout: () => Promise<void>;
+    user: () => Promise<TypeShowResponse<TypeUser>>;
 };
 
 export type TypeUser = Model & {

@@ -9,7 +9,7 @@ export type TypeAPIService = {
 
 export type TypeHttpMethods = "GET" | "POST" | "PUT" | "DELETE";
 
-export type Error = {
+export type TypeError = {
     message: string;
     field: string;
     value: any;
@@ -17,10 +17,10 @@ export type Error = {
 
 export type TypeShowResponse<T> = {
     data: T;
-    errors: Array<Error>;
+    errors: Array<TypeError>;
 };
 
 export type TypeIndexResponse<T> = {
     data: Array<T>;
-    errors: Array<Error>;
+    errors: Array<TypeError>;
 };

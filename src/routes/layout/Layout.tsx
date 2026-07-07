@@ -6,14 +6,15 @@ import Icon from "../../components/Icon";
 import AboutModal from "./modals/AboutModal";
 import { useStateModal } from "../../components/Modal";
 import { useEffect, useRef } from "react";
+import RegisterModal from "./modals/RegisterModal";
 
 type TypeProps = {
     authService: TypeAuthService;
 };
 
 function Layout({ authService }: TypeProps) {
-    const { auth, setAuth } = useAuth();
     const aboutModal = useStateModal(false);
+    const registerModal = useStateModal(false);
     const headerDivRef = useRef<HTMLDivElement>(null);
 
     const resizeObserver = useRef(
@@ -43,30 +44,30 @@ function Layout({ authService }: TypeProps) {
         };
     }, [headerDivRef.current]);
 
-    /*
-     * TODO: temporary placeholder to demonstrate useAuth(), should be moved to it's own auth related components
-     * */
-    async function handleRequestOTP() {
-        const user = await authService.requestOTP(
-            "jesse.reynekebarnard@gmail.com",
-        );
-        if (user !== null) {
-            setAuth((v) => ({
-                ...v,
-                isAuthenticated: true,
-                user: user,
-            }));
-        }
-    }
+    // /*
+    //  * TODO: temporary placeholder to demonstrate useAuth(), should be moved to it's own auth related components
+    //  * */
+    // async function handleRequestOTP() {
+    //     const user = await authService.requestOTP(
+    //         "jesse.reynekebarnard@gmail.com",
+    //     );
+    //     if (user !== null) {
+    //         setAuth((v) => ({
+    //             ...v,
+    //             isAuthenticated: true,
+    //             user: user,
+    //         }));
+    //     }
+    // }
 
     return (
         <>
             <div
                 ref={headerDivRef}
-                className="bg-back-2 w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4"
+                className="text-lg bg-back-2 w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4"
             >
                 <div className="flex items-center gap-4">
-                    <Link to="/" className="pl-4 h-full flex items-center">
+                    <Link to="/" className="h-full flex items-center">
                         <img src="/qolboard.svg" className="min-w-8" />
                     </Link>
                     <Button className="grow" onClick={aboutModal.open}>
@@ -75,15 +76,20 @@ function Layout({ authService }: TypeProps) {
                     </Button>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <p>
-                        isAuthenticated:{" "}
-                        {auth.isAuthenticated ? "true" : "false"}
-                    </p>
-                    <p>email: {auth.user?.email}</p>
-                    <Button onClick={handleRequestOTP}>request otp</Button>
+                    <Button onClick={registerModal.open}>
+                        <Icon iconName="person" />
+                        Register
+                    </Button>
+                    {/* <p> */}
+                    {/*     isAuthenticated:{" "} */}
+                    {/*     {auth.isAuthenticated ? "true" : "false"} */}
+                    {/* </p> */}
+                    {/* <p>email: {auth.user?.email}</p> */}
+                    {/* <Button onClick={handleRequestOTP}>request otp</Button> */}
                 </div>
             </div>
 
+            <RegisterModal authService={authService} {...registerModal} />
             <AboutModal {...aboutModal} />
 
             <Outlet />
