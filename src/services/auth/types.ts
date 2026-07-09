@@ -5,7 +5,7 @@ export type TypeAuthService = {
     register: (email: string) => Promise<TypeShowResponse<TypeUser>>;
     requestOTP: (email: string) => Promise<TypeShowResponse<TypeUser>>;
     login: (otp: string) => Promise<TypeShowResponse<TypeUser>>;
-    logout: () => Promise<void>;
+    logout: () => Promise<TypeShowResponse<TypeUser>>;
     user: () => Promise<TypeShowResponse<TypeUser>>;
 };
 

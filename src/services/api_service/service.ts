@@ -37,10 +37,6 @@ function createAPIService(): TypeAPIService {
                     }
                 }
             }
-            if (!resp.ok) {
-                // window.location.href = `/error?status=${resp.status}`;
-                return null;
-            }
             return resp;
         } catch (e) {
             // window.location.href = "/error?status=500";

@@ -6,7 +6,13 @@ function defaultResponse(): TypeShowResponse<TypeUser> {
         data: {
             email: "",
         },
-        errors: [],
+        errors: [
+            {
+                field: "",
+                message: "Sorry, something went wrong.",
+                value: "",
+            },
+        ],
     };
 }
 
@@ -17,56 +23,62 @@ function CreateAuthService(apiService: TypeAPIService): TypeAuthService {
         const response = await apiService.request("POST", "auth/register", {
             email: email,
         });
+        console.log(response);
 
-        if (response !== null) {
+        if (response != null) {
             const body: TypeShowResponse<TypeUser> = await response.json();
             return body;
-        } else {
-            return defaultResponse();
         }
+        return defaultResponse();
     };
 
-    const requestOTP = async (email: string): Promise<TypeUser | null> => {
+    const requestOTP = async (
+        email: string,
+    ): Promise<TypeShowResponse<TypeUser>> => {
         const response = await apiService.request("POST", "auth/request_otp", {
             email: email,
         });
 
-        if (response?.ok) {
+        if (response != null) {
             const body: TypeShowResponse<TypeUser> = await response.json();
-            return body.data;
+            return body;
         }
 
         return defaultResponse();
     };
 
-    const login = async (otp: string): Promise<TypeUser | null> => {
+    const login = async (otp: string): Promise<TypeShowResponse<TypeUser>> => {
         const response = await apiService.request("POST", "auth/login", {
             otp: otp,
         });
 
-        if (response?.ok) {
+        if (response != null) {
             const body: TypeShowResponse<TypeUser> = await response.json();
-            return body.data;
+            return body;
         }
 
-        return null;
+        return defaultResponse();
     };
 
-    const logout = async (): Promise<void> => {
+    const logout = async (): Promise<TypeShowResponse<TypeUser>> => {
         const response = await apiService.request("POST", "user/logout");
 
-        if (response?.ok) {
-            // const body: TypeShowResponse<TypeUser> = await response.json()
+        if (response != null) {
+            const body: TypeShowResponse<TypeUser> = await response.json();
+            return body;
         }
+
+        return defaultResponse();
     };
 
-    const user = async (): Promise<TypeUser | null> => {
+    const user = async (): Promise<TypeShowResponse<TypeUser>> => {
         const response = await apiService.request("GET", "user");
-        if (response?.ok) {
+        if (response != null) {
             const body: TypeShowResponse<TypeUser> = await response.json();
-            return body.data;
+            return body;
         }
-        return null;
+
+        return defaultResponse();
     };
 
     return { register, requestOTP, login, logout, user };

@@ -47,18 +47,26 @@
     }
     @keyframes slide-in {
         0% {
+            overflow-y: hidden;
             transform: scale(1, 0);
+            height: 0;
         }
         100% {
+            overflow-y: hidden;
             transform: scale(1, 1);
+            height: calc-size(auto, size);
         }
     }
     @keyframes slide-out {
         0% {
+            overflow-y: hidden;
             transform: scale(1, 1);
+            height: calc-size(auto, size);
         }
         100% {
+            overflow-y: hidden;
             transform: scale(1, 0);
+            height: 0;
         }
     }
 }
@@ -119,7 +127,6 @@ input[type="password"] {
     background-color: var(--color-back-3);
     @apply rounded-md;
     @apply text-white;
-    @apply m-1;
     @apply p-2;
 }
 
