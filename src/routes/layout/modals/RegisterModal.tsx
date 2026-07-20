@@ -24,7 +24,6 @@ function RegisterModal(props: TypeProps) {
     async function handleClickRegister() {
         setRegisterIsLoading(true);
         const resp = await props.authService.register(email);
-        console.log(resp);
         setErrors(resp.errors);
         setRegisterIsLoading(false);
     }

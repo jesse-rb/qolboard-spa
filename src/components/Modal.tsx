@@ -35,7 +35,6 @@ function Modal({ children, isOpen, close }: TypeProps) {
     }, [isOpen]);
 
     function handleAnimationEnd() {
-        console.log("handleTransitionEnd");
         if (!isOpen) {
             setShouldRender(false);
         }
