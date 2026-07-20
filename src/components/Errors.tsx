@@ -22,28 +22,26 @@ function Errors({ errors, shouldUsePortal }: TypeProps) {
         ]);
     }, [errors]);
 
-    function handleAnimationEnd(i: number) {
-        setShouldRender([
-            ...shouldRender.slice(0, i),
-            ...shouldRender.slice(i + 1),
-        ]);
+    function handleAnimationEnd() {
+        setShouldRender(errors);
     }
 
     if (shouldRender.length > 0) {
         return (
             <>
-                {shouldRender.map((v, i) => {
+                {shouldRender.map((v) => {
+                    const key = v.message + v.field + v.value;
                     const shouldRemove =
-                        errors.filter((v2) => compareErrors(v, v2)).length <= 0;
+                        errors.filter((v_) => compareErrors(v, v_)).length <= 0;
                     const portalElem = document.getElementById(
                         `field.${v.field}`,
                     );
                     const elem = (
                         <p
-                            key={v.message + v.field + v.value}
+                            key={key}
                             className={`text-red-400 text-sm ${!shouldRemove ? "animate-slide-in" : "animate-slide-out"}`}
                             onAnimationEnd={() =>
-                                shouldRemove && handleAnimationEnd(i)
+                                shouldRemove && handleAnimationEnd()
                             }
                         >
                             {v.message}
@@ -51,7 +49,7 @@ function Errors({ errors, shouldUsePortal }: TypeProps) {
                     );
 
                     return shouldUsePortal && portalElem != null
-                        ? createPortal(elem, portalElem)
+                        ? createPortal(elem, portalElem, key)
                         : elem;
                 })}
             </>
