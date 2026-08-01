@@ -1,12 +1,14 @@
 import { Link, Outlet } from "react-router";
-import { useAuth } from "../../context_providers/AuthProvider";
 import type { TypeAuthService } from "../../services/auth/types";
 import Button from "../../components/Button";
 import Icon from "../../components/Icon";
 import AboutModal from "./modals/AboutModal";
 import { useStateModal } from "../../components/Modal";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import RegisterModal from "./modals/RegisterModal";
+import { useAuth } from "../../context_providers/AuthProvider";
+import type { TypeError } from "../../services/api_service/types";
+import ErrorsModal from "./modals/ErrorsModal";
 
 type TypeProps = {
     authService: TypeAuthService;
@@ -15,7 +17,11 @@ type TypeProps = {
 function Layout({ authService }: TypeProps) {
     const aboutModal = useStateModal(false);
     const registerModal = useStateModal(false);
+    const errorsModal = useStateModal(false);
     const headerDivRef = useRef<HTMLDivElement>(null);
+    const [errors, setErrors] = useState<TypeError[]>([]);
+    const [logoutIsLoading, setLogoutIsLoading] = useState(false);
+    const { auth } = useAuth();
 
     const resizeObserver = useRef(
         new ResizeObserver((entries) => {
@@ -44,21 +50,20 @@ function Layout({ authService }: TypeProps) {
         };
     }, [headerDivRef.current]);
 
-    // /*
-    //  * TODO: temporary placeholder to demonstrate useAuth(), should be moved to it's own auth related components
-    //  * */
-    // async function handleRequestOTP() {
-    //     const user = await authService.requestOTP(
-    //         "jesse.reynekebarnard@gmail.com",
-    //     );
-    //     if (user !== null) {
-    //         setAuth((v) => ({
-    //             ...v,
-    //             isAuthenticated: true,
-    //             user: user,
-    //         }));
-    //     }
-    // }
+    // Clear errors when errors modal closes
+    useEffect(() => {
+        errorsModal.isOpen || setErrors([]);
+    }, [errorsModal.isOpen]);
+
+    async function handleClickLogout() {
+        setLogoutIsLoading(true);
+        const resp = await authService.logout();
+        setErrors(resp.errors);
+        if (resp.errors.length > 0) {
+            errorsModal.open();
+        }
+        setLogoutIsLoading(false);
+    }
 
     return (
         <>
@@ -76,10 +81,30 @@ function Layout({ authService }: TypeProps) {
                     </Button>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <Button onClick={registerModal.open}>
-                        <Icon iconName="person" />
-                        Register
-                    </Button>
+                    {auth.isAuthenticated ? (
+                        <>
+                            <p>{auth.user?.email}</p>
+                            <Button onClick={handleClickLogout}>
+                                {logoutIsLoading ? (
+                                    <Icon
+                                        iconName="refresh"
+                                        className="animate-spin"
+                                    />
+                                ) : (
+                                    <Icon iconName="logout" />
+                                )}{" "}
+                                Logout
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button onClick={registerModal.open}>
+                                <Icon iconName="person" />
+                                Register
+                            </Button>
+                        </>
+                    )}
+
                     {/* <p> */}
                     {/*     isAuthenticated:{" "} */}
                     {/*     {auth.isAuthenticated ? "true" : "false"} */}
@@ -91,6 +116,7 @@ function Layout({ authService }: TypeProps) {
 
             <RegisterModal authService={authService} {...registerModal} />
             <AboutModal {...aboutModal} />
+            <ErrorsModal errors={errors} {...errorsModal} />
 
             <Outlet />
         </>

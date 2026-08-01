@@ -5,7 +5,7 @@ function getApiHost(): string {
 }
 
 function createAPIService(): TypeAPIService {
-    const request = async function (
+    const request = async function(
         method: TypeHttpMethods,
         path: string,
         requestBody: object | null = null,

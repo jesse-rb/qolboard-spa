@@ -15,6 +15,7 @@ function RegisterModal(props: TypeProps) {
     const [email, setEmail] = useState("");
     const [registerIsLoading, setRegisterIsLoading] = useState(false);
     const [errors, setErrors] = useState<TypeError[]>([]);
+    const [hasRegistered, setHasRegistered] = useState(false);
 
     useEffect(() => {
         // Clear errors when modal is closed
@@ -25,6 +26,9 @@ function RegisterModal(props: TypeProps) {
         setRegisterIsLoading(true);
         const resp = await props.authService.register(email);
         setErrors(resp.errors);
+        if (resp.errors.length <= 0) {
+            setHasRegistered(true);
+        }
         setRegisterIsLoading(false);
     }
 
@@ -35,28 +39,48 @@ function RegisterModal(props: TypeProps) {
                 <div className="flex flex-col">
                     <div id="field.email">
                         <input
-                            className="w-full"
+                            className="w-full mb-2 mt-2"
                             id="email"
                             type="email"
                             placeholder="Email"
                             defaultValue={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            disabled={hasRegistered}
                         ></input>
                     </div>
 
-                    <Errors errors={errors} shouldUsePortal={true} />
+                    {!hasRegistered ? (
+                        <>
+                            <Errors errors={errors} shouldUsePortal={true} />
 
-                    <p>
-                        We will send an email verification link via your email.
-                    </p>
-                    <Button onClick={handleClickRegister}>
-                        {registerIsLoading ? (
-                            <Icon iconName="sync" className="animate-spin" />
-                        ) : (
-                            <Icon iconName="mail" />
-                        )}
-                        Register
-                    </Button>
+                            <p>
+                                We will send an email verification link via your
+                                email.
+                            </p>
+                            <Button onClick={handleClickRegister}>
+                                {registerIsLoading ? (
+                                    <Icon
+                                        iconName="sync"
+                                        className="animate-spin"
+                                    />
+                                ) : (
+                                    <Icon iconName="mail" />
+                                )}
+                                Register
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <p>
+                                We have sent an email verification link to{" "}
+                                <em>{email}</em>.
+                            </p>
+                            <p>
+                                Please follow the email verification link to log
+                                in.
+                            </p>
+                        </>
+                    )}
                 </div>
             </Modal>
         </>

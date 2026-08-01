@@ -6,7 +6,9 @@ type TypeProps = {
 function Icon({ className, iconName }: TypeProps) {
     return (
         <>
-            <span className={`material-icons ${className}`}>{iconName}</span>
+            <span className={`material-icons flex! items-center ${className}`}>
+                {iconName}
+            </span>
         </>
     );
 }

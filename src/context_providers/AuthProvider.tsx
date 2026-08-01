@@ -41,7 +41,7 @@ function AuthProvider({ children, authService }: TypeProps) {
                 if (user !== null) {
                     setAuth({
                         isAuthenticated: true,
-                        user: user,
+                        user: user.data,
                     });
                 }
             })();
